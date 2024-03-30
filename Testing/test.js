@@ -74,27 +74,27 @@ class Graph_Kru extends Graph_U {
     }
 }
 
-const Graph03a = function(s) {
+const Graph03a = function(p) {
     let t = {
         start: frames(1),
         txt: frames(2),
         trace: frames(3),
     };
     let tnr;
-    s.preload = function() {
-        tnr = s.loadFont('../lib/font/times.ttf');
+    p.preload = function() {
+        tnr = p.loadFont('../lib/font/times.ttf');
     };
-    s.setup = function () {
-        setup2D(s);
-        s.g = new Graph_Kru(s, {
+    p.setup = function () {
+        setup2D(p);
+        p.g = new Graph_Kru(p, {
             V: graph_object.V, E: graph_object.E, font: tnr,
             //color_e: [7, 97, 7],
             start: t.start, begin: t.trace, time: t.txt,
         });
     };
-    s.draw = function () {
-        s.background(0);
-        s.g.show();
+    p.draw = function () {
+        p.background(0);
+        p.g.show();
     };
 };
 
@@ -118,7 +118,7 @@ class Graph_UF extends Graph_U {  // Kruskal's Algorithm using UNION-FIND
             this.unodes[i] = new Node(this.scene, {
                 x: 557 + i * 50, y: 567, yOffset: -3, duration: 0.37,
                 start: this.start + frames(this.dur) * i / this.n, size: args.size || 27,
-                str: "" + i, color: Green, r: 34,
+                str: "" + i, color: GREEN, r: 34,
             });
 
         this.f = 47;  // fixme
@@ -162,4 +162,23 @@ const Graph03b = function(p) {
     };
 };
 
-let p = new p5(Graph03b);
+const TestScene00 = p => {
+  let t = {
+
+  };
+  let tnr;
+  p.preload = function() {
+      tnr = p.loadFont('../lib/font/times.ttf');
+  };
+  p.setup = function () {
+      setup2D(p);
+      p.dragger = new Dragger(p, []);
+  };
+  p.draw = function () {
+      p.background(0);
+      p.dragger.show();
+  };
+};
+
+
+let p = new p5(TestScene00);

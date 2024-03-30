@@ -65,14 +65,14 @@ class Text extends TextBase {
     shaking() {
         super.shaking();
         if (this.mode === 1)   // changing size only works if text is in the center
-            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+            this.size += Math.sin(this.move_timer.t * this.scene.TWO_PI) * this.amp * 0.27;
     }
 
     jumping() {
         super.jumping();
         if (this.mode === 1)
             // the integral of sin(2*PI*x) over 0 to 2*PI is 0, so position doesn't change
-            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+            this.size += Math.sin(this.move_timer.t * this.scene.TWO_PI) * this.amp * 0.27;
     }
 
     // works the same way as move
@@ -90,36 +90,36 @@ class Text extends TextBase {
 
     showSetup() {
         if (this.font)
-            this.s.textFont(this.font);
+            this.scene.textFont(this.font);
 
         if (this.mode === 0) {
-            this.s.textAlign(this.s.LEFT, this.s.TOP);
+            this.scene.textAlign(this.scene.LEFT, this.scene.TOP);
         } else if (this.mode === 1) {
-            this.s.textAlign(this.s.CENTER, this.s.CENTER);
+            this.scene.textAlign(this.scene.CENTER, this.scene.CENTER);
         } else if (this.mode === 2) {
-            this.s.textAlign(this.s.RIGHT, this.s.TOP);
+            this.scene.textAlign(this.scene.RIGHT, this.scene.TOP);
         } else if (this.mode === 3) {  // center-right
-            this.s.textAlign(this.s.LEFT, this.s.CENTER);
+            this.scene.textAlign(this.scene.LEFT, this.scene.CENTER);
         } else if (this.mode === 4) {  // center-right
-            this.s.textAlign(this.s.RIGHT, this.s.CENTER);
+            this.scene.textAlign(this.scene.RIGHT, this.scene.CENTER);
         }
-        this.s.textSize(this.size);
+        this.scene.textSize(this.size);
         this.ft.advance();  // show color
 
         if (this.stroke) {
-            this.s.strokeWeight(this.sw);
-            this.s.stroke(this.stroke);
+            this.scene.strokeWeight(this.sw);
+            this.scene.stroke(this.stroke);
         } else
-            this.s.noStroke();
+            this.scene.noStroke();
         this.showMove();
     }
 
     show() {
-        if (this.s.frameCount >= this.start && this.s.frameCount < this.end) {
+        if (this.scene.frameCount >= this.start && this.scene.frameCount < this.end) {
             this.showSetup();
-            this.s.fill(this.color);
+            this.scene.fill(this.color);
 
-            this.s.text(this.str, this.x, this.y);
+            this.scene.text(this.str, this.x, this.y);
         }
     }
 }
@@ -148,14 +148,14 @@ class TextFade extends Text {
     }
 
     show() {
-        if (this.s.frameCount >= this.start - 1) {
-            if (this.s.frameCount === this.start)
+        if (this.scene.frameCount >= this.start - 1) {
+            if (this.scene.frameCount === this.start)
                 this.ft.reColor(this.color, this.duration);
-            else if (this.s.frameCount === this.end)
+            else if (this.scene.frameCount === this.end)
                 this.ft.fadeOut(this.duration);
 
             this.showSetup();
-            this.s.text(this.str, this.x, this.y);
+            this.scene.text(this.str, this.x, this.y);
         }
 
     }
@@ -171,13 +171,13 @@ class TextWriteIn extends Text {
         this.txt = "";
     }
     show() {
-        if (this.s.frameCount >= this.start) {
+        if (this.scene.frameCount >= this.start) {
             this.showSetup();
             if (this.frCount < this.len) {
                 this.txt += this.str[this.frCount];
                 this.frCount++;
             }
-            this.s.text(this.txt, this.x, this.y);
+            this.scene.text(this.txt, this.x, this.y);
         }
     }
 }
@@ -231,7 +231,7 @@ class Katex extends TextBase {
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
         this.canvasPos = ctx.canvas.getBoundingClientRect();
 
-        this.k = this.s.createP('');
+        this.k = this.scene.createP('');
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
@@ -264,10 +264,10 @@ class Katex extends TextBase {
         }
         this.k.style('rotate', this.rotation);
 
-        if ((this.timer !== undefined) && this.s.frameCount > this.start) {
+        if ((this.timer !== undefined) && this.scene.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
         }
-        if ((this.timer2 !== undefined) && this.s.frameCount > this.end) {
+        if ((this.timer2 !== undefined) && this.scene.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
         katex.render(this.text, window[this.domId]);

@@ -2,26 +2,26 @@
  * Global variables / functions
  */
 
-let fr = 30;  // frame rate
+let frame_rate = 30;  // frame rate
 
 // canvas width. Set to 1200 normally, 1250 if want to monitor frame rate during recording
-let cvw = 1200;
+let canvasWidth = 1200;
 
 // canvas height. Ensure 16:9 ratio
-let cvh = 675;
+let canvasHeight = 675;
 
-let scn = 2;  // scene number
+let sceneNumber = 2;  // scene number
 
 // used for chapter 2, 3
 let matrix = [1, 1, 1, -1, 1, 2];
 let target = [-2, 0, 3];
 
-let White = [255, 255, 255];
-let Red = [255, 77, 97];
-let Green = [77, 217, 77];
-let Blue = [77, 177, 255];
-let Yellow = [247, 227, 47];
-let Orange = [247, 137, 27];
+let WHITE = [255, 255, 255];
+let RED = [255, 77, 97];
+let GREEN = [77, 217, 77];
+let BLUE = [77, 177, 255];
+let YELLOW = [247, 227, 47];
+let ORANGE = [247, 137, 27];
 
 /*** Refactored 3D scenes on 2019-01-17
  *
@@ -72,22 +72,22 @@ function p5ToStd(a) {
  * @returns {number}
  */
 function frames(sec) {
-    return Math.round(fr * sec);
+    return Math.round(frame_rate * sec);
 }
 
 
 /**
  * All 3D/2D scenes should call in s.setup()
  */
-function setup3D(s) {
-    s.frameRate(fr);
-    s.pixelDensity(1);
-    s.createCanvas(cvw, cvh);
+function setup3D(p) {
+    p.frameRate(frame_rate);
+    p.pixelDensity(1);
+    p.createCanvas(canvasWidth, canvasHeight);
 }
 
-function setup2D(s) {
-    s.frameRate(fr);
-    s.createCanvas(cvw, cvh);
+function setup2D(p) {
+    p.frameRate(frame_rate);
+    p.createCanvas(canvasWidth, canvasHeight);
 }
 
 
@@ -98,14 +98,14 @@ function setup2D(s) {
  * If width is monitor mode (1250), display FPS at upper-right where it'o not captured by camera.
  *
  */
-function showFR(s) {
-    const fps = s.frameRate();
-    let pos = (cvw === 1200) ? 0 : 1200;
-    s.fill(255);
-    s.textSize(10);
-    s.textAlign(s.LEFT, s.TOP);
-    s.noStroke();
-    s.text("FPS: " + fps.toFixed(1), pos, 10);
+function showFrameRate(p) {
+    const fps = p.frameRate();
+    let pos = (canvasWidth === 1200) ? 0 : 1200;
+    p.fill(255);
+    p.textSize(10);
+    p.textAlign(p.LEFT, p.TOP);
+    p.noStroke();
+    p.text("FPS: " + fps.toFixed(1), pos, 10);
 }
 
 function deep_copy(x) {
@@ -143,20 +143,20 @@ function vector_subtract(x, y) {
 /**
  * 2D Starter Template
  */
-const Scene00 = function(s) {
-    let t = {
+const Scene00 = p => {
+  let t = {
 
-    };
-    let tnr;
-    s.preload = function() {
-        tnr = s.loadFont('../lib/font/times.ttf');
-    };
-    s.setup = function () {
-        setup2D(s);
-        s.d = new Dragger(s, []);
-    };
-    s.draw = function () {
-        s.background(0);
-        s.d.show();
-    };
+  };
+  let tnr;
+  p.preload = function() {
+      tnr = p.loadFont('../lib/font/times.ttf');
+  };
+  p.setup = function () {
+      setup2D(p);
+      p.dragger = new Dragger(p, []);
+  };
+  p.draw = function () {
+      p.background(0);
+      p.dragger.show();
+  };
 };

@@ -75,7 +75,7 @@ function p5ToStd(a) {
  * @returns {number}
  */
 function frames(sec) {
-    return Math.round(fr * sec);
+    return Math.round(frame_rate * sec);
 }
 
 
@@ -83,14 +83,14 @@ function frames(sec) {
  * All 3D/2D scenes should call in s.setup()
  */
 function setup3D(s) {
-    s.frameRate(fr);
+    s.frameRate(frame_rate);
     s.pixelDensity(1);
-    s.createCanvas(cvw, cvh);
+    s.createCanvas(canvasWidth, canvasHeight);
 }
 
 function setup2D(s) {
-    s.frameRate(fr);
-    s.createCanvas(cvw, cvh);
+    s.frameRate(frame_rate);
+    s.createCanvas(canvasWidth, canvasHeight);
 }
 
 
@@ -101,9 +101,9 @@ function setup2D(s) {
  * If width is monitor mode (1250), display FPS at upper-right where it'o not captured by camera.
  *
  */
-function showFR(s) {
+function showFrameRate(s) {
     const fps = s.frameRate();
-    let pos = (cvw === 1200) ? 0 : 1200;
+    let pos = (canvasWidth === 1200) ? 0 : 1200;
     s.fill(255);
     s.textSize(10);
     s.textAlign(s.LEFT, s.TOP);
@@ -197,10 +197,10 @@ const Scene00 = function(s) {
  */
 class Graphics {         // the master of all classes
     constructor(ctx, args) {
-        this.s = ctx;
-        this.w = args.w || 1200;
-        this.h = args.h || 675;
-        this.g = this.s.createGraphics(this.w * 2, this.h * 2);
+        this.scene = ctx;
+        this.width = args.width || 1200;
+        this.height = args.height || 675;
+        this.g = this.scene.createGraphics(this.width * 2, this.height * 2);
     }
 
     // this is to be overridden by 2nd/3rd level to show the animation
@@ -210,7 +210,7 @@ class Graphics {         // the master of all classes
 
     // this may be overridden by 4th level to do operations on the canvas and display the image
     render() {
-        this.s.image(this.g, 0, 0, this.w, this.h);
+        this.scene.image(this.g, 0, 0, this.width, this.height);
     }
 }
 
@@ -227,7 +227,7 @@ class Graphics {         // the master of all classes
  */
 class PointBase {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x || 0;
         this.y = args.y || 0;
         this.start = args.start || 30;
@@ -305,7 +305,7 @@ class PointBase {
 
     shaking() {
         if (this.f <= this.move_duartion) {
-            let t = this.move_timer.advance() * this.s.TWO_PI;
+            let t = this.move_timer.advance() * this.scene.TWO_PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
@@ -315,7 +315,7 @@ class PointBase {
 
     jumping() {
         if (this.f <= this.move_duartion) {
-            let t = this.move_timer.advance() * this.s.PI;
+            let t = this.move_timer.advance() * this.scene.PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
@@ -353,13 +353,13 @@ class PointBase {
  */
 class Dragger {
     constructor(ctx, arr) {  // takes in an array of PointBase objects/arrays
-        this.s = ctx;
+        this.scene = ctx;
         this.a = arr;
     }
 
     changePos(i) {
-        let px = this.s.pmouseX, py = this.s.pmouseY;  // previous frame mouse locations
-        let nx = this.s.mouseX, ny = this.s.mouseY;  // current frame mouse locations
+        let px = this.scene.pmouseX, py = this.scene.pmouseY;  // previous frame mouse locations
+        let nx = this.scene.mouseX, ny = this.scene.mouseY;  // current frame mouse locations
         if (i.x - px > -7 && i.x - px < 7 && i.y - py > -7 && i.y - py < 7) {
             i.x = nx; // mouse is in the gray box, drag object to new position
             i.y = ny;
@@ -367,12 +367,12 @@ class Dragger {
     }
 
     showPos(i) {
-        this.s.noStroke();
-        this.s.fill(177);
-        this.s.rect(i.x - 7, i.y - 7, 14, 14);
-        this.s.textSize(17);
-        this.s.textAlign(this.s.LEFT, this.s.TOP);
-        this.s.text(i.x + ", " + i.y, i.x + 9, i.y - 7);
+        this.scene.noStroke();
+        this.scene.fill(177);
+        this.scene.rect(i.x - 7, i.y - 7, 14, 14);
+        this.scene.textSize(17);
+        this.scene.textAlign(this.scene.LEFT, this.scene.TOP);
+        this.scene.text(i.x + ", " + i.y, i.x + 9, i.y - 7);
     }
 
     show() {
@@ -383,7 +383,7 @@ class Dragger {
             } else
                 this.showPos(i);
         }
-        if (this.s.mouseIsPressed) {
+        if (this.scene.mouseIsPressed) {
             for (let i of this.a) {
                 if (i instanceof Array) {
                     for (let j of i)
@@ -416,7 +416,7 @@ class Dragger {
  */
 class Axes3D {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.angle = args.angle || 0;  // starting angle
         this.speed = args.speed || -0.0025;  // how many radians to rotate per frame
         this.camY = -567;
@@ -477,10 +477,10 @@ class Axes3D {
             this.angle += this.speed;
 
             // reset angles so that they remain between -PI and PI
-            if (this.angle < -this.s.PI)
-                this.angle += this.s.TWO_PI;
-            else if (this.angle > this.s.PI)
-                this.angle -= this.s.TWO_PI;
+            if (this.angle < -this.scene.PI)
+                this.angle += this.scene.TWO_PI;
+            else if (this.angle > this.scene.PI)
+                this.angle -= this.scene.TWO_PI;
         }
         let camX = this.camRadius * Math.cos(this.angle);
         let camZ = this.camRadius * Math.sin(this.angle);
@@ -488,8 +488,8 @@ class Axes3D {
         g.camera(camX, this.camY, camZ, 0, 0, 0, 0, 1, 0);
 
         g.push();
-        g.rotateX(this.s.PI);
-        g.rotateY(this.s.PI/2);
+        g.rotateX(this.scene.PI);
+        g.rotateY(this.scene.PI/2);
         g.model(this.model);
         g.pop();
     }
@@ -505,7 +505,7 @@ class Axes3D {
  */
 class Grid3D {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.lineLen = args.lineLen || 147;
         this.n = args.numLines + 1 || 4;
         this.strokeweight = args.strokeweight || 2;
@@ -532,9 +532,9 @@ class Grid3D {
     }
 
     setColor(g, i, j, k) {
-        g.stroke(this.s.map(i, 0, this.n, 72, 216),
-            this.s.map(j, 0, this.n, 72, 216),
-            this.s.map(k, 0, this.n, 72, 216));
+        g.stroke(this.scene.map(i, 0, this.n, 72, 216),
+            this.scene.map(j, 0, this.n, 72, 216),
+            this.scene.map(k, 0, this.n, 72, 216));
     }
 
     showGrid(g) {
@@ -603,7 +603,7 @@ class Grid3D_Transform extends Grid3D {
     }
 
     show(g) {
-        if (this.s.frameCount < this.start) {
+        if (this.scene.frameCount < this.start) {
             this.showGrid(g);
         } else {                           // show transformation
             let t = this.timer.advance();
@@ -669,7 +669,7 @@ class Grid3D_Transform extends Grid3D {
  */
 class Arrow3D {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         let tmp = args.from || [0, 0, 0];
         this.from = stdToP5(tmp);
 
@@ -677,7 +677,7 @@ class Arrow3D {
 
         this.label = args.label;
         if (this.label) {
-            this.fcn = args.fcn || ((g) => g.rotateZ(-this.s.PI / 2));  // default rotation function
+            this.fcn = args.fcn || ((g) => g.rotateZ(-this.scene.PI / 2));  // default rotation function
         }
 
         this.color = args.color || [177, 177, 177];
@@ -726,7 +726,7 @@ class Arrow3D {
         let x = Math.sin(phi) * Math.sin(theta);  // y = sin(phi) * sin(theta)
         let y = Math.cos(phi);                    // z = cos(phi)
         let z = Math.sin(phi) * Math.cos(theta);  // x = sin(phi) * cos(theta)
-        this.v = this.s.createVector(x, y, z);
+        this.v = this.scene.createVector(x, y, z);
 
         this.len -= this.tipLen / 2;
     }
@@ -811,16 +811,16 @@ class Arrow3D {
         g.specularMaterial(this.color);
 
         g.translate(this.tx, this.ty, this.tz);
-        g.rotate(this.s.PI, this.v); // frameCount / 77
+        g.rotate(this.scene.PI, this.v); // frameCount / 77
         g.cylinder(this.radius, this.len);
 
         g.translate(0, this.len / 2, 0);
         g.cone(this.tipRadius, this.tipLen);
         if (this.label) {  // fixme: how to determine rotation based on the orientation of arrow?
             // if (this.dx > 0) {
-            //     g.rotateZ(-this.s.PI / 2);
+            //     g.rotateZ(-this.scene.PI / 2);
             // } else {
-            //     g.rotateZ(this.s.PI / 2);
+            //     g.rotateZ(this.scene.PI / 2);
             // }
             this.fcn(g);
 
@@ -845,7 +845,7 @@ class Arrow3D {
  */
 class Plane3D {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         // an array in the form [a,b,c, d,e,f], representing 2 column vectors
         // coordinates should be in p5'o coordinate system
         if (args.mat) {
@@ -861,7 +861,7 @@ class Plane3D {
         this.q = args.q;
         this.r = args.r;
 
-        this.color = args.color || this.s.color(255, 127);
+        this.color = args.color || this.scene.color(255, 127);
         this.size = args.size || 400; // defaults to half the length of each axis on each direction
 
         this.calcParams();
@@ -904,7 +904,7 @@ class Plane3D {
         g.fill(this.color);
         g.beginShape();
         if (this.timer !== undefined) {
-            let t = this.s.frameCount > this.start ? this.timer.advance() : 0;
+            let t = this.scene.frameCount > this.start ? this.timer.advance() : 0;
             this.xs[1] = this.xs[2] = this.size - t * this.size * 2;   // growing from x-direction
             for (let i = 0; i < 4; i++)
                 this.zs[i] =
@@ -913,7 +913,7 @@ class Plane3D {
         for (let i = 0; i < 4; i++) {
             g.vertex(this.xs[i], this.zs[i], this.ys[i]);
         }
-        g.endShape(this.s.CLOSE);
+        g.endShape(this.scene.CLOSE);
         //g.pop();
     }
 }
@@ -987,14 +987,14 @@ class Text extends TextBase {
     shaking() {
         super.shaking();
         if (this.mode === 1)   // changing size only works if text is in the center
-            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+            this.size += Math.sin(this.move_timer.t * this.scene.TWO_PI) * this.amp * 0.27;
     }
 
     jumping() {
         super.jumping();
         if (this.mode === 1)
         // the integral of sin(2*PI*x) over 0 to 2*PI is 0, so position doesn't change
-            this.size += Math.sin(this.move_timer.t * this.s.TWO_PI) * this.amp * 0.27;
+            this.size += Math.sin(this.move_timer.t * this.scene.TWO_PI) * this.amp * 0.27;
     }
 
     // works the same way as move
@@ -1012,36 +1012,36 @@ class Text extends TextBase {
 
     showSetup() {
         if (this.font)
-            this.s.textFont(this.font);
+            this.scene.textFont(this.font);
 
         if (this.mode === 0) {
-            this.s.textAlign(this.s.LEFT, this.s.TOP);
+            this.scene.textAlign(this.scene.LEFT, this.scene.TOP);
         } else if (this.mode === 1) {
-            this.s.textAlign(this.s.CENTER, this.s.CENTER);
+            this.scene.textAlign(this.scene.CENTER, this.scene.CENTER);
         } else if (this.mode === 2) {
-            this.s.textAlign(this.s.RIGHT, this.s.TOP);
+            this.scene.textAlign(this.scene.RIGHT, this.scene.TOP);
         } else if (this.mode === 3) {  // center-right
-            this.s.textAlign(this.s.LEFT, this.s.CENTER);
+            this.scene.textAlign(this.scene.LEFT, this.scene.CENTER);
         } else if (this.mode === 4) {  // center-right
-            this.s.textAlign(this.s.RIGHT, this.s.CENTER);
+            this.scene.textAlign(this.scene.RIGHT, this.scene.CENTER);
         }
-        this.s.textSize(this.size);
+        this.scene.textSize(this.size);
         this.ft.advance();  // show color
 
         if (this.stroke) {
-            this.s.strokeWeight(this.sw);
-            this.s.stroke(this.stroke);
+            this.scene.strokeWeight(this.sw);
+            this.scene.stroke(this.stroke);
         } else
-            this.s.noStroke();
+            this.scene.noStroke();
         this.showMove();
     }
 
     show() {
-        if (this.s.frameCount >= this.start && this.s.frameCount < this.end) {
+        if (this.scene.frameCount >= this.start && this.scene.frameCount < this.end) {
             this.showSetup();
-            this.s.fill(this.color);
+            this.scene.fill(this.color);
 
-            this.s.text(this.str, this.x, this.y);
+            this.scene.text(this.str, this.x, this.y);
         }
     }
 }
@@ -1070,14 +1070,14 @@ class TextFade extends Text {
     }
 
     show() {
-        if (this.s.frameCount >= this.start - 1) {
-            if (this.s.frameCount === this.start)
+        if (this.scene.frameCount >= this.start - 1) {
+            if (this.scene.frameCount === this.start)
                 this.ft.reColor(this.color, this.duration);
-            else if (this.s.frameCount === this.end)
+            else if (this.scene.frameCount === this.end)
                 this.ft.fadeOut(this.duration);
 
             this.showSetup();
-            this.s.text(this.str, this.x, this.y);
+            this.scene.text(this.str, this.x, this.y);
         }
 
     }
@@ -1093,13 +1093,13 @@ class TextWriteIn extends Text {
         this.txt = "";
     }
     show() {
-        if (this.s.frameCount >= this.start) {
+        if (this.scene.frameCount >= this.start) {
             this.showSetup();
             if (this.frCount < this.len) {
                 this.txt += this.str[this.frCount];
                 this.frCount++;
             }
-            this.s.text(this.txt, this.x, this.y);
+            this.scene.text(this.txt, this.x, this.y);
         }
     }
 }
@@ -1153,7 +1153,7 @@ class Katex extends TextBase {
         this.domId = args.id || 'KATEX-' + parseInt(Math.random().toString().substr(2)); // Rand ID
         this.canvasPos = ctx.canvas.getBoundingClientRect();
 
-        this.k = this.s.createP('');
+        this.k = this.scene.createP('');
         this.k.style('color', this.color);
         this.k.style('font-size', this.size + 'px');
         this.k.id(this.domId);
@@ -1186,10 +1186,10 @@ class Katex extends TextBase {
         }
         this.k.style('rotate', this.rotation);
 
-        if ((this.timer !== undefined) && this.s.frameCount > this.start) {
+        if ((this.timer !== undefined) && this.scene.frameCount > this.start) {
             this.k.style('opacity', this.timer.advance());
         }
-        if ((this.timer2 !== undefined) && this.s.frameCount > this.end) {
+        if ((this.timer2 !== undefined) && this.scene.frameCount > this.end) {
             this.k.style('opacity', 1 - this.timer2.advance());
         }
         katex.render(this.text, window[this.domId]);
@@ -1327,7 +1327,7 @@ function TimerFactory(frames, mode) {
  */
 class StrokeWeightTimer {
     constructor(ctx, end, strokeWeight, duration) {
-        this.s = ctx;
+        this.scene = ctx;
         this.end = end;
         this.sw = strokeWeight || 4;
         this.duration = duration || 1;
@@ -1335,11 +1335,11 @@ class StrokeWeightTimer {
     }
 
     advance() {
-        if (this.s.frameCount <= this.end) {
-            this.s.strokeWeight(this.sw);
+        if (this.scene.frameCount <= this.end) {
+            this.scene.strokeWeight(this.sw);
         } else {
             // fixme: 1.00001 is used since strokeWeight(0) will produce incorrect behavior
-            this.s.strokeWeight(this.sw * (1.00001 - this.timer.advance()));
+            this.scene.strokeWeight(this.sw * (1.00001 - this.timer.advance()));
         }
     }
 }
@@ -1352,7 +1352,7 @@ class StrokeWeightTimer {
  */
 class ColorChanger {
     constructor(ctx, initColor) {
-        this.s = ctx;
+        this.scene = ctx;
         this.color = initColor || [255, 255, 255, 255];
     }
 
@@ -1401,7 +1401,7 @@ class StrokeChanger extends ColorChanger {
     advance() {
         if (this.changed)
             this.changing();
-        this.s.stroke(this.color);
+        this.scene.stroke(this.color);
     }
 }
 
@@ -1413,7 +1413,7 @@ class FillChanger extends ColorChanger {
     advance() {
         if (this.changed)
             this.changing();
-        this.s.fill(this.color);
+        this.scene.fill(this.color);
     }
 }
 
@@ -1444,40 +1444,40 @@ class FillChanger extends ColorChanger {
  */
 class HelperGrid {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.w = ctx.width || width;
         this.h = ctx.height || height;
     }
 
     show() {
-        this.s.strokeWeight(1);
+        this.scene.strokeWeight(1);
 
         // draw horizontal helper lines
-        this.s.stroke(137);
+        this.scene.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
-        this.s.stroke(255);
+        this.scene.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
-        this.s.stroke(57);
+        this.scene.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
 
         // draw vertical lines
-        this.s.stroke(137);
+        this.scene.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
-        this.s.stroke(255);
+        this.scene.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
-        this.s.stroke(57);
+        this.scene.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
     }
 }
@@ -1494,7 +1494,7 @@ class HelperGrid {
  */
 class Axes {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the following parameters define the scope of the plot'o grid lines on the canvas
@@ -1516,7 +1516,7 @@ class Axes {
 
         if (args.labelX) {
             this.offsetX = args.offsetX || -27;  // default offset value based on displaying x
-            this.label1 = new Katex(this.s, {
+            this.label1 = new Katex(this.scene, {
                 text: args.labelX,
                 x: this.right + this.offsetX, y: this.centerY - 95,
                 fadeIn: true, start: this.start,
@@ -1524,19 +1524,19 @@ class Axes {
         }
         if (args.labelY) {
             this.offsetY = args.offsetY || -47;  // default offset value based on displaying y
-            this.label2 = new Katex(this.s, {
+            this.label2 = new Katex(this.scene, {
                 text: args.labelY,
                 x: this.centerX + 14, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,
             })
         }
 
-        this.xAxis = new Arrow(this.s, {
+        this.xAxis = new Arrow(this.scene, {
             x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
             frames: frames(6), start: this.start
         });
 
-        this.yAxis = new Arrow(this.s, {
+        this.yAxis = new Arrow(this.scene, {
             x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
             frames: frames(6), start: this.start
         });
@@ -1601,12 +1601,12 @@ class Grid extends Axes {
     showGrid() {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            this.s.strokeWeight(2);
-            if (this.s.frameCount - this.start - frames(1) > i * 2) {
+            this.scene.strokeWeight(2);
+            if (this.scene.frameCount - this.start - frames(1) > i * 2) {
                 if (i % 2 === 1) {  // major grid line
-                    this.s.stroke(27, 177, 247);
+                    this.scene.stroke(27, 177, 247);
                 } else {    // minor grid line
-                    this.s.stroke(17, 67, 77);
+                    this.scene.stroke(17, 67, 77);
                 }
                 //stroke(27, 177, 247);
 
@@ -1616,19 +1616,19 @@ class Grid extends Axes {
 
                 if (i < this.gridlineup.length) {
                     let y = this.gridlineup[i];
-                    this.s.line(this.left, y, right, y);
+                    this.scene.line(this.left, y, right, y);
                 }
                 if (i < this.gridlinedown.length) {
                     let y = this.gridlinedown[i];
-                    this.s.line(this.left, y, right, y);
+                    this.scene.line(this.left, y, right, y);
                 }
                 if (i < this.gridlineleft.length) {
                     let x = this.gridlineleft[i];
-                    this.s.line(x, this.bottom, x, top);
+                    this.scene.line(x, this.bottom, x, top);
                 }
                 if (i < this.gridlineright.length) {
                     let x = this.gridlineright[i];
-                    this.s.line(x, this.bottom, x, top);
+                    this.scene.line(x, this.bottom, x, top);
                 }
             }
         }
@@ -1667,10 +1667,10 @@ class Plot extends Axes {
         this.calcCoords();
         this.points = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = args.ptLabel ? new PlotPoint(this.s, {
+            this.points[i] = args.ptLabel ? new PlotPoint(this.scene, {
                 x: this.ptXs[i], y: this.ptYs[i], radius: 12, val: this.Ys[i], font: args.font,
                 start: this.startPt + i * frames(1) / this.numPts
-            }) : new Point(this.s, {
+            }) : new Point(this.scene, {
                 x: this.ptXs[i], y: this.ptYs[i], radius: 12,
                 start: this.startPt + i * frames(1) / this.numPts  // display all points in 1 second
             });
@@ -1678,12 +1678,12 @@ class Plot extends Axes {
         // calculate the parameters for displaying the least squares line on the canvas
         this.calcParams();
 
-        this.LSLine = new Line(this.s, {
+        this.LSLine = new Line(this.scene, {
             x1: this.left,
             x2: this.right,
             y1: this.y_intercept + this.beta * (this.centerX - this.left),
             y2: this.y_intercept - this.beta * (this.right - this.centerX),
-            color: args.lineColor || this.s.color(77, 177, 77),
+            color: args.lineColor || this.scene.color(77, 177, 77),
             strokeweight: 3,
             start: this.startLSLine
         });
@@ -1750,7 +1750,7 @@ class Plot extends Axes {
  */
 class Point {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x;
         this.y = args.y;
         this.radius = args.radius || 10;
@@ -1767,19 +1767,19 @@ class Point {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.t = this.timer.advance();
 
             // draw the contour
-            this.s.noFill();
-            this.s.stroke(255, 0, 0);
-            this.s.strokeWeight((1 - this.t) * this.radius / 3);
-            this.s.arc(this.x, this.y, this.radius, this.radius, 0, this.t * this.s.TWO_PI);
+            this.scene.noFill();
+            this.scene.stroke(255, 0, 0);
+            this.scene.strokeWeight((1 - this.t) * this.radius / 3);
+            this.scene.arc(this.x, this.y, this.radius, this.radius, 0, this.t * this.scene.TWO_PI);
 
             // draw the ellipse
-            this.s.noStroke();
-            this.s.fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
-            this.s.ellipse(this.x, this.y, this.radius, this.radius);
+            this.scene.noStroke();
+            this.scene.fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
+            this.scene.ellipse(this.x, this.y, this.radius, this.radius);
         }
     }
 }
@@ -1829,19 +1829,19 @@ class Rect extends PointBase {
 
     // sets stroke and the t value
     showSetup() {
-        this.s.noStroke();
-        if (this.s.frameCount > this.start) {
+        this.scene.noStroke();
+        if (this.scene.frameCount > this.start) {
             this.t = this.timer.advance();
         }
-        if (this.s.frameCount > this.end) {
+        if (this.scene.frameCount > this.end) {
             this.t = 1 - this.timer2.advance();
         }
     }
 
     show() {
         this.showSetup();
-        this.s.fill(this.color[0], this.color[1], this.color[2], this.color[3] * this.t);
-        this.s.rect(this.x, this.y, this.w, this.h);
+        this.scene.fill(this.color[0], this.color[1], this.color[2], this.color[3] * this.t);
+        this.scene.rect(this.x, this.y, this.w, this.h);
     }
 }
 
@@ -1856,19 +1856,19 @@ class Rect extends PointBase {
 class Emphasis extends Rect {
     constructor(ctx, args) {
         super(ctx, args);
-        this.s = ctx;
+        this.scene = ctx;
         this.duration = 0.5;
         this.timer = new Timer1(frames(this.duration));  // the duration went wrong
         this.timer2 = new Timer1(frames(this.duration));
 
         this.end = args.end || 10000;
-        this.color = args.color || this.s.color(107, 107, 17, 177);
+        this.color = args.color || this.scene.color(107, 107, 17, 177);
     }
 
     show() {
         this.showSetup();
-        this.s.fill(this.color);
-        this.s.rect(this.x, this.y, this.w * this.t, this.h);
+        this.scene.fill(this.color);
+        this.scene.rect(this.x, this.y, this.w * this.t, this.h);
     }
 }
 
@@ -1886,7 +1886,7 @@ class Emphasis extends Rect {
  */
 class Line {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x1 = args.x1 || 0;
         this.y1 = args.y1 || 0;
         this.x2 = args.x2 || 0;
@@ -1897,12 +1897,12 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
-        this.st = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.scene, args.color);
 
         this.timer = new TimerFactory(frames(this.duration), args.mode);
 
         this.end = args.end || 100000;
-        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
+        this.timer_sw = new StrokeWeightTimer(this.scene, this.end, this.strokeweight, 0.7);
     }
 
     // 2019-03-19: copied from the Bracket class
@@ -1956,10 +1956,10 @@ class Line {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            this.s.line(this.x1, this.y1,
+            this.scene.line(this.x1, this.y1,
                 this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
         }
     }
@@ -1984,10 +1984,10 @@ class LineCenter extends Line {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            this.s.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
+            this.scene.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
                 this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
         }
     }
@@ -2026,7 +2026,7 @@ class DottedLine extends Line {
     show() {
         let x = this.x1;
         let y = this.y1;
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             let xEnd = this.x1 + this.w * t;
             let yEnd = this.y1 + this.h * t;
@@ -2041,7 +2041,7 @@ class DottedLine extends Line {
                     y0 = yEnd;
                 }
                 this.showSetup();
-                this.s.line(x, y, x0, y0);
+                this.scene.line(x, y, x0, y0);
                 x += 2 * this.dx;  // this 2 is arbitrary
                 y += 2 * this.dy;
             }
@@ -2131,22 +2131,22 @@ class Arrow extends Line {
 
     showFadeIn() {
         let t = this.timer.advance() * 255;
-        this.s.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
-        this.s.strokeWeight(this.strokeweight);
+        this.scene.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
+        this.scene.strokeWeight(this.strokeweight);
 
-        this.s.line(this.x1, this.y1, this.x2, this.y2);
-        this.s.line(this.x2, this.y2, this.x3, this.y3);
-        this.s.line(this.x2, this.y2, this.x4, this.y4);
+        this.scene.line(this.x1, this.y1, this.x2, this.y2);
+        this.scene.line(this.x2, this.y2, this.x3, this.y3);
+        this.scene.line(this.x2, this.y2, this.x4, this.y4);
     }
 
     static showArrow(obj, t) {  // // show the two line segments at the tip; also used by ArcArrow
         let dx3 = obj.x3 - obj.x2;
         let dy3 = obj.y3 - obj.y2;
-        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx3, obj.y2 + t * dy3);
+        obj.scene.line(obj.x2, obj.y2, obj.x2 + t * dx3, obj.y2 + t * dy3);
 
         let dx4 = obj.x4 - obj.x2;
         let dy4 = obj.y4 - obj.y2;
-        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
+        obj.scene.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
     }
 
     showGrow() {
@@ -2158,20 +2158,20 @@ class Arrow extends Line {
         // 2019-01-26 BUG FIX: no wonder why the display of arrows appears 6 times slower...
         let t = this.timer.advance();
 
-        this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
+        this.scene.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
 
         Arrow.showArrow(this, t);
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             if (this.fadeIn) {
                 this.showFadeIn();
             } else {
                 this.showGrow();
             }
         }
-        if (this.fadeOut && this.s.frameCount > this.end) {
+        if (this.fadeOut && this.scene.frameCount > this.end) {
 
         }
     }
@@ -2188,7 +2188,7 @@ class Arrow extends Line {
  */
 class FcnPlot {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.f = args.f || ((x) => { return (x * x / 7 - 1); });
         this.a = args.axes;
         this.segLen = args.segLen || 7;  // how many pixels wide is a line segment in the plot
@@ -2224,18 +2224,18 @@ class FcnPlot {
     }
 
     show() {
-        if (this.s.frameCount >= this.start) {
-            this.s.beginShape();
-            this.s.stroke(this.color);
-            this.s.strokeWeight(this.sw);
-            //this.s.strokeJoin(this.s.ROUND);
-            this.s.noFill();
+        if (this.scene.frameCount >= this.start) {
+            this.scene.beginShape();
+            this.scene.stroke(this.color);
+            this.scene.strokeWeight(this.sw);
+            //this.scene.strokeJoin(this.scene.ROUND);
+            this.scene.noFill();
 
             let t = this.timer.advance();
             for (let i = 0; i < this.len * t; i++) {
-                this.s.vertex(this.xs[i], this.ys[i]);
+                this.scene.vertex(this.xs[i], this.ys[i]);
             }
-            this.s.endShape();
+            this.scene.endShape();
         }
     }
 }
@@ -2256,7 +2256,7 @@ class FcnPlot {
  */
 class Table {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x;
         this.y = args.y;
         this.xs = args.xs;
@@ -2268,14 +2268,14 @@ class Table {
 
         this.numPts = this.xs.length;
         this.sizeY = args.size || 37;   // size of the text
-        this.s.textFont(this.font);
-        this.s.textSize(this.sizeY);
-        this.sizeX = args.sizeX || Math.max(this.s.textWidth("" + this.xs[this.numPts - 1]),
-            this.s.textWidth("" + this.ys[this.numPts - 1]));
+        this.scene.textFont(this.font);
+        this.scene.textSize(this.sizeY);
+        this.sizeX = args.sizeX || Math.max(this.scene.textWidth("" + this.xs[this.numPts - 1]),
+            this.scene.textWidth("" + this.ys[this.numPts - 1]));
 
         this.duration = args.duration || frames(1);
         this.timer = new Timer0(this.duration);
-        this.textX = [new TextFade(this.s, {
+        this.textX = [new TextFade(this.scene, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label1,
@@ -2284,7 +2284,7 @@ class Table {
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
-        this.textY = [new TextFade(this.s, {
+        this.textY = [new TextFade(this.scene, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label2,
@@ -2294,7 +2294,7 @@ class Table {
             mode: 1,
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.textX[i] = new TextFade(this.s, {
+            this.textX[i] = new TextFade(this.scene, {
                 color: args.colorX,
                 duration: frames(0.5),
                 size: this.sizeY,
@@ -2304,7 +2304,7 @@ class Table {
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
-            this.textY[i] = new TextFade(this.s, {
+            this.textY[i] = new TextFade(this.scene, {
                 color: args.colorY,
                 duration: frames(0.5),
                 size: this.sizeY,
@@ -2316,7 +2316,7 @@ class Table {
             });
         }
 
-        this.horizLine = new Line(this.s, {
+        this.horizLine = new Line(this.scene, {
             strokeweight: 2,
             x1: this.x,
             y1: this.y + this.sizeY * 1.32,
@@ -2326,7 +2326,7 @@ class Table {
         });
         this.vertLines = [];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.vertLines[i - 1] = new LineCenter(this.s, {
+            this.vertLines[i - 1] = new LineCenter(this.scene, {
                 strokeweight: 2,
                 duration: frames(0.5),
                 x1: this.x + this.sizeX * (i * 1.4 - 0.1),
@@ -2339,7 +2339,7 @@ class Table {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.horizLine.show();
             let t = Math.round(this.timer.advance() * (this.numPts + 1));
             for (let i = 0; i < this.numPts + 1; i++) {
@@ -2384,14 +2384,14 @@ class Chart extends PointBase {
             this.grid[i] = [];
 
         for (let j = 0; j < this.j + 1; j++)
-            this.hl[j] = new Line(this.s, {
+            this.hl[j] = new Line(this.scene, {
                 x1: this.x + j * this.w, y1: this.y, color: this.color,
                 x2: this.x + j * this.w, y2: this.y + this.h * this.j,
                 strokeweight: this.sw, start: this.start + this.duration * j / this.j
             });
 
         for (let i = 0; i < this.i + 1; i++)
-            this.vl[i] = new Line(this.s, {
+            this.vl[i] = new Line(this.scene, {
                 x1: this.x, y1: this.y + i * this.h, color: this.color,
                 x2: this.x + this.w * this.i, y2: this.y + i * this.h,
                 strokeweight: this.sw, start: this.start + this.duration * i / this.i
@@ -2423,13 +2423,13 @@ class Pie extends PointBase {
 
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
-        this.st = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.scene, args.color);
         this.fill = args.fill || undefined;
         if (this.fill)
-            this.ft = new FillChanger(this.s, args.fill);
+            this.ft = new FillChanger(this.scene, args.fill);
 
         this.strokeweight = args.strokeweight || 3;
-        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
+        this.timer_sw = new StrokeWeightTimer(this.scene, this.end, this.strokeweight, 0.7);
     }
 
     showSetup() {
@@ -2437,16 +2437,16 @@ class Pie extends PointBase {
         if (this.fill) {
             this.ft.advance();
         } else
-            this.s.noFill();
+            this.scene.noFill();
 
         this.st.advance();
         this.timer_sw.advance();
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
-            this.s.arc(this.x, this.y, this.r, this.r,
+            this.scene.arc(this.x, this.y, this.r, this.r,
                 this.a1, this.a1 + (this.a2 - this.a1) * this.timer.advance());
         }
     }
@@ -2476,16 +2476,16 @@ class Arc extends Pie {
     }
 
     showArc(t) {
-        this.s.beginShape();
+        this.scene.beginShape();
         this.showSetup();
         for (let i = 0; i < this.n * t; i++) {
-            this.s.vertex(this.p[i][0], this.p[i][1]);
+            this.scene.vertex(this.p[i][0], this.p[i][1]);
         }
-        this.s.endShape();
+        this.scene.endShape();
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             this.showArc(t);
         }
@@ -2510,7 +2510,7 @@ class ArcArrow extends Arc {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             this.showArc(t);
             Arrow.showArrow(this, t);
@@ -2528,9 +2528,9 @@ class Circle extends Pie {
         super(ctx, args);
     }
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
-            this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
+            this.scene.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
         }
     }
 }
@@ -2549,7 +2549,7 @@ class Circle extends Pie {
 class Bracket extends Line {
     constructor(ctx, args) {
         super(ctx, args);
-        this.s = ctx;
+        this.scene = ctx;
         // this.x = args.x;
         // this.y = args.y;
         // this.l = args.length;
@@ -2567,15 +2567,15 @@ class Bracket extends Line {
         this.strokeweight = args.strokeweight || 3;
 
         this.lines = [];
-        this.lines[0] = new LineCenter(this.s, {
+        this.lines[0] = new LineCenter(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
-        this.lines[1] = new Line(this.s, {
+        this.lines[1] = new Line(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
-        this.lines[2] = new Line(this.s, {
+        this.lines[2] = new Line(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
@@ -2617,7 +2617,7 @@ class Bracket extends Line {
  * ImageBase (could not name it to Image since it would conflict p5.Image)
  *
  * This class does not support init animations. See ImageFly, ImageGrow, ImageFade.
- * Since this.s.tint() is a very costly method and slows down the frame rate drastically,
+ * Since this.scene.tint() is a very costly method and slows down the frame rate drastically,
  * user can use the ImageFly class to display init animation of flying in from the left, etc.
  *
  * ---- args list parameters ----
@@ -2634,7 +2634,7 @@ class ImageBase extends PointBase {
 
     showImage() {
         this.showMove();
-        this.s.image(this.img, this.x, this.y, this.w, this.h);
+        this.scene.image(this.img, this.x, this.y, this.w, this.h);
     }
 }
 
@@ -2659,16 +2659,16 @@ class ImageFly extends ImageBase {
             case 1:
                 this.x = -this.img.width; break;
             case 2:
-                this.x = cvw; break;
+                this.x = canvasWidth; break;
             case 3:
                 this.y = -this.img.height; break;
             case 4:
-                this.y = cvh; break;
+                this.y = canvasHeight; break;
         }
     }
 
     show() {
-        if (this.s.frameCount === this.start) {
+        if (this.scene.frameCount === this.start) {
             this.move(this.xf, this.yf, this.duration, 1);
         }
         this.showImage();
@@ -2684,9 +2684,9 @@ class ImageGrow extends ImageBase {  // grow from center; no additional args nee
     }
     show() {
         this.showMove();
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
-            this.s.image(this.img,
+            this.scene.image(this.img,
                 this.xc - this.w * t / 2, this.yc - this.h * t / 2, this.w * t, this.h * t);
         }
     }
@@ -2701,7 +2701,7 @@ class ImageGrow extends ImageBase {  // grow from center; no additional args nee
 class ImageFade extends ImageBase {
     constructor(ctx, args) {
         super(ctx, args);
-        this.rect = new Rect(this.s, {
+        this.rect = new Rect(this.scene, {
             x: this.x, y: this.y, w: this.w, h: this.h, duration: 0.7,
             color: [0, 0, 0, 255], start: 1, end: this.start,
         });
@@ -2762,12 +2762,12 @@ class Graph extends PointBase {
 
         this.nodes = [];  // stores Node objects
         for (let i = 0; i < this.n; i++) {
-            this.nodes[i] = args.label ? new NodeLabel(this.s, {
+            this.nodes[i] = args.label ? new NodeLabel(this.scene, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 start: this.start + frames(this.dur) * i / this.n, size: args.size || 37,
                 str: "" + i, font: args.font, color: args.color_v, r: this.radius,
                 label: args.label
-            }) : new Node(this.s, {
+            }) : new Node(this.scene, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 // display all nodes in this.dur seconds
                 start: this.start + frames(this.dur) * i / this.n, size: args.size || 42,
@@ -2798,16 +2798,16 @@ class Node extends PointBase {
         super(ctx, args);
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
-        this.color = args.color || Blue;
+        this.color = args.color || BLUE;
         this.yOffset = args.yOffset || -4;
         this.fill = args.fill || vector_multiply(this.color, 0.14);
 
-        this.c = new Circle(this.s, {
+        this.c = new Circle(this.scene, {
             x: this.x, y: this.y, r: this.r, start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.sw, color: this.color, fill: this.fill
         });
 
-        this.txt = new TextFade(this.s, {
+        this.txt = new TextFade(this.scene, {
             x: this.x, y: this.y + this.yOffset, size: args.size || 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
@@ -2838,7 +2838,7 @@ class Node extends PointBase {
         this.thickness = thickness || 17;
         this.f = 0;
         this.h_timer = new Timer1(frames(0.67));
-        this.s_timer = new FillChanger(this.s, this.h_color);
+        this.s_timer = new FillChanger(this.scene, this.h_color);
     }
 
     dehighlight() {
@@ -2848,7 +2848,7 @@ class Node extends PointBase {
     highlighting() {
         if (this.f < this.h_fr) {
             this.f++;
-            this.s.noStroke();
+            this.scene.noStroke();
             this.s_timer.advance();
             if (this.f === this.h_fr - frames(0.27)) {
                 this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
@@ -2856,11 +2856,11 @@ class Node extends PointBase {
             let t = this.h_timer.advance();
             let r = this.r + this.thickness * t;
             if (this.dis) {
-                this.s.ellipse(this.x, this.y,
+                this.scene.ellipse(this.x, this.y,
                     this.r + this.thickness * t, this.r + this.thickness * t);
             } else     // refined animation on 05/14
-                this.s.arc(this.x, this.y, r, r,
-                    -this.s.PI + t * this.s.HALF_PI, -this.s.PI + t * this.s.TWO_PI * 1.2499);
+                this.scene.arc(this.x, this.y, r, r,
+                    -this.scene.PI + t * this.scene.HALF_PI, -this.scene.PI + t * this.scene.TWO_PI * 1.2499);
         } else
             this.hi = false;
     }
@@ -2896,12 +2896,12 @@ class NodeLabel extends Node {
         });
         let m = 0.24;
         this.labelColor = args.labelColor || [255, 247, 77];
-        this.lin = new Line(this.s, {
+        this.lin = new Line(this.scene, {
             x1: this.x - this.r * m, y1: this.y + this.r * m,
             x2: this.x + this.r * m, y2: this.y - this.r * m,
             strokeweight: 1, start: args.start, color: [177, 177, 177]
         });
-        this.label = new TextFade(this.s, {
+        this.label = new TextFade(this.scene, {
             str: args.label, mode: 1, x: this.x + 10, y: this.y + 10, start: args.start,
             color: this.labelColor, size: 24
         });
@@ -2919,9 +2919,9 @@ class NodeLabel extends Node {
         this.resetted = true;
         this.f = 0;
         this.duration = 1;
-        this.labelN = new TextFade(this.s, {
+        this.labelN = new TextFade(this.scene, {
             str: "" + cost, mode: 1, x: this.x + 10,
-            y: down ? this.y - 20 : this.y + 40, start: this.s.frameCount + 1,
+            y: down ? this.y - 20 : this.y + 40, start: this.scene.frameCount + 1,
             color: this.labelColor, size: 24
         });
         this.label.ft.fadeOut(0.7);
@@ -2931,7 +2931,7 @@ class NodeLabel extends Node {
     }
 
     resetting() {
-        if (this.f <= this.duration * fr) {
+        if (this.f <= this.duration * frame_rate) {
             this.f++;
             this.labelN.show();
         } else {
@@ -3003,9 +3003,9 @@ class Edge extends Line {
             let x2d = this.x2 - this.xc, y2d = this.y2 - this.yc;
             this.a2 = Math.atan2(y2d, x2d);
             if (this.a2 < this.a1 && this.d < 0) {
-                this.a2 += this.s.TWO_PI;
+                this.a2 += this.scene.TWO_PI;
             } else if (this.a2 > this.a1 && this.d > 0) {   // don't yet know why I need to do this
-                this.a1 += this.s.TWO_PI;
+                this.a1 += this.scene.TWO_PI;
             }
 
             // start and end angles, after "subtracting" the radius of two nodes from the curve
@@ -3044,7 +3044,7 @@ class Edge extends Line {
         // add label
         if (args.weight !== undefined) {
             this.str = "" + args.weight;
-            this.txt = new TextFade(this.s, {
+            this.txt = new TextFade(this.scene, {
                 str: this.str, x: this.x3, y: this.y3, mode: 1,
                 start: args.start, color: this.txtColor,
                 stroke: [0, 0, 0],    // black stroke
@@ -3062,17 +3062,17 @@ class Edge extends Line {
     }
 
     createLine(){
-        return this.r ? (this.directed ? new ArcArrow(this.s, {   // arc directed
+        return this.r ? (this.directed ? new ArcArrow(this.scene, {   // arc directed
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color, tipLen: this.tipLen
-        }) : new Arc(this.s, {  // arc undirected
+        }) : new Arc(this.scene, {  // arc undirected
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color,
-        })) : (this.directed ? new Arrow(this.s, {  // straight directed
+        })) : (this.directed ? new Arrow(this.scene, {  // straight directed
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
             tipAngle: 0.37, tipLen: this.tipLen,
-        }) : new Line(this.s, {  // straight undirected
+        }) : new Line(this.scene, {  // straight undirected
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
         }));
@@ -3080,7 +3080,7 @@ class Edge extends Line {
 
     addEdge(color) {  // shows a line/arc growing on top of previous edge
         this.color = color;
-        this.start = this.s.frameCount + 1;
+        this.start = this.scene.frameCount + 1;
         this.l2 = this.createLine();
     }
 
@@ -3107,7 +3107,7 @@ class Edge extends Line {
         this.thickness = thickness || 14;
         this.f = 0;
         this.h_timer = new Timer2(frames(0.67));
-        this.s_timer = new StrokeChanger(this.s, this.h_color);
+        this.s_timer = new StrokeChanger(this.scene, this.h_color);
     }
 
     /**
@@ -3121,21 +3121,21 @@ class Edge extends Line {
         if (this.f < this.h_fr) {
             this.f++;
             this.s_timer.advance();
-            this.s.strokeWeight(this.thickness);
+            this.scene.strokeWeight(this.thickness);
             if (this.f === this.h_fr - frames(0.27)) {
                 this.s_timer.fadeOut(0.27);  // fade out .27 seconds before duration ends
             }
             let t = this.h_timer.advance();
             if (!this.d)
-                this.s.line(this.x1, this.y1,
+                this.scene.line(this.x1, this.y1,
                     this.x1 + t * (this.x2 - this.x1), this.y1 + t * (this.y2 - this.y1));
             else {
-                this.s.noFill();
-                this.s.beginShape();
+                this.scene.noFill();
+                this.scene.beginShape();
                 for (let i = 0; i < this.numPts * t - 1; i++) {
-                    this.s.vertex(this.pts[i][0], this.pts[i][1]);
+                    this.scene.vertex(this.pts[i][0], this.pts[i][1]);
                 }
-                this.s.endShape();
+                this.scene.endShape();
             }
         } else
             this.hi = false;
@@ -3168,7 +3168,7 @@ class Graph_U extends Graph {
             else
                 this.A[a][b] = this.A[b][a] = true;
 
-            this.edges[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.scene, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
@@ -3179,7 +3179,7 @@ class Graph_U extends Graph {
             // they will be displayed at the same location as the other edge,
             // and start time is set to after all edges are displayed.
             // We do this so that edge highlight functionality works both ways
-            this.edges[b][a] = new Edge(this.s, {
+            this.edges[b][a] = new Edge(this.scene, {
                 x1: this.V[b][0], y1: this.V[b][1],
                 x2: this.V[a][0], y2: this.V[a][1], color: args.color_e,
                 start: this.start + frames(this.dur) + 1, d: -d,  // notice d is inverted
@@ -3204,7 +3204,7 @@ class Graph_D extends Graph {
             else
                 this.A[a][b] = true;
 
-            this.edges[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.scene, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
@@ -3232,14 +3232,14 @@ class Tracer extends PointBase {
         this.ys = [];
         this.to = 17;  // time offset
 
-        this.t[0] = new TextWriteIn(this.s, {
-            str: args.str, color: Yellow,
+        this.t[0] = new TextWriteIn(this.scene, {
+            str: args.str, color: YELLOW,
             x: args.x, y: args.y, size: args.size || 29, start: this.start,
         });
         this.start += args.str.length + this.to * 2;
 
-        this.arr = new Arrow(this.s, {
-            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || Orange,
+        this.arr = new Arrow(this.scene, {
+            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || ORANGE,
         });
     }
 
@@ -3251,9 +3251,9 @@ class Tracer extends PointBase {
      * index is set to 0, 1, 2, 3... if this text is a step of the algorithm, or -1 if not
      */
     add(str, index, x, y, size, color, frameOff) {
-        this.t[this.n] = new TextWriteIn(this.s, {
+        this.t[this.n] = new TextWriteIn(this.scene, {
             str: str, x: this.x + x, y: this.y + y, size: size || 29, start: this.start,
-            color: color || White
+            color: color || WHITE
         });
         this.start += str.length + (frameOff ? frameOff : this.to);  // disabled for github pages
         this.n++;

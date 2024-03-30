@@ -20,7 +20,7 @@
  * call render() for canvas operations, then show() for object animations
  *
  * ----args list parameters----
- * @optional (number) w, h
+ * @optional (number) width, height
  *
  * Due to a bug in p5.js, I will have to first create a canvas twice the original size,
  * and then use image() to render the scaled down version.
@@ -29,11 +29,11 @@
  * @reference https://www.youtube.com/watch?v=pNDc8KXWp9E&t=529s
  */
 class Graphics {         // the master of all classes
-    constructor(ctx, args) {
-        this.s = ctx;
-        this.w = args.w || 1200;
-        this.h = args.h || 675;
-        this.g = this.s.createGraphics(this.w * 2, this.h * 2);
+    constructor(p, args) {
+        this.p = p;
+        this.width = args.width || 1200;
+        this.height = args.height || 675;
+        this.graphics = this.p.createGraphics(this.width * 2, this.height * 2);
     }
 
     // this is to be overridden by 2nd/3rd level to show the animation
@@ -43,7 +43,7 @@ class Graphics {         // the master of all classes
 
     // this may be overridden by 4th level to do operations on the canvas and display the image
     render() {
-        this.s.image(this.g, 0, 0, this.w, this.h);
+        this.p.image(this.graphics, 0, 0, this.width, this.height);
     }
 }
 
@@ -60,14 +60,12 @@ class Graphics {         // the master of all classes
  */
 class PointBase {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x || 0;
         this.y = args.y || 0;
-        this.start = args.start || 30;
-        this.start = Math.floor(this.start);
+        this.start = Math.floor(args.start || 30);
         this.duration = args.duration || 1;  // fixme
-        this.end = args.end || 100000;
-        this.end = Math.floor(this.end);
+        this.end = Math.floor(args.end || 100000);
     }
 
     shift(x, y, duration, timerNum) {
@@ -138,7 +136,7 @@ class PointBase {
 
     shaking() {
         if (this.f <= this.move_duartion) {
-            let t = this.move_timer.advance() * this.s.TWO_PI;
+            let t = this.move_timer.advance() * this.scene.TWO_PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
@@ -148,7 +146,7 @@ class PointBase {
 
     jumping() {
         if (this.f <= this.move_duartion) {
-            let t = this.move_timer.advance() * this.s.PI;
+            let t = this.move_timer.advance() * this.scene.PI;
             this.y = this.yo - this.amp * Math.sin(t);
             this.f++;
         } else {
@@ -186,13 +184,13 @@ class PointBase {
  */
 class Dragger {
     constructor(ctx, arr) {  // takes in an array of PointBase objects/arrays
-        this.s = ctx;
+        this.p = ctx;
         this.a = arr;
     }
 
     changePos(i) {
-        let px = this.s.pmouseX, py = this.s.pmouseY;  // previous frame mouse locations
-        let nx = this.s.mouseX, ny = this.s.mouseY;  // current frame mouse locations
+        let px = this.p.pmouseX, py = this.p.pmouseY;  // previous frame mouse locations
+        let nx = this.p.mouseX, ny = this.p.mouseY;  // current frame mouse locations
         if (i.x - px > -7 && i.x - px < 7 && i.y - py > -7 && i.y - py < 7) {
             i.x = nx; // mouse is in the gray box, drag object to new position
             i.y = ny;
@@ -200,12 +198,12 @@ class Dragger {
     }
 
     showPos(i) {
-        this.s.noStroke();
-        this.s.fill(177);
-        this.s.rect(i.x - 7, i.y - 7, 14, 14);
-        this.s.textSize(17);
-        this.s.textAlign(this.s.LEFT, this.s.TOP);
-        this.s.text(i.x + ", " + i.y, i.x + 9, i.y - 7);
+        this.p.noStroke();
+        this.p.fill(177);
+        this.p.rect(i.x - 7, i.y - 7, 14, 14);
+        this.p.textSize(17);
+        this.p.textAlign(this.p.LEFT, this.p.TOP);
+        this.p.text(i.x + ", " + i.y, i.x + 9, i.y - 7);
     }
 
     show() {
@@ -216,7 +214,7 @@ class Dragger {
             } else
                 this.showPos(i);
         }
-        if (this.s.mouseIsPressed) {
+        if (this.p.mouseIsPressed) {
             for (let i of this.a) {
                 if (i instanceof Array) {
                     for (let j of i)

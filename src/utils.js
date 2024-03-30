@@ -24,40 +24,40 @@
  */
 class HelperGrid {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.w = ctx.width || width;
         this.h = ctx.height || height;
     }
 
     show() {
-        this.s.strokeWeight(1);
+        this.scene.strokeWeight(1);
 
         // draw horizontal helper lines
-        this.s.stroke(137);
+        this.scene.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
-        this.s.stroke(255);
+        this.scene.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
-        this.s.stroke(57);
+        this.scene.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.s.line(i, 0, i, this.h);
+            this.scene.line(i, 0, i, this.h);
         }
 
         // draw vertical lines
-        this.s.stroke(137);
+        this.scene.stroke(137);
         for (let i = 100; i < this.w; i += 200) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
-        this.s.stroke(255);
+        this.scene.stroke(255);
         for (let i = 200; i < this.w; i += 200) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
-        this.s.stroke(57);
+        this.scene.stroke(57);
         for (let i = 50; i < this.w; i += 100) {
-            this.s.line(0, i, this.w, i);
+            this.scene.line(0, i, this.w, i);
         }
     }
 }
@@ -74,7 +74,7 @@ class HelperGrid {
  */
 class Axes {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         //this.showLabel = args.showLabel || false;  // show numerical labels
 
         // the following parameters define the scope of the plot'o grid lines on the canvas
@@ -96,7 +96,7 @@ class Axes {
 
         if (args.labelX) {
             this.offsetX = args.offsetX || -27;  // default offset value based on displaying x
-            this.label1 = new Katex(this.s, {
+            this.label1 = new Katex(this.scene, {
                 text: args.labelX,
                 x: this.right + this.offsetX, y: this.centerY - 95,
                 fadeIn: true, start: this.start,
@@ -104,19 +104,19 @@ class Axes {
         }
         if (args.labelY) {
             this.offsetY = args.offsetY || -47;  // default offset value based on displaying y
-            this.label2 = new Katex(this.s, {
+            this.label2 = new Katex(this.scene, {
                 text: args.labelY,
                 x: this.centerX + 14, y: this.top + this.offsetY,
                 fadeIn: true, start: this.start,
             })
         }
 
-        this.xAxis = new Arrow(this.s, {
+        this.xAxis = new Arrow(this.scene, {
             x1: this.left, x2: this.right, y1: this.centerY, y2: this.centerY,
             frames: frames(6), start: this.start
         });
 
-        this.yAxis = new Arrow(this.s, {
+        this.yAxis = new Arrow(this.scene, {
             x1: this.centerX, x2: this.centerX, y1: this.bottom, y2: this.top,
             frames: frames(6), start: this.start
         });
@@ -181,12 +181,12 @@ class Grid extends Axes {
     showGrid() {
         this.showAxes();
         for (let i = 0; i < this.maxNumLines; ++i) {
-            this.s.strokeWeight(2);
-            if (this.s.frameCount - this.start - frames(1) > i * 2) {
+            this.scene.strokeWeight(2);
+            if (this.scene.frameCount - this.start - frames(1) > i * 2) {
                 if (i % 2 === 1) {  // major grid line
-                    this.s.stroke(27, 177, 247);
+                    this.scene.stroke(27, 177, 247);
                 } else {    // minor grid line
-                    this.s.stroke(17, 67, 77);
+                    this.scene.stroke(17, 67, 77);
                 }
                 //stroke(27, 177, 247);
 
@@ -196,19 +196,19 @@ class Grid extends Axes {
 
                 if (i < this.gridlineup.length) {
                     let y = this.gridlineup[i];
-                    this.s.line(this.left, y, right, y);
+                    this.scene.line(this.left, y, right, y);
                 }
                 if (i < this.gridlinedown.length) {
                     let y = this.gridlinedown[i];
-                    this.s.line(this.left, y, right, y);
+                    this.scene.line(this.left, y, right, y);
                 }
                 if (i < this.gridlineleft.length) {
                     let x = this.gridlineleft[i];
-                    this.s.line(x, this.bottom, x, top);
+                    this.scene.line(x, this.bottom, x, top);
                 }
                 if (i < this.gridlineright.length) {
                     let x = this.gridlineright[i];
-                    this.s.line(x, this.bottom, x, top);
+                    this.scene.line(x, this.bottom, x, top);
                 }
             }
         }
@@ -247,10 +247,10 @@ class Plot extends Axes {
         this.calcCoords();
         this.points = [];
         for (let i = 0; i < this.numPts; i++) {
-            this.points[i] = args.ptLabel ? new PlotPoint(this.s, {
+            this.points[i] = args.ptLabel ? new PlotPoint(this.scene, {
                 x: this.ptXs[i], y: this.ptYs[i], radius: 12, val: this.Ys[i], font: args.font,
                 start: this.startPt + i * frames(1) / this.numPts
-            }) : new Point(this.s, {
+            }) : new Point(this.scene, {
                 x: this.ptXs[i], y: this.ptYs[i], radius: 12,
                 start: this.startPt + i * frames(1) / this.numPts  // display all points in 1 second
             });
@@ -258,12 +258,12 @@ class Plot extends Axes {
         // calculate the parameters for displaying the least squares line on the canvas
         this.calcParams();
 
-        this.LSLine = new Line(this.s, {
+        this.LSLine = new Line(this.scene, {
             x1: this.left,
             x2: this.right,
             y1: this.y_intercept + this.beta * (this.centerX - this.left),
             y2: this.y_intercept - this.beta * (this.right - this.centerX),
-            color: args.lineColor || this.s.color(77, 177, 77),
+            color: args.lineColor || this.scene.color(77, 177, 77),
             strokeweight: 3,
             start: this.startLSLine
         });
@@ -330,7 +330,7 @@ class Plot extends Axes {
  */
 class Point {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x;
         this.y = args.y;
         this.radius = args.radius || 10;
@@ -347,19 +347,19 @@ class Point {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.t = this.timer.advance();
 
             // draw the contour
-            this.s.noFill();
-            this.s.stroke(255, 0, 0);
-            this.s.strokeWeight((1 - this.t) * this.radius / 3);
-            this.s.arc(this.x, this.y, this.radius, this.radius, 0, this.t * this.s.TWO_PI);
+            this.scene.noFill();
+            this.scene.stroke(255, 0, 0);
+            this.scene.strokeWeight((1 - this.t) * this.radius / 3);
+            this.scene.arc(this.x, this.y, this.radius, this.radius, 0, this.t * this.scene.TWO_PI);
 
             // draw the ellipse
-            this.s.noStroke();
-            this.s.fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
-            this.s.ellipse(this.x, this.y, this.radius, this.radius);
+            this.scene.noStroke();
+            this.scene.fill(this.color[0], this.color[1], this.color[2], 255 * this.t);
+            this.scene.ellipse(this.x, this.y, this.radius, this.radius);
         }
     }
 }
@@ -409,19 +409,19 @@ class Rect extends PointBase {
 
     // sets stroke and the t value
     showSetup() {
-        this.s.noStroke();
-        if (this.s.frameCount > this.start) {
+        this.scene.noStroke();
+        if (this.scene.frameCount > this.start) {
             this.t = this.timer.advance();
         }
-        if (this.s.frameCount > this.end) {
+        if (this.scene.frameCount > this.end) {
             this.t = 1 - this.timer2.advance();
         }
     }
 
     show() {
         this.showSetup();
-        this.s.fill(this.color[0], this.color[1], this.color[2], this.color[3] * this.t);
-        this.s.rect(this.x, this.y, this.w, this.h);
+        this.scene.fill(this.color[0], this.color[1], this.color[2], this.color[3] * this.t);
+        this.scene.rect(this.x, this.y, this.w, this.h);
     }
 }
 
@@ -436,19 +436,19 @@ class Rect extends PointBase {
 class Emphasis extends Rect {
     constructor(ctx, args) {
         super(ctx, args);
-        this.s = ctx;
+        this.scene = ctx;
         this.duration = 0.5;
         this.timer = new Timer1(frames(this.duration));  // the duration went wrong
         this.timer2 = new Timer1(frames(this.duration));
 
         this.end = args.end || 10000;
-        this.color = args.color || this.s.color(107, 107, 17, 177);
+        this.color = args.color || this.scene.color(107, 107, 17, 177);
     }
 
     show() {
         this.showSetup();
-        this.s.fill(this.color);
-        this.s.rect(this.x, this.y, this.w * this.t, this.h);
+        this.scene.fill(this.color);
+        this.scene.rect(this.x, this.y, this.w * this.t, this.h);
     }
 }
 
@@ -466,7 +466,7 @@ class Emphasis extends Rect {
  */
 class Line {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x1 = args.x1 || 0;
         this.y1 = args.y1 || 0;
         this.x2 = args.x2 || 0;
@@ -477,12 +477,12 @@ class Line {
         // starting frame for initialization animation
         this.start = args.start || 1;
         this.strokeweight = args.strokeweight || 3;
-        this.st = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.scene, args.color);
 
         this.timer = new TimerFactory(frames(this.duration), args.mode);
 
         this.end = args.end || 100000;
-        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
+        this.timer_sw = new StrokeWeightTimer(this.scene, this.end, this.strokeweight, 0.7);
     }
 
     // 2019-03-19: copied from the Bracket class
@@ -536,10 +536,10 @@ class Line {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            this.s.line(this.x1, this.y1,
+            this.scene.line(this.x1, this.y1,
                 this.x1 + (this.x2 - this.x1) * t, this.y1 + (this.y2 - this.y1) * t);
         }
     }
@@ -564,10 +564,10 @@ class LineCenter extends Line {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
             let t = this.timer.advance();
-            this.s.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
+            this.scene.line(this.xm + (this.x1 - this.xm) * t, this.ym + (this.y1 - this.ym) * t,
                 this.xm + (this.x2 - this.xm) * t, this.ym + (this.y2 - this.ym) * t);
         }
     }
@@ -606,7 +606,7 @@ class DottedLine extends Line {
     show() {
         let x = this.x1;
         let y = this.y1;
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             let xEnd = this.x1 + this.w * t;
             let yEnd = this.y1 + this.h * t;
@@ -621,7 +621,7 @@ class DottedLine extends Line {
                     y0 = yEnd;
                 }
                 this.showSetup();
-                this.s.line(x, y, x0, y0);
+                this.scene.line(x, y, x0, y0);
                 x += 2 * this.dx;  // this 2 is arbitrary
                 y += 2 * this.dy;
             }
@@ -711,22 +711,22 @@ class Arrow extends Line {
 
     showFadeIn() {
         let t = this.timer.advance() * 255;
-        this.s.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
-        this.s.strokeWeight(this.strokeweight);
+        this.scene.stroke(this.colorArr[0], this.colorArr[1], this.colorArr[2], t);
+        this.scene.strokeWeight(this.strokeweight);
 
-        this.s.line(this.x1, this.y1, this.x2, this.y2);
-        this.s.line(this.x2, this.y2, this.x3, this.y3);
-        this.s.line(this.x2, this.y2, this.x4, this.y4);
+        this.scene.line(this.x1, this.y1, this.x2, this.y2);
+        this.scene.line(this.x2, this.y2, this.x3, this.y3);
+        this.scene.line(this.x2, this.y2, this.x4, this.y4);
     }
 
     static showArrow(obj, t) {  // // show the two line segments at the tip; also used by ArcArrow
         let dx3 = obj.x3 - obj.x2;
         let dy3 = obj.y3 - obj.y2;
-        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx3, obj.y2 + t * dy3);
+        obj.scene.line(obj.x2, obj.y2, obj.x2 + t * dx3, obj.y2 + t * dy3);
 
         let dx4 = obj.x4 - obj.x2;
         let dy4 = obj.y4 - obj.y2;
-        obj.s.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
+        obj.scene.line(obj.x2, obj.y2, obj.x2 + t * dx4, obj.y2 + t * dy4);
     }
     
     showGrow() {
@@ -738,20 +738,20 @@ class Arrow extends Line {
         // 2019-01-26 BUG FIX: no wonder why the display of arrows appears 6 times slower...
         let t = this.timer.advance();
 
-        this.s.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
+        this.scene.line(this.x1, this.y1, this.x1 + t * dx2, this.y1 + t * dy2);
 
         Arrow.showArrow(this, t);
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             if (this.fadeIn) {
                 this.showFadeIn();
             } else {
                 this.showGrow();
             }
         }
-        if (this.fadeOut && this.s.frameCount > this.end) {
+        if (this.fadeOut && this.scene.frameCount > this.end) {
 
         }
     }
@@ -768,7 +768,7 @@ class Arrow extends Line {
  */
 class FcnPlot {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.f = args.f || ((x) => { return (x * x / 7 - 1); });
         this.a = args.axes;
         this.segLen = args.segLen || 7;  // how many pixels wide is a line segment in the plot
@@ -804,18 +804,18 @@ class FcnPlot {
     }
 
     show() {
-        if (this.s.frameCount >= this.start) {
-            this.s.beginShape();
-            this.s.stroke(this.color);
-            this.s.strokeWeight(this.sw);
-            //this.s.strokeJoin(this.s.ROUND);
-            this.s.noFill();
+        if (this.scene.frameCount >= this.start) {
+            this.scene.beginShape();
+            this.scene.stroke(this.color);
+            this.scene.strokeWeight(this.sw);
+            //this.scene.strokeJoin(this.scene.ROUND);
+            this.scene.noFill();
 
             let t = this.timer.advance();
             for (let i = 0; i < this.len * t; i++) {
-                this.s.vertex(this.xs[i], this.ys[i]);
+                this.scene.vertex(this.xs[i], this.ys[i]);
             }
-            this.s.endShape();
+            this.scene.endShape();
         }
     }
 }
@@ -836,7 +836,7 @@ class FcnPlot {
  */
 class Table {
     constructor(ctx, args) {
-        this.s = ctx;
+        this.scene = ctx;
         this.x = args.x;
         this.y = args.y;
         this.xs = args.xs;
@@ -848,14 +848,14 @@ class Table {
 
         this.numPts = this.xs.length;
         this.sizeY = args.size || 37;   // size of the text
-        this.s.textFont(this.font);
-        this.s.textSize(this.sizeY);
-        this.sizeX = args.sizeX || Math.max(this.s.textWidth("" + this.xs[this.numPts - 1]),
-            this.s.textWidth("" + this.ys[this.numPts - 1]));
+        this.scene.textFont(this.font);
+        this.scene.textSize(this.sizeY);
+        this.sizeX = args.sizeX || Math.max(this.scene.textWidth("" + this.xs[this.numPts - 1]),
+            this.scene.textWidth("" + this.ys[this.numPts - 1]));
 
         this.duration = args.duration || frames(1);
         this.timer = new Timer0(this.duration);
-        this.textX = [new TextFade(this.s, {
+        this.textX = [new TextFade(this.scene, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label1,
@@ -864,7 +864,7 @@ class Table {
             y: this.y + this.sizeY * 0.6,
             mode: 1,
         })];
-        this.textY = [new TextFade(this.s, {
+        this.textY = [new TextFade(this.scene, {
             duration: frames(0.5),
             size: this.sizeY,
             str: this.label2,
@@ -874,7 +874,7 @@ class Table {
             mode: 1,
         })];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.textX[i] = new TextFade(this.s, {
+            this.textX[i] = new TextFade(this.scene, {
                 color: args.colorX,
                 duration: frames(0.5),
                 size: this.sizeY,
@@ -884,7 +884,7 @@ class Table {
                 y: this.y + this.sizeY * 0.6,
                 mode: 1
             });
-            this.textY[i] = new TextFade(this.s, {
+            this.textY[i] = new TextFade(this.scene, {
                 color: args.colorY,
                 duration: frames(0.5),
                 size: this.sizeY,
@@ -896,7 +896,7 @@ class Table {
             });
         }
 
-        this.horizLine = new Line(this.s, {
+        this.horizLine = new Line(this.scene, {
             strokeweight: 2,
             x1: this.x,
             y1: this.y + this.sizeY * 1.32,
@@ -906,7 +906,7 @@ class Table {
         });
         this.vertLines = [];
         for (let i = 1; i < this.numPts + 1; i++) {
-            this.vertLines[i - 1] = new LineCenter(this.s, {
+            this.vertLines[i - 1] = new LineCenter(this.scene, {
                 strokeweight: 2,
                 duration: frames(0.5),
                 x1: this.x + this.sizeX * (i * 1.4 - 0.1),
@@ -919,7 +919,7 @@ class Table {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.horizLine.show();
             let t = Math.round(this.timer.advance() * (this.numPts + 1));
             for (let i = 0; i < this.numPts + 1; i++) {
@@ -964,14 +964,14 @@ class Chart extends PointBase {
             this.grid[i] = [];
 
         for (let j = 0; j < this.j + 1; j++)
-            this.hl[j] = new Line(this.s, {
+            this.hl[j] = new Line(this.scene, {
                 x1: this.x + j * this.w, y1: this.y, color: this.color,
                 x2: this.x + j * this.w, y2: this.y + this.h * this.j,
                 strokeweight: this.sw, start: this.start + this.duration * j / this.j
             });
 
         for (let i = 0; i < this.i + 1; i++)
-            this.vl[i] = new Line(this.s, {
+            this.vl[i] = new Line(this.scene, {
                 x1: this.x, y1: this.y + i * this.h, color: this.color,
                 x2: this.x + this.w * this.i, y2: this.y + i * this.h,
                 strokeweight: this.sw, start: this.start + this.duration * i / this.i
@@ -1003,13 +1003,13 @@ class Pie extends PointBase {
 
         this.r = args.r || 100;
         this.timer = new Timer1(frames(this.duration));
-        this.st = new StrokeChanger(this.s, args.color);
+        this.st = new StrokeChanger(this.scene, args.color);
         this.fill = args.fill || undefined;
         if (this.fill)
-            this.ft = new FillChanger(this.s, args.fill);
+            this.ft = new FillChanger(this.scene, args.fill);
 
         this.strokeweight = args.strokeweight || 3;
-        this.timer_sw = new StrokeWeightTimer(this.s, this.end, this.strokeweight, 0.7);
+        this.timer_sw = new StrokeWeightTimer(this.scene, this.end, this.strokeweight, 0.7);
     }
 
     showSetup() {
@@ -1017,16 +1017,16 @@ class Pie extends PointBase {
         if (this.fill) {
             this.ft.advance();
         } else
-            this.s.noFill();
+            this.scene.noFill();
 
         this.st.advance();
         this.timer_sw.advance();
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
-            this.s.arc(this.x, this.y, this.r, this.r,
+            this.scene.arc(this.x, this.y, this.r, this.r,
                 this.a1, this.a1 + (this.a2 - this.a1) * this.timer.advance());
         }
     }
@@ -1056,16 +1056,16 @@ class Arc extends Pie {
     }
     
     showArc(t) {
-        this.s.beginShape();
+        this.scene.beginShape();
         this.showSetup();
         for (let i = 0; i < this.n * t; i++) {
-            this.s.vertex(this.p[i][0], this.p[i][1]);
+            this.scene.vertex(this.p[i][0], this.p[i][1]);
         }
-        this.s.endShape();
+        this.scene.endShape();
     }
     
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             this.showArc(t);
         }
@@ -1090,7 +1090,7 @@ class ArcArrow extends Arc {
     }
 
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
             this.showArc(t);
             Arrow.showArrow(this, t);
@@ -1108,9 +1108,9 @@ class Circle extends Pie {
         super(ctx, args);
     }
     show() {
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             this.showSetup();
-            this.s.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
+            this.scene.arc(this.x, this.y, this.r, this.r, 0, 6.283 * this.timer.advance());
         }
     }
 }
@@ -1129,7 +1129,7 @@ class Circle extends Pie {
 class Bracket extends Line {
     constructor(ctx, args) {
         super(ctx, args);
-        this.s = ctx;
+        this.scene = ctx;
         // this.x = args.x;
         // this.y = args.y;
         // this.l = args.length;
@@ -1147,15 +1147,15 @@ class Bracket extends Line {
         this.strokeweight = args.strokeweight || 3;
 
         this.lines = [];
-        this.lines[0] = new LineCenter(this.s, {
+        this.lines[0] = new LineCenter(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
-        this.lines[1] = new Line(this.s, {
+        this.lines[1] = new Line(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
-        this.lines[2] = new Line(this.s, {
+        this.lines[2] = new Line(this.scene, {
             start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.strokeweight
         });
@@ -1197,7 +1197,7 @@ class Bracket extends Line {
  * ImageBase (could not name it to Image since it would conflict p5.Image)
  *
  * This class does not support init animations. See ImageFly, ImageGrow, ImageFade.
- * Since this.s.tint() is a very costly method and slows down the frame rate drastically,
+ * Since this.scene.tint() is a very costly method and slows down the frame rate drastically,
  * user can use the ImageFly class to display init animation of flying in from the left, etc.
  *
  * ---- args list parameters ----
@@ -1214,7 +1214,7 @@ class ImageBase extends PointBase {
 
     showImage() {
         this.showMove();
-        this.s.image(this.img, this.x, this.y, this.w, this.h);
+        this.scene.image(this.img, this.x, this.y, this.w, this.h);
     }
 }
 
@@ -1239,16 +1239,16 @@ class ImageFly extends ImageBase {
             case 1:
                 this.x = -this.img.width; break;
             case 2:
-                this.x = cvw; break;
+                this.x = canvasWidth; break;
             case 3:
                 this.y = -this.img.height; break;
             case 4:
-                this.y = cvh; break;
+                this.y = canvasHeight; break;
         }
     }
 
     show() {
-        if (this.s.frameCount === this.start) {
+        if (this.scene.frameCount === this.start) {
             this.move(this.xf, this.yf, this.duration, 1);
         }
         this.showImage();
@@ -1264,9 +1264,9 @@ class ImageGrow extends ImageBase {  // grow from center; no additional args nee
     }
     show() {
         this.showMove();
-        if (this.s.frameCount > this.start) {
+        if (this.scene.frameCount > this.start) {
             let t = this.timer.advance();
-            this.s.image(this.img,
+            this.scene.image(this.img,
                 this.xc - this.w * t / 2, this.yc - this.h * t / 2, this.w * t, this.h * t);
         }
     }
@@ -1281,7 +1281,7 @@ class ImageGrow extends ImageBase {  // grow from center; no additional args nee
 class ImageFade extends ImageBase {
     constructor(ctx, args) {
         super(ctx, args);
-        this.rect = new Rect(this.s, {
+        this.rect = new Rect(this.scene, {
             x: this.x, y: this.y, w: this.w, h: this.h, duration: 0.7,
             color: [0, 0, 0, 255], start: 1, end: this.start,
         });

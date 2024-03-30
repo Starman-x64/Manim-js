@@ -47,12 +47,12 @@ class Graph extends PointBase {
 
         this.nodes = [];  // stores Node objects
         for (let i = 0; i < this.n; i++) {
-            this.nodes[i] = args.label ? new NodeLabel(this.s, {
+            this.nodes[i] = args.label ? new NodeLabel(this.scene, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 start: this.start + frames(this.dur) * i / this.n, size: args.size || 37,
                 str: "" + i, font: args.font, color: args.color_v, r: this.radius,
                 label: args.label
-            }) : new Node(this.s, {
+            }) : new Node(this.scene, {
                 x: this.V[i][0], y: this.V[i][1], yOffset: this.yOffset, duration: 0.37,
                 // display all nodes in this.dur seconds
                 start: this.start + frames(this.dur) * i / this.n, size: args.size || 42,
@@ -83,16 +83,16 @@ class Node extends PointBase {
         super(ctx, args);
         this.r = args.r || 57;
         this.sw = args.strokeweight || 2;
-        this.color = args.color || Blue;
+        this.color = args.color || BLUE;
         this.yOffset = args.yOffset || -4;
         this.fill = args.fill || vector_multiply(this.color, 0.14);
 
-        this.c = new Circle(this.s, {
+        this.c = new Circle(this.scene, {
             x: this.x, y: this.y, r: this.r, start: this.start, end: this.end,
             duration: this.duration, strokeweight: this.sw, color: this.color, fill: this.fill
         });
 
-        this.txt = new TextFade(this.s, {
+        this.txt = new TextFade(this.scene, {
             x: this.x, y: this.y + this.yOffset, size: args.size || 42,
             start: this.start, font: args.font, mode: 1, str: args.str,
         })
@@ -123,7 +123,7 @@ class Node extends PointBase {
         this.thickness = thickness || 17;
         this.f = 0;
         this.h_timer = new Timer1(frames(0.67));
-        this.s_timer = new FillChanger(this.s, this.h_color);
+        this.s_timer = new FillChanger(this.scene, this.h_color);
     }
 
     dehighlight() {
@@ -181,12 +181,12 @@ class NodeLabel extends Node {
         });
         let m = 0.24;
         this.labelColor = args.labelColor || [255, 247, 77];
-        this.lin = new Line(this.s, {
+        this.lin = new Line(this.scene, {
             x1: this.x - this.r * m, y1: this.y + this.r * m,
             x2: this.x + this.r * m, y2: this.y - this.r * m,
             strokeweight: 1, start: args.start, color: [177, 177, 177]
         });
-        this.label = new TextFade(this.s, {
+        this.label = new TextFade(this.scene, {
             str: args.label, mode: 1, x: this.x + 10, y: this.y + 10, start: args.start,
             color: this.labelColor, size: 24
         });
@@ -204,7 +204,7 @@ class NodeLabel extends Node {
         this.resetted = true;
         this.f = 0;
         this.duration = 1;
-        this.labelN = new TextFade(this.s, {
+        this.labelN = new TextFade(this.scene, {
             str: "" + cost, mode: 1, x: this.x + 10,
             y: down ? this.y - 20 : this.y + 40, start: this.s.frameCount + 1,
             color: this.labelColor, size: 24
@@ -216,7 +216,7 @@ class NodeLabel extends Node {
     }
 
     resetting() {
-        if (this.f <= this.duration * fr) {
+        if (this.f <= this.duration * frame_rate) {
             this.f++;
             this.labelN.show();
         } else {
@@ -329,7 +329,7 @@ class Edge extends Line {
         // add label
         if (args.weight !== undefined) {
             this.str = "" + args.weight;
-            this.txt = new TextFade(this.s, {
+            this.txt = new TextFade(this.scene, {
                 str: this.str, x: this.x3, y: this.y3, mode: 1,
                 start: args.start, color: this.txtColor,
                 stroke: [0, 0, 0],    // black stroke
@@ -347,17 +347,17 @@ class Edge extends Line {
     }
 
     createLine(){
-        return this.r ? (this.directed ? new ArcArrow(this.s, {   // arc directed
+        return this.r ? (this.directed ? new ArcArrow(this.scene, {   // arc directed
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color, tipLen: this.tipLen
-        }) : new Arc(this.s, {  // arc undirected
+        }) : new Arc(this.scene, {  // arc undirected
             r: this.r, x: this.xc, y: this.yc, a1: this.la1, a2: this.la2,
             start: this.start, duration: this.duration, color: this.color,
-        })) : (this.directed ? new Arrow(this.s, {  // straight directed
+        })) : (this.directed ? new Arrow(this.scene, {  // straight directed
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
             tipAngle: 0.37, tipLen: this.tipLen,
-        }) : new Line(this.s, {  // straight undirected
+        }) : new Line(this.scene, {  // straight undirected
             x1: this.lx1, x2: this.lx2, y1: this.ly1, y2: this.ly2, start: this.start,
             duration: this.duration, color: this.color,
         }));
@@ -392,7 +392,7 @@ class Edge extends Line {
         this.thickness = thickness || 14;
         this.f = 0;
         this.h_timer = new Timer2(frames(0.67));
-        this.s_timer = new StrokeChanger(this.s, this.h_color);
+        this.s_timer = new StrokeChanger(this.scene, this.h_color);
     }
 
     /**
@@ -453,7 +453,7 @@ class Graph_U extends Graph {
             else
                 this.A[a][b] = this.A[b][a] = true;
 
-            this.edges[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.scene, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
@@ -464,7 +464,7 @@ class Graph_U extends Graph {
             // they will be displayed at the same location as the other edge,
             // and start time is set to after all edges are displayed.
             // We do this so that edge highlight functionality works both ways
-            this.edges[b][a] = new Edge(this.s, {
+            this.edges[b][a] = new Edge(this.scene, {
                 x1: this.V[b][0], y1: this.V[b][1],
                 x2: this.V[a][0], y2: this.V[a][1], color: args.color_e,
                 start: this.start + frames(this.dur) + 1, d: -d,  // notice d is inverted
@@ -489,7 +489,7 @@ class Graph_D extends Graph {
             else
                 this.A[a][b] = true;
 
-            this.edges[a][b] = new Edge(this.s, {
+            this.edges[a][b] = new Edge(this.scene, {
                 x1: this.V[a][0], y1: this.V[a][1],
                 x2: this.V[b][0], y2: this.V[b][1],
                 start: this.start + frames(this.dur) * i / this.m, d: d, color: args.color_e,
@@ -517,14 +517,14 @@ class Tracer extends PointBase {
         this.ys = [];
         this.to = 17;  // time offset
 
-        this.t[0] = new TextWriteIn(this.s, {
-            str: args.str, color: Yellow,
+        this.t[0] = new TextWriteIn(this.scene, {
+            str: args.str, color: YELLOW,
             x: args.x, y: args.y, size: args.size || 29, start: this.start,
         });
         this.start += args.str.length + this.to * 2;
 
-        this.arr = new Arrow(this.s, {
-            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || Orange,
+        this.arr = new Arrow(this.scene, {
+            x1: 0, x2: 0, y1: 1, y2: 1, start: args.begin, color: args.arrColor || ORANGE,
         });
     }
 
@@ -536,9 +536,9 @@ class Tracer extends PointBase {
      * index is set to 0, 1, 2, 3... if this text is a step of the algorithm, or -1 if not
      */
     add(str, index, x, y, size, color, frameOff) {
-        this.t[this.n] = new TextWriteIn(this.s, {
+        this.t[this.n] = new TextWriteIn(this.scene, {
             str: str, x: this.x + x, y: this.y + y, size: size || 29, start: this.start,
-            color: color || White
+            color: color || WHITE
         });
         this.start += str.length + (frameOff ? frameOff : this.to);  // disabled for github pages
         this.n++;

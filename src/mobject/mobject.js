@@ -1,3 +1,8 @@
+/**Mathematical Object: base class for objects that can be displayed on screen.
+ * 
+ * @param {Mobject[]} submobjects The contained objects.
+ * @param {nj.NdArray} points The points of the objects.
+ */
 class Mobject {
   constructor(name=null, dim=3, target=null, zIndex=0) {
     this.name = name || this.constructor.name;

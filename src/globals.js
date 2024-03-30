@@ -87,7 +87,7 @@ function setup3D(p) {
 
 function setup2D(p) {
     p.frameRate(frame_rate);
-    p.createCanvas(canvasWidth, canvasHeight);
+    p.createCanvas(canvasWidth, canvasHeight, SVG);
 }
 
 

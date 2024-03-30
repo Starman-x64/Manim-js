@@ -1,0 +1,3 @@
+class VMobject extends Mobject {
+  
+}

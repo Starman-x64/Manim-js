@@ -452,8 +452,57 @@ class Mobject {
   
   applyToFamily() {}
 
-  
+  /**Shift by the given vectors.
+   * 
+   * @param  {...number[]} vectors Vectors to shift by. If multiple vectors are given, they are added together.
+   * @returns {this}
+   */
   shift(...vectors) {
+    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
     
+    // Shift the points of all "family members" who have points by the total vector.
+    this.familyMembersWithPoints().forEach(mobject => {
+      mobject.points = mobject.points.map(point => nj.add(point, totalVector));
+    });
+
+    return this;
+  }
+
+
+
+  //
+  /**Get the number of points that define the mobjects shape.
+   * 
+   * @returns {number}
+   */
+  getNumPoints() {
+    return this.points.length;
+  }
+  
+  
+  
+
+
+
+
+  // Family matters
+  
+  /**
+   * 
+   * @param {boolean | true} recurse
+   * @returns {Mobject[]}
+   */
+  getFamily(recurse=true) {
+    let subFamilies = [];
+    this.submobjects.forEach(mobject => {
+      subFamilies.concat(mobject.getFamily());
+    });
+    let allMobjects = [this].concat(subFamilies);
+    return Array.from(new Set(...allMobjects));
+  }
+
+
+  familyMembersWithPoints() {
+    return this.getFamily().filter(mobject => mobject.getNumPoints() > 0);
   }
 }

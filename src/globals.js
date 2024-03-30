@@ -16,47 +16,6 @@ let sceneNumber = 2;  // scene number
 let matrix = [1, 1, 1, -1, 1, 2];
 let target = [-2, 0, 3];
 
-let WHITE = [255, 255, 255];
-let RED = [255, 77, 97];
-let GREEN = [77, 217, 77];
-let BLUE = [77, 177, 255];
-let YELLOW = [247, 227, 47];
-let ORANGE = [247, 137, 27];
-
-/** `[0, 0, 0]`: The center of the coordinate system. */
-const ORIGIN = nj.array(0.0, 0.0, 0.0);
-/** `[0, 1, 0]`: One unit step in the positive Y direction. */
-const UP = nj.array(0.0, 1.0, 0.0);
-/** `[0, -1, 0]`: One unit step in the negative Y direction. */
-const DOWN = nj.array(0.0, -1.0, 0.0);
-/** `[1, 0, 0]`: One unit step in the positive X direction. */
-const RIGHT = nj.array(1.0, 0.0, 0.0);
-/** `[-1, 0, 0]`: One unit step in the negative X direction. */
-const LEFT = nj.array(-1.0, 0.0, 0.0);
-/** `[0, 0, 1]`: One unit step in the positive Z direction. */
-const OUT = nj.array(0.0, 0.0, 1.0);
-/** `[0, 0, -1]`: One unit step in the negative Z direction. */
-const IN = nj.array(0.0, 0.0, -1.0);
-
-/** `[1, 0, 0]`: Unit vector on the x-axis. */
-const X_AXIS = nj.array(1.0, 0.0, 0.0);
-/** `[0, 1, 0]`: Unit vector on the y-axis. */
-const Y_AXIS = nj.array(0.0, 1.0, 0.0);
-/** `[0, 0, 1]`: Unit vector on the z-axis. */
-const Z_AXIS = nj.array(0.0, 0.0, 1.0);
-
-/** `[-1, 1, 0]`: One step up plus one step left. */
-const UL = nj.add(UP, LEFT);
-/** `[1, 1, 0]`: One step up plus one step right. */
-const UR = nj.add(UP, RIGHT);
-/** `[-1, -1, 0]`: One step down plus one step left. */
-const DL = nj.add(DOWN, LEFT);
-/** `[1, -1, 0]`: One step down plus one step right. */
-const DR = nj.add(DOWN, RIGHT);
-
-
-let DEFAULT_STROKE_WIDTH = 4;
-
 
 /*** Refactored 3D scenes on 2019-01-17
  *
@@ -107,7 +66,7 @@ function p5ToStd(a) {
  * @returns {number}
  */
 function frames(sec) {
-    return Math.round(frame_rate * sec);
+  return Math.round(frame_rate * sec);
 }
 
 
@@ -115,14 +74,14 @@ function frames(sec) {
  * All 3D/2D scenes should call in s.setup()
  */
 function setup3D(p) {
-    p.frameRate(frame_rate);
-    p.pixelDensity(1);
-    p.createCanvas(canvasWidth, canvasHeight);
+  p.frameRate(frame_rate);
+  p.pixelDensity(1);
+  p.createCanvas(canvasWidth, canvasHeight, p.WEBGL);
 }
 
 function setup2D(p) {
-    p.frameRate(frame_rate);
-    p.createCanvas(canvasWidth, canvasHeight);
+  p.frameRate(frame_rate);
+  p.createCanvas(canvasWidth, canvasHeight, p.WEBGL);
 }
 
 

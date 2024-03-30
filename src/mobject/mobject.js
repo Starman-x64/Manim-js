@@ -4,19 +4,18 @@
  * @param {nj.NdArray} points The points of the objects.
  */
 class Mobject {
-  constructor(name=null, dim=3, target=null, zIndex=0) {
-    this.name = name || this.constructor.name;
-    this.dim = dim;
-    this.target = target;
-    this.zIndex = zIndex;
+  constructor(args) {
+    this.name = args.name ? args.name : this.constructor.name;
+    this.dim = args.dim ? args.dim : 3;
+    this.target = args.target ? args.target : null;
+    this.zIndex = args.zIndex ? args.zIndex : 0;
     this.pointHash = null;
     this.submobjects = [];
-    //self.updaters: list[Updater] = []
-    //self.updating_suspended = False
+    this.updaters = [];
+    this.updating_suspended = false;
     //self.color = ManimColor.parse(color)
 
-    this.resetPoints();
-    this.generatePoints();
+
     this.initColors();
   }
 
@@ -29,7 +28,7 @@ class Mobject {
   /** Sets `points` to be an empty array.
    */
   resetPoints() {
-    this.points = Array(this.dim).fill(0);
+    this.points = [];
   }
 
   /**Initializes `points` and therefore the shape.

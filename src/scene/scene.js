@@ -1,7 +1,9 @@
 class Scene {
   constructor(args) {
-
+    
     this.mobjects = [];
+    this.animationQueue = [];
+    this.currentAnimationCollection = new _AnimationCollection();
     
   }
 
@@ -31,7 +33,8 @@ class Scene {
     /*
     draw background and stuff
     */
-    this.mobjects.forEach(mobject => { mobject.draw(p5); })
+    this.animate(1/60);
+    this.mobjects.forEach(mobject => { mobject.draw(p5); });
   }
 
   /**
@@ -72,6 +75,20 @@ class Scene {
    */
   updateMobjects(dt) {
     this.mobjects.forEach(mobject => mobject.update(dt));
+  }
+
+  /**Play queued animations frabe-by-frame.
+   * 
+   */
+  animate(dt) {
+    // Check if the animations at the start of the queue have been completed.
+    if (this.currentAnimationCollection.allAnimationsComplete()) {
+      this.currentAnimationCollection.animations.forEach(animation => { animation.finish(); animation.cleanUpFromScene(this); });
+      this.currentAnimationCollection = this.animationQueue.shift();
+      this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
+    }
+    // Advance the animation.
+    this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
   }
 
   /**Add mobjects to scene.
@@ -117,5 +134,13 @@ class Scene {
     this.foregroundMobjects = [];
 
     return this;
+  }
+
+  /**Queue animations to play simultaneously.
+   * 
+   * @param  {...Animation} animations Animations to add to `this.animationQueue`.
+   */
+  play(...animations) {
+    this.animationQueue.push(new _AnimationCollection(...animations));
   }
 }

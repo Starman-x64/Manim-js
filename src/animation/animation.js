@@ -13,15 +13,17 @@ const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
  * @param {boolean} suspendMobjectUpdating Whether updaters of the mobject should be suspended during the animation.
  */
 class Animation {
-  constructor(kwargs) {
-    this.mobject = kwargs.mobject;
-    this.runTime = kwargs.runTime ? kwargs.runTime : DEFAULT_ANIMATION_RUN_TIME;
-    this.lagRatio = kwargs.lagRatio ? kwargs.lagRatio : DEFAULT_ANIMATION_LAG_RATIO;
-    this.reverseRateFunction = kwargs.reverseRateFunction ? kwargs.reverseRateFunction : false;
-    this.name = kwargs.name ? kwargs.name : `<${this.mobject.constructor.name}>(${this.mobject.name})`;
-    this.remover = kwargs.remover ? kwargs.remover : false;
-    this.introducer = kwargs.introducer ? kwargs.introducer : false;
-    this.suspendMobjectUpdating = kwargs.suspendMobjectUpdating ? kwargs.suspendMobjectUpdating : true;
+  constructor(args) {
+    this.mobject = args.mobject;
+    this.runTime = args.runTime ? args.runTime : DEFAULT_ANIMATION_RUN_TIME;
+    this.lagRatio = args.lagRatio ? args.lagRatio : DEFAULT_ANIMATION_LAG_RATIO;
+    this.reverseRateFunction = args.reverseRateFunction ? args.reverseRateFunction : false;
+    this.name = args.name ? args.name : `<${this.mobject.constructor.name}>(${this.mobject.name})`;
+    this.remover = args.remover ? args.remover : false;
+    this.introducer = args.introducer ? args.introducer : false;
+    this.suspendMobjectUpdating = args.suspendMobjectUpdating ? args.suspendMobjectUpdating : true;
+    this.method = args.method;
+    this.animationTimer = 0
   }
 
   /**Begin the animation.
@@ -38,6 +40,16 @@ class Animation {
     this.startingMobject = this.createStartingMobject();
     if (this.suspendMobjectUpdating) this.mobject.suspendUpdating();
     this.interpolate(0);
+  }
+
+  step(dt) {
+    if (this.animationTimer > this.runTime) {
+      return;
+    }
+    
+    this.interpolate(this.animationTimer/this.runTime);
+
+    this.animationTimer += dt;
   }
 
   /**Finish the animation
@@ -148,7 +160,8 @@ class Animation {
    * @returns {void}
    */
   interpolate(alpha) {
-    this.interpolateMobject(alpha);
+    console.log(alpha*alpha*(3 - 2*alpha));
+    this.interpolateMobject(alpha*alpha*(3 - 2*alpha));
   }
 
   /**Interpolates the mobject of the :class:`Animation` based on alpha value.
@@ -156,6 +169,16 @@ class Animation {
    * @param {number} alpha A float between 0 and 1 expressing the ratio to which the animation is completed. For example, alpha-values of 0, 0.5, and 1 correspond to the animation being completed 0%, 50%, and 100%, respectively.
    */
   interpolateMobject(alpha) {
-    
+    this.method(alpha);
+  }
+}
+
+class _AnimationCollection {
+  constructor(...animations) {
+    this.animations = animations;
+  }
+  
+  allAnimationsComplete() {
+    return this.animations.length == 0;
   }
 }

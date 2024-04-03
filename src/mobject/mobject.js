@@ -44,8 +44,8 @@ class Mobject {
     this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
   }
 
-  animate() {
-    return new (class Based extends this.constructor { constructor(args) {super(args); console.log("based.");} })({});
+  animate(method) {
+    return new Animation({ mobject: this, method: method });
   }
 
   /** Sets `points` to be an empty array.

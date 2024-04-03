@@ -22,7 +22,7 @@ class Animation {
     this.remover = args.remover ? args.remover : false;
     this.introducer = args.introducer ? args.introducer : false;
     this.suspendMobjectUpdating = args.suspendMobjectUpdating ? args.suspendMobjectUpdating : true;
-    this.method = args.method;
+    this.methods = args.methods;
     this.animationTimer = 0
   }
 
@@ -169,7 +169,9 @@ class Animation {
    * @param {number} alpha A float between 0 and 1 expressing the ratio to which the animation is completed. For example, alpha-values of 0, 0.5, and 1 correspond to the animation being completed 0%, 50%, and 100%, respectively.
    */
   interpolateMobject(alpha) {
-    this.method(alpha);
+    this.methods.forEach(methodObject => {
+      this.mobject[methodObject.func](...methodObject.args.forEach(arg => arg));
+    })
   }
 }
 

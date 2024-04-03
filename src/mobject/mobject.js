@@ -44,8 +44,8 @@ class Mobject {
     this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
   }
 
-  animate(method) {
-    return new Animation({ mobject: this, method: method });
+  animate(...methods) {
+    return new Animation({ mobject: this, methods: methods });
   }
 
   /** Sets `points` to be an empty array.

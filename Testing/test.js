@@ -1,32 +1,49 @@
+const s = ( sketch ) => {
 
+  let x = 100;
+  let y = 100;
 
-const TestScene00 = p => {
-  let t = {
-    
+  sketch.setup = () => {
+    sketch.createCanvas(400, 400);
   };
-  let tnr;
-  p.preload = function() {
-    tnr = p.loadFont('../lib/font/times.ttf');
-  };
-  p.setup = function () {
-    setup2D(p);
-    p.camera(0, 0, 50*p.sqrt(3), 0, 0, 0, 0, 1, 0);
-    p.dragger = new Dragger(p, []);
-    p.circ = new Circle({
-      radius: 10,
-    });
-    p.circ.createGraphics(p);
-  };
-  p.draw = function () {
-    p.background(0);
-    p.dragger.show();
-    p.rectMode(p.CENTER);
-    //p.stroke(255, 0, 0);
-    p.circ.show(p);
-    //p.rect(0, 0, 50, 25);
-    p.image(p.circ.graphics.createFramebuffer(), 0, 0);
+
+  sketch.draw = () => {
+    sketch.background(0);
+    sketch.fill(255);
+    sketch.rect(x,y,50,50);
+    sketch.stroke(255);
+    sketch.drawingContext.stroke(new Path2D("M 190 190 A 50 100 45 1 1 215,215"));
   };
 };
 
+//let myp5 = new p5(s);
 
-let p = new p5(TestScene00);
+
+class TestScene extends Scene {
+  construct() {
+    let square = new Mobject({ name: "Square" });
+    this.add(square);
+    console.log(square.animate());
+    //square.shift(nj.array([100, 100, 0, 0]));
+  }
+  setup(p5) {
+    p5.createCanvas(400, 400);
+  }
+
+  draw(p5) {
+    p5.background(0);
+    //p5.fill(255);
+    //p5.rect(100, 100, 50, 50);
+    //p5.stroke(255);
+    //p5.drawingContext.stroke(new Path2D("M 190 190 A 50 100 45 1 1 215,215"));
+    //p5.drawingContext.fill(new Path2D("M 190 190 l 100 0 l 0 100 l -100 0 l 0 -100 Z"));
+    //p5.drawingContext.stroke(new Path2D("M 100 100 L 200 100 L 200 200 L 100 200 Z"));
+    //this.mobjects[0].shift(nj.array([1, 1, 0, 0]));
+    super.draw(p5);
+  }
+}
+
+let scene = new TestScene();
+scene.initialize();
+scene.construct();
+scene.runSketch();

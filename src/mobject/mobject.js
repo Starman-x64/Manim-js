@@ -15,7 +15,8 @@ class Mobject {
     this.updating_suspended = false;
     //self.color = ManimColor.parse(color)
 
-
+    this.resetPoints();
+    this.generatePoints();
     this.initColors();
   }
 
@@ -25,20 +26,34 @@ class Mobject {
   // setDefault() {}
   // animate() {}
 
+  draw(p5) {
+    /*
+    Draw this mobject
+    */
+
+    let pathString = "M ";
+    for(let i = 0; i < 4; i++) {
+      pathString += `${this.points.get(0, i)} ${this.points.get(1, i)} L `;
+    }
+    pathString = pathString.substring(0, pathString.length - 2 ) + "Z";
+    //console.log(pathString);
+    
+    p5.stroke(255);
+    p5.drawingContext.stroke(new Path2D(pathString));
+
+    this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
+  }
+
+  animate() {
+    return new (class Based extends this.constructor { constructor(args) {super(args); console.log("based.");} })({});
+  }
+
   /** Sets `points` to be an empty array.
    */
   resetPoints() {
     this.points = [];
   }
-
-  /**Initializes `points` and therefore the shape.
-   * 
-   * Gets called upon creation. This is an empty method that can be implemented by
-   * subclasses.
-   */
-  generatePoints() {
-    
-  }
+  
   /**Initializes the colors.
    * 
    * Gets called upon creation. This is an empty method that can be implemented by
@@ -46,6 +61,15 @@ class Mobject {
    */
   initColors() {
     
+  }
+  
+  /**Initializes `points` and therefore the shape.
+   * 
+   * Gets called upon creation. This is an empty method that can be implemented by
+   * subclasses.
+   */
+  generatePoints() {
+    this.points = nj.array([100, 100, 0, 1, 200, 100, 0, 1, 200, 200, 0, 1, 100, 200, 0, 1]).reshape(4,-1).T;
   }
 
   /**Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
@@ -269,7 +293,7 @@ class Mobject {
    * @returns {Mobject} The copy.
    */
   copy() {
-    
+    return structuredClone(this);
   }
   
   /**Dunno what this does...
@@ -462,11 +486,19 @@ class Mobject {
    * @returns {this}
    */
   shift(...vectors) {
-    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
+    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector.reshape(4,-1)), nj.zeros(4).reshape(4,-1));
+    let transformationMatrix = nj.identity(4);
+    transformationMatrix.set(0, 3, totalVector.get(0,0));
+    transformationMatrix.set(1, 3, totalVector.get(1,0));
+    transformationMatrix.set(2, 3, totalVector.get(2,0));
+    
     
     // Shift the points of all "family members" who have points by the total vector.
+      //console.log(transformationMatrix.toString());
     this.familyMembersWithPoints().forEach(mobject => {
-      mobject.points = mobject.points.map(point => nj.add(point, totalVector));
+      //console.log(mobject.points.toString());
+      //console.log(nj.dot(transformationMatrix, mobject.points).toString());
+      mobject.points = nj.dot(transformationMatrix, mobject.points);
     });
 
     return this;
@@ -480,7 +512,7 @@ class Mobject {
    * @returns {number}
    */
   getNumPoints() {
-    return this.points.length;
+    return 1;//this.points.length;
   }
   
   
@@ -502,11 +534,18 @@ class Mobject {
       subFamilies.concat(mobject.getFamily());
     });
     let allMobjects = [this].concat(subFamilies);
-    return Array.from(new Set(...allMobjects));
+    return Array.from(new Set(allMobjects));
   }
 
 
   familyMembersWithPoints() {
     return this.getFamily().filter(mobject => mobject.getNumPoints() > 0);
+  }
+}
+
+class _AnimationBuilder {
+  constructor(mobject) {
+    this.mobject = mobject;
+    
   }
 }

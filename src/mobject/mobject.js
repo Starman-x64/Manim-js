@@ -49,7 +49,7 @@ class Mobject {
     let proxy = new Proxy(this, {
       get(target, prop, receiver) {
         const value = target[prop];
-        console.log(`\`get()\` called:\nprop: ${prop}\nvalue: ${value.constructor.name}`);
+        console.log(`#green(get)() called:\n**prop** #D9C679(${prop})\nvalue: #D88E79(${value.constructor.name})`);
         if (value instanceof Function) {
           this.animationBuilder.addMethod(prop);
           console.log(this.animationBuilder.methods);

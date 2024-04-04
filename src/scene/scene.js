@@ -85,10 +85,11 @@ class Scene {
     if (this.currentAnimationCollection.allAnimationsComplete()) {
       this.currentAnimationCollection.animations.forEach(animation => { animation.finish(); animation.cleanUpFromScene(this); });
       this.currentAnimationCollection = this.animationQueue.shift();
-      this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
+      console.log(this.currentAnimationCollection.animations);
+      //this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
     }
     // Advance the animation.
-    this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
+    //this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
   }
 
   /**Add mobjects to scene.

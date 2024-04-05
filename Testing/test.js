@@ -23,7 +23,7 @@ class TestScene extends Scene {
   construct() {
     let square = new Mobject({ name: "Square" });
     this.add(square);
-    this.play(square.animate());
+    this.play(square.animate().shift);
     //square.shift(nj.array([100, 100, 0, 0]));
   }
   setup(p5) {

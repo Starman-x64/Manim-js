@@ -85,6 +85,7 @@ class Scene {
     if (this.currentAnimationCollection.allAnimationsComplete()) {
       this.currentAnimationCollection.animations.forEach(animation => { animation.finish(); animation.cleanUpFromScene(this); });
       this.currentAnimationCollection = this.animationQueue.shift();
+      console.log("scene.<prop>(currentAnimationCollection).<prop>(animations):\n");
       console.log(this.currentAnimationCollection.animations);
       //this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
     }

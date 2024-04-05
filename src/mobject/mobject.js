@@ -49,35 +49,49 @@ class Mobject {
     let proxy = new Proxy(this, {
       get(target, prop, receiver) {
         const value = target[prop];
-        console.log(`#green(get)() called:\n**prop** #D9C679(${prop})\nvalue: #D88E79(${value.constructor.name})`);
+        console.log(
+          `<func>(get()) called
+          > -target:- <<class>(${target.constructor.name})>(\`${target.name}\`)
+          > -prop:- <prop>(${prop})
+          > -value:- <class>(${value.constructor.name})`
+          );
         if (value instanceof Function) {
-          this.animationBuilder.addMethod(prop);
-          console.log(this.animationBuilder.methods);
-          return this;
+          if (!this.animationBuilder) {
+            this.animationBuilder = new _AnimationBuilder(target);
+          }
+          return function (...args) {
+            value.apply(this === receiver ? target : this, args);
+            return this;
+          };
         }
         else {
-          console.log(`Reflecting \`get\` of prop ${prop} (${value.constructor.name})`);
+          console.log(`Reflecting <func>(get) of \`${target.name}.\`<prop>(${prop}).`);
           let reflected = Reflect.get(...arguments);
-          console.log(reflected);
+          //console.log(reflected);
           return reflected;
         }
       },
       set(obj, prop, value) {
-        console.log(`\`set()\` called:\nprop: ${prop}\nvalue: ${value.constructor.name}`);
+        console.log(
+          `<func>(set)() called
+          > -target:- <<class>(${obj.constructor.name})>(\`${obj.name}\`)
+          > -prop:- <var>(${prop})
+          > -value:- <class>(${value.constructor.name})`
+          );
         if (prop === "animationBuilder") {
-          console.log("`set()` was called to set `animationBuilder`");
+          console.log(`<func>(set()) was called to set \`${obj.name}.\`<prop>(animationBuilder).`);
         }
-        console.log(`Reflecting \`set\` of prop ${prop} (${value.constructor.name})`);
+        console.log(`Reflecting <func>(set) of \`${obj.name}.\`<prop>(${prop}).`);
         let reflected = Reflect.set(...arguments);
-        console.log(reflected);
         return reflected;
 
       }
     });
-    proxy.animationBuilder = this.animationBuilder;
-    console.log(proxy.animationBuilder);
-    delete this.animationBuilder;
-    proxy.shift(nj.array([100, 50, 0, 0]));
+    //proxy.animationBuilder = this.animationBuilder;
+    //console.log(proxy.animationBuilder);
+    //delete this.animationBuilder;
+    //console.log(proxy.animationBuilder);
+    //proxy.shift(nj.array([100, 50, 0, 0]));
     return proxy;
     //return new Animation({ mobject: this, methods: methods });
   }

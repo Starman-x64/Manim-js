@@ -23,7 +23,15 @@ class Animation {
     this.introducer = args.introducer ? args.introducer : false;
     this.suspendMobjectUpdating = args.suspendMobjectUpdating ? args.suspendMobjectUpdating : true;
     this.methods = args.methods;
-    this.animationTimer = 0
+    this.animationTimer = 0;
+  }
+
+  getLagTime() {
+    return this.lagRatio * this.runTime;
+  }
+
+  getAlpha() {
+    return (this.animationTimer - this.getLagTime())/(this.runTime - this.getLagTime());
   }
 
   /**Begin the animation.
@@ -43,12 +51,13 @@ class Animation {
   }
 
   step(dt) {
-    if (this.animationTimer > this.runTime) {
+    if (this.animationTimer >= this.runTime) {
+      this.finish();
       return;
     }
-    
-    this.interpolate(this.animationTimer/this.runTime);
-
+    if (this.animationTimer >= this.getLagTime()) {
+      this.interpolate(this.getAlpha());
+    }
     this.animationTimer += dt;
   }
 
@@ -98,6 +107,8 @@ class Animation {
       
     }
   }
+
+  _onFinish(scene) {}
 
   /**Copy the animation's mobject to create a reference
    * of the starting state.
@@ -160,7 +171,6 @@ class Animation {
    * @returns {void}
    */
   interpolate(alpha) {
-    console.log(alpha*alpha*(3 - 2*alpha));
     this.interpolateMobject(alpha*alpha*(3 - 2*alpha));
   }
 
@@ -170,17 +180,40 @@ class Animation {
    */
   interpolateMobject(alpha) {
     this.methods.forEach(methodObject => {
-      this.mobject[methodObject.func](...methodObject.args.forEach(arg => arg));
+      //console.log(methodObject.name);
+      this.mobject.shiftAnimationOverride(this, alpha, nj.array([50,0,0]));
+      this.mobject.scaleAnimationOverride(this, alpha, 2);
+      // this.mobject.shiftAnimationOverride(this, alpha, nj.array([0,50,0]));
+      //this.mobject.shift(nj.array([0,1,0]));
+      //this.mobject = this.mobject[methodObject.name+"AnimationOverride"].call(this.mobject, this, alpha, ...(methodObject.args));
+      //this.mobject[methodObject.name+"AnimationOverride"](this, alpha, ...(methodObject.args));
     })
+  }
+
+  isAnimationComplete() {
+    return this.animationTimer >= this.runTime;
   }
 }
 
 class _AnimationCollection {
+  /**
+   * 
+   * @param  {...Animation} animations Animations to play simultaneously.
+   */
   constructor(...animations) {
     this.animations = animations;
   }
   
+  /**Get whether all animations have completed.
+   * 
+   * Loops through all animations in the collection and returns `false` upon finding the first animation with its `animationTimer <= runTime`. Returns `true` if none are found.
+   * 
+   * @returns {boolean}
+   */
   allAnimationsComplete() {
-    return this.animations.length == 0;
+    for (let i = 0; i < this.animations.length; i++) {
+      if(!this.animations[i].isAnimationComplete()) return false;
+    }
+    return true;
   }
 }

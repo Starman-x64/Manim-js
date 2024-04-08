@@ -21,10 +21,14 @@ const s = ( sketch ) => {
 
 class TestScene extends Scene {
   construct() {
-    let square = new Mobject({ name: "Square" });
-    this.add(square);
-    this.play(square.animate().shift);
-    //square.shift(nj.array([100, 100, 0, 0]));
+    let square1 = new Mobject({ name: "Square 1" });
+    //let square2 = new Mobject({ name: "Square 2" });
+    this.add(square1);
+    //this.add(square2);
+    square1.shift(nj.array([-50, 0, 0]));
+    //square2.shift(nj.array([100, 0, 0]));
+    this.play(square1.animate().scale(1.1).shift(nj.array([50, 100, 0])));
+    //this.play(square2.animate().shift(nj.array([50, 100, 0])));
   }
   setup(p5) {
     p5.createCanvas(400, 400);

@@ -12,7 +12,7 @@ class Mobject {
     this.pointHash = null;
     this.submobjects = [];
     this.updaters = [];
-    this.updating_suspended = false;
+    this.updatingSuspended = false;
     //self.color = ManimColor.parse(color)
 
     this.resetPoints();
@@ -33,7 +33,7 @@ class Mobject {
 
     let pathString = "M ";
     for(let i = 0; i < 4; i++) {
-      pathString += `${this.points.get(0, i)} ${this.points.get(1, i)} L `;
+      pathString += `${this.points.get(0,i)} ${this.points.get(1,i)} L `;
     }
     pathString = pathString.substring(0, pathString.length - 2 ) + "Z";
     //console.log(pathString);
@@ -44,44 +44,44 @@ class Mobject {
     this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
   }
 
-  animate(...methods) {
-    this.animationBuilder = new _AnimationBuilder(this);
+  animate(kwargs) {
+    this.animationBuilder = new _AnimationBuilder(this, kwargs);
     let proxy = new Proxy(this, {
       get(target, prop, receiver) {
         const value = target[prop];
         console.log(
-          `<func>(get()) called
+          `<func>(get()) called on mobject proxy
           > -target:- <<class>(${target.constructor.name})>(\`${target.name}\`)
           > -prop:- <prop>(${prop})
           > -value:- <class>(${value.constructor.name})`
           );
         if (value instanceof Function) {
           if (!this.animationBuilder) {
-            this.animationBuilder = new _AnimationBuilder(target);
+            //this.animationBuilder = new _AnimationBuilder(target);
           }
           return function (...args) {
-            value.apply(this === receiver ? target : this, args);
+            this.animationBuilder.addMethod(prop, ...args);
             return this;
           };
         }
         else {
-          console.log(`Reflecting <func>(get) of \`${target.name}.\`<prop>(${prop}).`);
+          // console.log(`Reflecting <func>(get) of \`${target.name}.\`<prop>(${prop}).`);
           let reflected = Reflect.get(...arguments);
           //console.log(reflected);
           return reflected;
         }
       },
       set(obj, prop, value) {
-        console.log(
-          `<func>(set)() called
-          > -target:- <<class>(${obj.constructor.name})>(\`${obj.name}\`)
-          > -prop:- <var>(${prop})
-          > -value:- <class>(${value.constructor.name})`
-          );
+        // console.log(
+        //   `<func>(set)() called on mobject proxy
+        //   > -target:- <<class>(${obj.constructor.name})>(\`${obj.name}\`)
+        //   > -prop:- <var>(${prop})
+        //   > -value:- <class>(${value.constructor.name})`
+        //   );
         if (prop === "animationBuilder") {
-          console.log(`<func>(set()) was called to set \`${obj.name}.\`<prop>(animationBuilder).`);
+          // console.log(`<func>(set()) was called to set \`${obj.name}.\`<prop>(animationBuilder).`);
         }
-        console.log(`Reflecting <func>(set) of \`${obj.name}.\`<prop>(${prop}).`);
+        // console.log(`Reflecting <func>(set) of \`${obj.name}.\`<prop>(${prop}).`);
         let reflected = Reflect.set(...arguments);
         return reflected;
 
@@ -117,7 +117,9 @@ class Mobject {
    * subclasses.
    */
   generatePoints() {
-    this.points = nj.array([100, 100, 0, 1, 200, 100, 0, 1, 200, 200, 0, 1, 100, 200, 0, 1]).reshape(4,-1).T;
+    this.points = nj.array([[100, 200, 200, 100], [100, 100, 200, 200], [0, 0, 0, 0]]);
+    console.log("<var>(this).<prop>(points)")
+    console.log(this.points);
   }
 
   /**Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
@@ -341,7 +343,9 @@ class Mobject {
    * @returns {Mobject} The copy.
    */
   copy() {
-    return structuredClone(this);
+    let copy = structuredClone(this);
+    copy.points = this.points.clone();
+    return copy;
   }
   
   /**Dunno what this does...
@@ -525,28 +529,88 @@ class Mobject {
 
 
   // Transforming Operations
+  /**Apply a function to `this` and every submobject with points recursively.
+   * 
+   * @param {Function} func The function to apply to each mobject. `func` gets passed the respective (sub)mobject as parameter.
+   * @returns {this}
+   */
+  applyToFamily(func) {
+    this.familyMembersWithPoints().forEach(submobject => func.apply(submobject, func.arguments));
+    return this;
+  }
   
-  applyToFamily() {}
-
   /**Shift by the given vectors.
    * 
    * @param  {...number[]} vectors Vectors to shift by. If multiple vectors are given, they are added together.
    * @returns {this}
    */
   shift(...vectors) {
-    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector.reshape(4,-1)), nj.zeros(4).reshape(4,-1));
-    let transformationMatrix = nj.identity(4);
-    transformationMatrix.set(0, 3, totalVector.get(0,0));
-    transformationMatrix.set(1, 3, totalVector.get(1,0));
-    transformationMatrix.set(2, 3, totalVector.get(2,0));
-    
+    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
     
     // Shift the points of all "family members" who have points by the total vector.
-      //console.log(transformationMatrix.toString());
     this.familyMembersWithPoints().forEach(mobject => {
-      //console.log(mobject.points.toString());
-      //console.log(nj.dot(transformationMatrix, mobject.points).toString());
-      mobject.points = nj.dot(transformationMatrix, mobject.points);
+      totalVector.tolist().forEach((coord, index) => {
+        for(let i = 0; i < this.points.shape[1]; i++) {
+          mobject.points.set(index, i, mobject.points.get(index, i) + coord);
+        }
+      });
+    });
+
+    return this;
+  }
+  
+  /**Scale the size by a factor.
+   * 
+   * Default behavior is to scale about the center of the mobject.
+   * 
+   * @param  {number} scaleFactor The scaling factor `α`. If `0 < |α| < 1`, the mobject will shrink, and for :math:`|α| > 1` it will grow. Furthermore, if :math:`α < 0`, the mobject is also flipped.
+   * @param  {object} kwargs Additional keyword arguments passed to `applyPointsFunctionAboutPoint()`.
+   * @returns {this}
+   */
+  scale(scaleFactor, kwargs) {
+    //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
+    
+    this.familyMembersWithPoints().forEach(mobject => {
+      mobject.points = nj.multiply(mobject.points, scaleFactor);
+    });
+
+    return this;
+  }
+  
+  shiftAnimationOverride(animation, alpha, ...vectors) {
+    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
+    let referencePoints = animation.startingMobject.points.clone();
+    // Shift the points of all "family members" who have points by the total vector.
+    this.familyMembersWithPoints().forEach(mobject => {
+      totalVector.tolist().forEach((coord, index) => {
+        for(let i = 0; i < this.points.shape[1]; i++) {
+          mobject.points.set(index, i, referencePoints.get(index, i) + coord*alpha);
+        }
+      });
+      console.log("shifted points:\n", mobject.points.toString());
+    });
+    
+    return this;
+
+    totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
+    
+    // Shift the points of all "family members" who have points by the total vector.
+    this.familyMembersWithPoints().forEach(mobject => {
+      totalVector.tolist().forEach((coord, index) => {
+        for(let i = 0; i < this.points.shape[1]; i++) {
+          mobject.points.set(index, i, mobject.points.get(index, i) + coord);
+        }
+      });
+      console.log("shifted points:\n", mobject.points.toString());
+    });
+
+    return this;
+  }
+
+  scaleAnimationOverride(animation, alpha, scaleFactor, kwargs) {
+    this.familyMembersWithPoints().forEach(mobject => {
+      mobject.points = nj.multiply(mobject.points, scaleFactor);//mobject.points = ;
+      console.log("scaled points:\n", mobject.points.toString());
     });
 
     return this;
@@ -592,15 +656,25 @@ class Mobject {
 }
 
 class _AnimationBuilder {
-  constructor(mobject) {
+  constructor(mobject, animationKwargs) {
     this.mobject = mobject;
     this.methods = [];
+    
+    if (animationKwargs) {
+      for (const [key, value] of Object.entries(animationKwargs)) {
+        this[key] = value;
+      }
+    }
   }
 
   addMethod(methodName, ...args) {
     this.methods.push({
       name: methodName,
       args: args
-  });
+    });
+  }
+
+  buildAnimation() {
+    return new Animation(this);
   }
 }

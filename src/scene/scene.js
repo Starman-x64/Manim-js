@@ -77,20 +77,31 @@ class Scene {
     this.mobjects.forEach(mobject => mobject.update(dt));
   }
 
-  /**Play queued animations frabe-by-frame.
+  /**Play queued animations frame-by-frame.
    * 
    */
   animate(dt) {
+    if (this.currentAnimationCollection === null) {
+      return;
+    }
     // Check if the animations at the start of the queue have been completed.
     if (this.currentAnimationCollection.allAnimationsComplete()) {
       this.currentAnimationCollection.animations.forEach(animation => { animation.finish(); animation.cleanUpFromScene(this); });
-      this.currentAnimationCollection = this.animationQueue.shift();
-      console.log("scene.<prop>(currentAnimationCollection).<prop>(animations):\n");
-      console.log(this.currentAnimationCollection.animations);
-      //this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
+      this.queueNextAnimations();
     }
     // Advance the animation.
-    //this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
+    if (this.currentAnimationCollection !== null) {
+      this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
+    }
+  }
+
+  queueNextAnimations() {
+    if (this.animationQueue.length != 0) {
+      this.currentAnimationCollection = this.animationQueue.shift();
+      this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
+      return;
+    }
+    this.currentAnimationCollection = null;
   }
 
   /**Add mobjects to scene.
@@ -142,7 +153,7 @@ class Scene {
    * 
    * @param  {...Animation} animations Animations to add to `this.animationQueue`.
    */
-  play(...animations) {
-    this.animationQueue.push(new _AnimationCollection(...animations));
+  play(...mobjectProxies) {
+    this.animationQueue.push(new _AnimationCollection(...(mobjectProxies.map(proxy => proxy.animationBuilder.buildAnimation()))));
   }
 }

@@ -14,7 +14,7 @@ class GraphicMobject extends Mobject {
     console.log(p5.background);
   }
   drawGraphics(p5) {
-    this.graphics.background(0, 0, 50, 20);
+    //this.graphics.background(0, 0, 50, 20);
   }
   p5Setup(p5) {
     this.graphics = p5.createGraphics(200, 200);

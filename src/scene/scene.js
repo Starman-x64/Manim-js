@@ -9,6 +9,18 @@ class Scene {
 
   initialize() {
     this.sketch = ( p5 ) => {
+      p5.getColor = (...args) => {
+        if (args.length == 1) {
+          switch(args[0].constructor.name) {
+            case "Color":
+              args[0] = args[0].srgb.map(x => 255*x);
+              break;
+            default:
+              break; 
+          }
+        }
+        return p5.color(...args);
+      };
       p5.setup = () => {
         this.setup(p5);
       };

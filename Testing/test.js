@@ -34,7 +34,8 @@ class TestScene extends Scene {
   }
   setup(p5) {
    p5.createCanvas(810, 540);
-   
+   console.log(p5.color(255,0,0));
+   console.log(Color);
    super.setup(p5);
   }
 

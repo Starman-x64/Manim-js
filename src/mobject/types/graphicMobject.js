@@ -13,23 +13,29 @@ class GraphicMobject extends Mobject {
     //this.graphics = p5.createGraphics(this.width, this.height);
     this.pg = p5.createGraphics(100, 100, p5.canvas);
     console.log(this.pg);
-    console.log(p5.createGraphics(100, 100, p5.canvas).createFramebuffer());
+    console.log(p5.background);
+  }
+  p5Setup(p5) {
+    
   }
   draw(p5) {
     //console.log(this.graphics);
     if (!this.pg) {
-      this.createGraphics(p5);
+      //this.createGraphics(p5);
+      //this.pg = p5.createGraphics(100, 100, p5.canvas);
       //console.log(this.graphics);
       //console.log(p5.createGraphics(100, 100).circle)
     }
     //this.graphics.circle(0, 0, 50);
     //p5.image(this.graphics, 0, 0);
-    p5.background(50);
-    p5.ellipse(100, 100, 20, 20);
-    this.pg.background(100);
-    this.pg.noStroke();
-    this.pg.ellipse(this.pg.width / 2, this.pg.height / 2, 50, 50);
-    p5.image(pg, 50, 50);
-    p5.image(pg, 0, 0, 50, 50);
+    //p5.background(50);
+
+    // this.pg = p5.createGraphics(100, 100, p5.canvas);
+    // p5.ellipse(100, 100, 20, 20);
+    // this.pg.background(100);
+    // this.pg.noStroke();
+    // this.pg.ellipse(this.pg.width / 2, this.pg.height / 2, 50, 50);
+    // p5.image(pg, 50, 50);
+    // p5.image(pg, 0, 0, 50, 50);
   }
 }

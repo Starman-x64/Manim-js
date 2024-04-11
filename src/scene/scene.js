@@ -9,15 +9,17 @@ class Scene {
 
   initialize() {
     this.sketch = ( p5 ) => {
-      this.p5 = p5;
-      
-      p5.setup = () => { this.setup(p5); };
-      p5.draw = () => { this.draw(p5); };
+      p5.setup = () => {
+        this.setup(p5);
+      };
+      p5.draw = () => {
+        this.draw(p5);
+      };
     };
   }
 
   runSketch() {
-    new p5(this.sketch);
+    this.p5 = new p5(this.sketch);
   }
 
   /**
@@ -26,13 +28,24 @@ class Scene {
    * involved before the construct method is called.
    */
   setup(p5) {
-    
+    let pg;
+    p5.createCanvas(100, 100);
+    pg = p5.createGraphics(100, 100);
+    this.pg = pg;
+    console.log(this.pg);
+    this.mobjects.forEach(mobject => { if(mobject.p5Setup) mobject.p5Setup(p5); });
   }
 
   draw(p5) {
     /*
     draw background and stuff
     */
+    p5.background(200);
+    this.pg.background(100);
+    this.pg.noStroke();
+    this.pg.ellipse(this.pg.width / 2, this.pg.height / 2, 50, 50);
+    p5.image(this.pg, 50, 50);
+    p5.image(this.pg, 0, 0, 50, 50);
     this.animate(1/60);
     this.mobjects.forEach(mobject => { mobject.draw(p5); });
   }

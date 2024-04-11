@@ -9,13 +9,27 @@ class GraphicMobject extends Mobject {
   }
   
   createGraphics(p5) {
-    this.graphics = p5.createGraphics(this.width, this.height, p5.WEBGL, p5);
+    //console.log(this.width, this.height);
+    //this.graphics = p5.createGraphics(this.width, this.height);
+    this.pg = p5.createGraphics(100, 100, p5.canvas);
+    console.log(this.pg);
+    console.log(p5.createGraphics(100, 100, p5.canvas).createFramebuffer());
   }
   draw(p5) {
-    if (!this.graphics) {
+    //console.log(this.graphics);
+    if (!this.pg) {
       this.createGraphics(p5);
+      //console.log(this.graphics);
+      //console.log(p5.createGraphics(100, 100).circle)
     }
-    this.graphics.circle(0, 0, 50);
-    p5.image(this.graphics, 0, 0);
+    //this.graphics.circle(0, 0, 50);
+    //p5.image(this.graphics, 0, 0);
+    p5.background(50);
+    p5.ellipse(100, 100, 20, 20);
+    this.pg.background(100);
+    this.pg.noStroke();
+    this.pg.ellipse(this.pg.width / 2, this.pg.height / 2, 50, 50);
+    p5.image(pg, 50, 50);
+    p5.image(pg, 0, 0, 50, 50);
   }
 }

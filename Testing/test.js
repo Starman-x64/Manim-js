@@ -16,31 +16,8 @@ const s = ( sketch ) => {
   };
 };
 
-class Square extends Mobject {
-  draw(p5) {
-    /*
-    Draw this mobject
-    */
-
-    let pathString = "M ";
-    for(let i = 0; i < 4; i++) {
-      pathString += `${this.points.get(0,i)} ${this.points.get(1,i)} L `;
-    }
-    pathString = pathString.substring(0, pathString.length - 2 ) + "Z";
-    //console.log(pathString);
-    let path = new Path2D(pathString);
-    console.log(path);
-    
-    p5.stroke(255);
-    p5.drawingContext.stroke(path);
-
-    this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
-  }
-
-  generatePoints() {
-    this.points = nj.array([[100, 200, 200, 100], [100, 100, 200, 200], [0, 0, 0, 0]]);
-    console.log("<var>(this).<prop>(points)\n", this.points);
-  }
+class Square extends GraphicMobject {
+  
 }
 
 
@@ -50,9 +27,9 @@ class TestScene extends Scene {
     //let square2 = new Square({ name: "Square 2" });
     this.add(square1);
     //this.add(square2);
-    square1.shift(nj.array([-50, 0, 0]));
+    //square1.shift(nj.array([-50, 0, 0]));
     //square2.shift(nj.array([100, 0, 0]));
-    this.play(square1.animate().scale(1.1).shift(nj.array([50, 100, 0])));
+    //this.play(square1.animate().scale(1.1).shift(nj.array([50, 100, 0])));
     //this.play(square2.animate().shift(nj.array([50, 100, 0])));
   }
   setup(p5) {

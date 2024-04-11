@@ -27,21 +27,7 @@ class Mobject {
   // animate() {}
 
   draw(p5) {
-    /*
-    Draw this mobject
-    */
-
-    let pathString = "M ";
-    for(let i = 0; i < 4; i++) {
-      pathString += `${this.points.get(0,i)} ${this.points.get(1,i)} L `;
-    }
-    pathString = pathString.substring(0, pathString.length - 2 ) + "Z";
-    //console.log(pathString);
     
-    p5.stroke(255);
-    p5.drawingContext.stroke(new Path2D(pathString));
-
-    this.submobjects.forEach(mobject => { mobject.draw(p5); }); 
   }
 
   animate(kwargs) {
@@ -117,9 +103,7 @@ class Mobject {
    * subclasses.
    */
   generatePoints() {
-    this.points = nj.array([[100, 200, 200, 100], [100, 100, 200, 200], [0, 0, 0, 0]]);
-    console.log("<var>(this).<prop>(points)")
-    console.log(this.points);
+    
   }
 
   /**Add mobjects as submobjects. The mobjects are added to `this.submobjects`.

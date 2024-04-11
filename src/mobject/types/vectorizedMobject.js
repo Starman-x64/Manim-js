@@ -56,6 +56,6 @@ class VMobject extends Mobject {
     if (fillColor) self.fillColor = fillColor;
     if (strokeColor) self.strokeColor = strokeColor;
   }
-
+  
   
 }

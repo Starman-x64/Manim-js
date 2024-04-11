@@ -576,19 +576,19 @@ class Mobject {
     
     return this;
 
-    totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
+    // totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
     
-    // Shift the points of all "family members" who have points by the total vector.
-    this.familyMembersWithPoints().forEach(mobject => {
-      totalVector.tolist().forEach((coord, index) => {
-        for(let i = 0; i < this.points.shape[1]; i++) {
-          mobject.points.set(index, i, mobject.points.get(index, i) + coord);
-        }
-      });
-      console.log("shifted points:\n", mobject.points.toString());
-    });
+    // // Shift the points of all "family members" who have points by the total vector.
+    // this.familyMembersWithPoints().forEach(mobject => {
+    //   totalVector.tolist().forEach((coord, index) => {
+    //     for(let i = 0; i < this.points.shape[1]; i++) {
+    //       mobject.points.set(index, i, mobject.points.get(index, i) + coord);
+    //     }
+    //   });
+    //   console.log("shifted points:\n", mobject.points.toString());
+    // });
 
-    return this;
+    // return this;
   }
 
   scaleAnimationOverride(animation, alpha, scaleFactor, kwargs) {

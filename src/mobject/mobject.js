@@ -119,7 +119,7 @@ class Mobject {
   add(...mobjects) {
     // Error checking
     if (mobjects.includes(this)) {
-      throw new Error("Mobject cannot contain self");
+      throw new ValueError("Mobject cannot contain self");
     }
     mobjects.forEach((mobject, i) => {
       if (!(mobject instanceof Mobject)) {

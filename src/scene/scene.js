@@ -10,21 +10,33 @@ class Scene {
   initialize() {
     this.sketch = ( p5 ) => {
       p5.getColor = (...args) => {
+        let returnColor;
         if (args.length == 1) {
           switch(args[0].constructor.name) {
             case "Color":
-              args[0] = args[0].srgb.map(x => 255*x);
+              let color = args[0];
+              let p5Color = p5.color(color.srgb.map(x => 255*x));
+              // for (const [key, value] of Object.entries(p5Color)) {
+              //   color[key] = value;
+              // }
+              returnColor = p5Color;
               break;
             default:
+              returnColor = p5.color(...args);
               break; 
           }
         }
-        return p5.color(...args);
+        else {
+          returnColor = p5.color(...args);
+        }
+        return returnColor;
       };
       p5.setup = () => {
         this.setup(p5);
       };
       p5.draw = () => {
+        p5.translate(p5.width/2, p5.height/2);
+        p5.scale(1, -1);
         this.draw(p5);
       };
     };
@@ -43,6 +55,7 @@ class Scene {
     /*
     create canvas and stuff
     */
+    //console.log(p5.getColor(WHITE));
     this.mobjects.forEach(mobject => { if(mobject.p5Setup) mobject.p5Setup(p5); });
   }
 

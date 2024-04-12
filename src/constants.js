@@ -2,13 +2,19 @@
  * Global variables / functions
  */
 
-const WHITE = [255, 255, 255];
-const RED = [255, 77, 97];
-const GREEN = [77, 217, 77];
-const BLUE = [77, 177, 255];
-const YELLOW = [247, 227, 47];
-const ORANGE = [247, 137, 27];
-const TRANSPARENT = [0, 0, 0, 0];
+const WHITE = new Color("rgb(255, 255, 255)");
+const BLACK = new Color("rgb(0, 0, 0)");
+const RED = new Color("rgb(255, 77, 97)");
+const GREEN = new Color("rgb(77, 217, 77)");
+const BLUE = new Color("rgb(77, 177, 255)");
+const YELLOW = new Color("rgb(247, 227, 47)");
+const ORANGE = new Color("rgb(247, 137, 27)");
+const TRANSPARENT = new Color("rgb(0, 0, 0, 0)");
+const DARK_RED = RED.range(BLACK, { space: "oklab", outputSpace: "srgb" })(0.5);
+const DARK_GREEN = GREEN.range(BLACK, { space: "oklab", outputSpace: "srgb" })(0.5);
+const DARK_BLUE = BLUE.range(BLACK, { space: "oklab", outputSpace: "srgb" })(0.5);
+const DARK_YELLOW = YELLOW.range(BLACK, { space: "oklab", outputSpace: "srgb" })(0.5);
+const DARK_ORANGE = ORANGE.range(BLACK, { space: "oklab", outputSpace: "srgb" })(0.5);
 
 const PI = Math.PI;
 const TAU = 2 * Math.PI;

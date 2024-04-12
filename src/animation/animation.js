@@ -2,9 +2,6 @@ const DEFAULT_ANIMATION_RUN_TIME = 1.0;
 const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
 
 /**An animation.
- * @class
- * @constructor
- * @public
  */
 class Animation {
   /**
@@ -152,17 +149,28 @@ class Animation {
     return this.mobject.copy();
   }
   
-  /**Get all objects involved in the animation.
-   * 
+  /**Get all mobjects involved in the animation.  
    * Ordering must match the ordering of arguments to `interpolateSubmobject`.
-   * 
    * @returns {Mobject[]}
    */
   getAllMobjects() {
     return [this.mobject, this.startingMobject];
   }
 
-  getAllFamiliesZipped() { return [this.startingMobject]; }
+  /**The JS implementation of `get_all_families_zipped` returns an array of pairs `[mobject, startingMobject]`  
+   * 
+   * In Python, "zipped" returns an iterable tuple:
+   * ```
+   * >>> zip(("a","b","c"),(1,2,3))
+   * (("a", 1), ("b", 2), ("c", 3))
+   * ```
+   * 
+   * @returns {Mobject[][]}
+   */
+  getAllFamiliesZipped() {
+    let allMobjects = this.getAllMobjects().map(mob => mob.familyMembersWithPoints());
+    return allMobjects[0].map((mob, i) => [mob, allMobjects[1][i]]);
+  }
 
   /**Updates things like `this.startingMobject`, and ~~(for
    * Transforms)~~ `targetMobject`.  Note, since typically
@@ -204,7 +212,7 @@ class Animation {
    * @returns {void}
    */
   interpolate(alpha) {
-    this.interpolateMobject(this.rateFunc(alpha));
+    this.interpolateMobject(alpha);
   }
 
   /**Interpolates the mobject of the :class:`Animation` based on alpha value.
@@ -212,15 +220,52 @@ class Animation {
    * @param {number} alpha A float between 0 and 1 expressing the ratio to which the animation is completed. For example, alpha-values of 0, 0.5, and 1 correspond to the animation being completed 0%, 50%, and 100%, respectively.
    */
   interpolateMobject(alpha) {
-    this.methods.forEach(methodObject => {
-      //console.log(methodObject.name);
-      this.mobject.shiftAnimationOverride(this, alpha, nj.array([50,0,0]));
-      this.mobject.scaleAnimationOverride(this, alpha, 2);
-      // this.mobject.shiftAnimationOverride(this, alpha, nj.array([0,50,0]));
-      //this.mobject.shift(nj.array([0,1,0]));
-      //this.mobject = this.mobject[methodObject.name+"AnimationOverride"].call(this.mobject, this, alpha, ...(methodObject.args));
-      //this.mobject[methodObject.name+"AnimationOverride"](this, alpha, ...(methodObject.args));
-    })
+    let families = this.getAllFamiliesZipped();
+    families.forEach((mobs, i) => {
+      subAlpha = this.getSubAlpha(alpha, i, families.length);
+      this.interpolateSubmobject(...mobs, subAlpha);
+    });
+    // this.methods.forEach(methodObject => {
+    //   //console.log(methodObject.name);
+    //   //this.mobject.shiftAnimationOverride(this, alpha, nj.array([50,0,0]));
+    //   //this.mobject.scaleAnimationOverride(this, alpha, 2);
+    //   // this.mobject.shiftAnimationOverride(this, alpha, nj.array([0,50,0]));
+    //   //this.mobject.shift(nj.array([0,1,0]));
+    //   //this.mobject = this.mobject[methodObject.name+"AnimationOverride"].call(this.mobject, this, alpha, ...(methodObject.args));
+    //   //this.mobject[methodObject.name+"AnimationOverride"](this, alpha, ...(methodObject.args));
+    // })
+  }
+
+  /**Interpolate Submobject.
+   * 
+   * @param {Mobject} submobject 
+   * @param {Mobject} startingSubmobject 
+   * @param {number} alpha 
+   * @returns {Animation}
+   */
+  interpolateSubmobject(submobject, startingSubmobject, alpha) {
+    // Typically implemented by subclass.
+  }
+
+  /**Get the animation progress of any submobject's subanimation.
+   *
+   * @param {number} alpha The overall animation progress.
+   * @param {number} index The index of the subanimation.
+   * @param {number} numSubmobjects The total count of subanimations.
+   * @returns {float} The progress of the subanimation.
+   */
+  getSubAlpha(alpha, index, numSubmobjects) {
+    // TODO, make this more understandable, and/or combine
+    // its functionality with AnimationGroup's method
+    // buildAnimationsWithTimings
+    let lagRatio = this.lagRatio;
+    let fullLength = (numSubmobjects - 1) * lagRatio + 1;
+    let value = alpha * fullLength
+    let lower = index * lagRatio;
+    if (this.reverseRateFunction) {
+      return this.rateFunc(1 - (value - lower));
+    }
+    return this.rateFunc(value - lower);
   }
 
   isAnimationComplete() {

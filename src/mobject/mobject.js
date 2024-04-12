@@ -4,11 +4,14 @@
  * @param {nj.NdArray} points The points of the objects.
  */
 class Mobject {
-  constructor(args) {
-    this.name = args.name ? args.name : this.constructor.name;
-    this.dim = args.dim ? args.dim : 3;
-    this.target = args.target ? args.target : null;
-    this.zIndex = args.zIndex ? args.zIndex : 0;
+  /**
+   * @param {{name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
+   */
+  constructor(kwargs) {
+    this.name = kwargs.name !== undefined ? kwargs.name : this.constructor.name;
+    this.dim = kwargs.dim !== undefined ? kwargs.dim : 3;
+    this.target = kwargs.target !== undefined ? kwargs.target : null;
+    this.zIndex = kwargs.zIndex !== undefined ? kwargs.zIndex : 0;
     this.pointHash = null;
     this.submobjects = [];
     this.updaters = [];
@@ -239,15 +242,20 @@ class Mobject {
   /**
    * Gets the width (X dimension) of the mobject.
    * @returns {number}
-   *//**
+   */
+  // width() {
+  // }
+
+  /**
    * Sets the mobject's width (X dimension) to the given value.
    * @param {number} value 
    */
-  width() {
-    return this.lengthOverDim(0);
-  }
   width(value) {
-    this.scaleToFitWidth(value);
+    if (this.value !== undefined) {
+      this.scaleToFitWidth(value);
+      return;
+    }
+    return this.lengthOverDim(0);
   }
   
   /**
@@ -257,11 +265,15 @@ class Mobject {
    * Sets the mobject's height (Y dimension) to the given value.
    * @param {number} value 
    */
-  height() {
-    return this.lengthOverDim(1);
-  }
+  // height() {
+  //   return this.lengthOverDim(1);
+  // }
   height(value) {
-    this.scaleToFitHeight(value);
+    if (this.value !== undefined) {
+      this.scaleToFitHeight(value);
+      return;
+    }
+    return this.lengthOverDim(1);
   }
   
   /**
@@ -271,11 +283,20 @@ class Mobject {
    * Sets the mobject's depth (Z dimension) to the given value.
    * @param {number} value 
    */
-  depth() {
+  // depth() {
+  //   return this.lengthOverDim(2);
+  // }
+  depth(value) {
+    if (this.value !== undefined) {
+      this.scaleToFitDepth(value);
+      return;
+    }
     return this.lengthOverDim(2);
   }
-  depth(value) {
-    this.scaleToFitDepth(value);
+
+  lengthOverDim(dim) {
+    let componentsInDim = this.points.slice([dim, dim+1]).flatten().selection.data;
+    console.log(Math.max(...componentsInDim) - Math.min(...componentsInDim));
   }
 
   /**
@@ -619,9 +640,9 @@ class Mobject {
 
   // Family matters
   
-  /**
+  /**Get this moject's family (this mobject and all of its children and their children and so on).
    * 
-   * @param {boolean | true} recurse
+   * @param {boolean | true} recurse Whether or not to recursively include grandchild mobjects (submobjects of submobjects).
    * @returns {Mobject[]}
    */
   getFamily(recurse=true) {
@@ -633,7 +654,10 @@ class Mobject {
     return Array.from(new Set(allMobjects));
   }
 
-
+  /**Get an array of the subset of all mobjects (the family) with points. 
+   * 
+   * @returns {Mobject[]}
+   */
   familyMembersWithPoints() {
     return this.getFamily().filter(mobject => mobject.getNumPoints() > 0);
   }

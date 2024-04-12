@@ -16,38 +16,17 @@ const s = ( sketch ) => {
   };
 };
 
-class Square extends GMobject {
-  drawGraphics(p5) {
-    //super.drawGraphics(p5);
-    let dimensions = this.strokeWeight == 0 ? [this.width, this.height] : [this.width - this.strokeWeight, this.height - this.strokeWeight];
-    console.log(this.strokeWeight);
-    let fc = p5.getColor(this.fillColor);
-    let sc = p5.getColor(this.strokeColor);
-    fc.setAlpha(this.fillOpacity);
-    sc.setAlpha(this.strokeOpacity);
 
-    this.graphics.noStroke();
-    this.graphics.fill(fc);
-    this.graphics.rect(-dimensions[0]/2, -dimensions[1]/2, dimensions[0], dimensions[1]);
-    
-    this.graphics.stroke(sc);
-    this.graphics.strokeWeight(this.strokeWeight);
-    this.graphics.noFill();
-    if (this.strokeWeight > 0) {
-      this.graphics.rect(-this.width/2, -this.height/2, this.width, this.height);
-    }
-  }
-}
 
 
 class TestScene extends Scene {
   construct() {
     let square1 = new Square({ name: "Square 1", strokeColor: DARK_RED, fillColor: RED });
-    let square2 = new Square({ name: "Square 2", strokeColor: DARK_BLUE, fillColor: BLUE });
+    //let square2 = new Square({ name: "Square 2", strokeColor: DARK_BLUE, fillColor: BLUE });
     this.add(square1);
-    this.add(square2);
-    square1.shift(nj.array([-100, 0, 0]));
-    square2.shift(nj.array([100, 0, 0]));
+    //this.add(square2);
+    //square1.shift(nj.array([-100, 0, 0]));
+    //square2.shift(nj.array([100, 0, 0]));
     //this.play(square1.animate().scale(1.1).shift(nj.array([50, 100, 0])));
     //this.play(square2.animate().shift(nj.array([50, 100, 0])));
   }

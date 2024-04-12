@@ -1,7 +1,4 @@
 /**Abstract class for Animations that show the GMobject partially.
- * @class
- * @constructor
- * @public
  */
 class ShowPartial extends Animation {
   /**
@@ -19,6 +16,11 @@ class ShowPartial extends Animation {
    */
   _getBounds(alpha) {
     throw new NotImplementedError("Please use Create or ShowPassingFlash");
+  }
+  
+  /**@inheritdoc */
+  interpolateSubmobject(submobject, startingSubmobject, alpha) {
+    //submobject.pointwiseBecomePartial(startingSubmobject, ...(this._getBounds(alpha)));
   }
 }
 
@@ -42,4 +44,18 @@ class Create extends ShowPartial {
   _getBounds(alpha) {
     return [0, alpha];
   }
+}
+
+/**Like `Create`, but in reverse.
+ * 
+ */
+class Uncreate extends Create {
+  /**
+   * @param {GMobject} mobject The GMobject to animate.
+   * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
+   */
+  constructor(mobject, kwargs={ reverseRateFunction: true, remover: true, introducer: false }) {
+    super(mobject, kwargs);
+  }
+
 }

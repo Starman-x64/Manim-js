@@ -30,18 +30,15 @@ class GMobject extends Mobject {
     this.setFillAndStroke(p5);
   }
   p5Setup(p5) {
-    console.log("width: ", this.width());
-    this.graphics = p5.createGraphics(this.width(), this.height());
-    this.graphics.translate(this.width()/2, this.height()/2);
+    this.graphics = p5.createGraphics(p5.width, p5.height);
+    this.graphics.translate(p5.width/2, p5.width/2);
     this.drawGraphics(p5);
   }
   draw(p5) {
     //console.log(this.graphics);
     //
     p5.imageMode(p5.CENTER);
-    console.log(this.graphics);
-    this.graphics.background(100);
-    p5.image(this.graphics, 0, 0);//...(this.getCenter().selection.data)
+    p5.image(this.graphics, 0, 0);
     //p5.background(50);
 
     // this.pg = p5.createGraphics(100, 100, p5.canvas);
@@ -72,5 +69,34 @@ class GMobject extends Mobject {
     // if (a <= 0 && b >= 1) {
     //   this.setPoints(gmobject.points);
     // }
+  }
+  
+  /**Get the perimeter of the gmobject by summing up the distances between consecutive points.
+   * 
+   * @returns {number}
+   */
+  getPerimeter() {
+    let perimeter = this.getDistanceBetweenPointsOnPerimeter().reduce((acc, x) => acc + x);
+    return perimeter;
+  }
+  
+  /**Get the distance between each pair of consecutiive points. The last entry in the returned array is the distance between the first and last points.
+   * 
+   * @returns {number[]} The nth element in the returned array is the distance between the nth and the (n+1)th point.
+   */
+  getDistanceBetweenPointsOnPerimeter() {
+    let distances = [];
+    let thisPoint;
+    let nextPoint;
+    for (let i = 0; i < this.points.shape[1]; i++) {
+      if (!thisPoint) {
+        thisPoint = this.points.slice(null, [i, i+1]).flatten();
+      }
+      nextPoint = i + 1 == this.points.shape[1] ? this.points.slice(null, [0, 1]).flatten() : this.points.slice(null, [i+1, i+2]).flatten()
+      let displacement = nj.subtract(thisPoint, nextPoint);
+      distances.push(Math.sqrt(nj.multiply(displacement, displacement).selection.data.reduce((acc, x) => acc + x)));
+      thisPoint = nextPoint;
+    }
+    return distances;
   }
 }

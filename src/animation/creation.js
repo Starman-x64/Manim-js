@@ -20,7 +20,7 @@ class ShowPartial extends Animation {
   
   /**@inheritdoc */
   interpolateSubmobject(submobject, startingSubmobject, alpha) {
-    //submobject.pointwiseBecomePartial(startingSubmobject, ...(this._getBounds(alpha)));
+    submobject.pointwiseBecomePartial(startingSubmobject, ...(this._getBounds(alpha)));
   }
 }
 

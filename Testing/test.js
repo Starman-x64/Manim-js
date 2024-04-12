@@ -22,11 +22,16 @@ const s = ( sketch ) => {
 class TestScene extends Scene {
   construct() {
     let square1 = new Square({ name: "Square 1", strokeColor: DARK_RED, fillColor: RED });
-    //let square2 = new Square({ name: "Square 2", strokeColor: DARK_BLUE, fillColor: BLUE });
-    this.add(square1);
+    let squareHidden = new Square({ name: "Square Hidden", strokeColor: DARK_RED, fillColor: RED });
+    let square2 = new Square({ name: "Square 2", strokeColor: DARK_BLUE, fillColor: BLUE });
+    //this.add(square1);
     //this.add(square2);
-    //square1.shift(nj.array([-100, 0, 0]));
-    //square2.shift(nj.array([100, 0, 0]));
+    square1.shift(nj.array([-100, 0, 0]));
+    squareHidden.shift(nj.array([-100, 0, 0]));
+    square2.shift(nj.array([100, 0, 0]));
+    
+    //square1.pointwiseBecomePartial(squareHidden, 0, 1);
+    this.play(new Create(square1));
     //this.play(square1.animate().scale(1.1).shift(nj.array([50, 100, 0])));
     //this.play(square2.animate().shift(nj.array([50, 100, 0])));
   }

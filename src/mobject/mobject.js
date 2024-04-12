@@ -295,8 +295,8 @@ class Mobject {
   }
 
   lengthOverDim(dim) {
-    let componentsInDim = this.points.slice([dim, dim+1]).flatten().selection.data;
-    console.log(Math.max(...componentsInDim) - Math.min(...componentsInDim));
+    let componentsInDim = this.points.slice([dim, dim+1]).flatten();
+    return componentsInDim.max() - componentsInDim.min();
   }
 
   /**
@@ -313,6 +313,10 @@ class Mobject {
    */
   applyOverAttrArrays(func) {
     
+  }
+  
+  setPoints(points) {
+    this.points = points;
   }
   
 

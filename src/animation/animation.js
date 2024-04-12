@@ -2,30 +2,63 @@ const DEFAULT_ANIMATION_RUN_TIME = 1.0;
 const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
 
 /**An animation.
- * 
- * @param {Mobject} mobject The mobject to be animated. This is not required for all types of animations.
- * @param {number} lagRatio Defines the delay after which the animation is applied to submobjects. This lag is relative to the duration of the animation. This does not influence the total runtime of the animation. Instead the runtime of individual animations is adjusted so that the complete animation has the defined run time.
- * @param {number} runTime The duration of the animation in seconds.
- * @param {Function} rateFunc The function defining the animation progress based on the relative runtime (see  :mod:`~.rate_functions`) . For example `rateFunc(0.5)` is the proportion of the animation that is done after half of the animations run time.
- * @param {boolean} reverseRateFunction Reverses the rate function of the animation. Setting `reverseRateFunction` does not have any effect on ``remover`` or ``introducer``. These need to be set explicitly if an introducer-animation should be turned into a remover one and vice versa.
- * @param {string} name The name of the animation. Defaults to `<class-name>(<Mobject-name>)`.
- * @param {boolean} remover Whether the given mobject should be removed from the scene after this animation.
- * @param {boolean} suspendMobjectUpdating Whether updaters of the mobject should be suspended during the animation.
+ * @class
+ * @constructor
+ * @public
  */
 class Animation {
-  constructor(args) {
-    this.mobject = args.mobject;
-    this.runTime = args.runTime ? args.runTime : DEFAULT_ANIMATION_RUN_TIME;
-    this.lagRatio = args.lagRatio ? args.lagRatio : DEFAULT_ANIMATION_LAG_RATIO;
-    this.reverseRateFunction = args.reverseRateFunction ? args.reverseRateFunction : false;
-    this.name = args.name ? args.name : `<${this.mobject.constructor.name}>(${this.mobject.name})`;
-    this.remover = args.remover ? args.remover : false;
-    this.introducer = args.introducer ? args.introducer : false;
-    this.suspendMobjectUpdating = args.suspendMobjectUpdating ? args.suspendMobjectUpdating : true;
-    this.methods = args.methods;
+  /**
+   * @param {{mobject: Mobject, runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
+   */
+  constructor(kwargs) {
+    /**The mobject to be animated. This is not required for all types of animations.
+     * @type {Mobject}
+    */
+    this.mobject = kwargs.mobject;
+    /**The duration of the animation in seconds.
+     * @type {number}
+    */
+    this.runTime = kwargs.runTime !== undefined ? kwargs.runTime : DEFAULT_ANIMATION_RUN_TIME;
+    /**Defines the delay after which the animation is applied to submobjects. This lag is relative to the duration of the animation. This does not influence the total runtime of the animation. Instead the runtime of individual animations is adjusted so that the complete animation has the defined run time.
+     * @type {number}
+    */
+    this.lagRatio = kwargs.lagRatio !== undefined ? kwargs.lagRatio : DEFAULT_ANIMATION_LAG_RATIO;
+    /**Reverses the rate function of the animation. Setting `reverseRateFunction` does not have any effect on `remover` or `introducer`. These need to be set explicitly if an introducer-animation should be turned into a remover one and vice versa.
+     * @type {boolean}
+    */
+    this.reverseRateFunction = kwargs.reverseRateFunction !== undefined ? kwargs.reverseRateFunction : false;
+    /**The name of the animation. Defaults to `<class-name>(<Mobject-name>)`.
+     * @type {string}
+    */
+    this.name = kwargs.name !== undefined ? kwargs.name : `<${this.mobject.constructor.name}>(${this.mobject.name})`;
+    /**Whether the given mobject should be removed from the scene after this animation.
+     * @type {boolean}
+    */
+    this.remover = kwargs.remover !== undefined ? kwargs.remover : false;
+    /**Whether the given mobject should be addded to the scene after this animation.
+     * @type {boolean}
+    */
+    this.introducer = kwargs.introducer !== undefined ? kwargs.introducer : false;
+    /**Whether updaters of the mobject should be suspended during the animation.
+     * @type {boolean}
+    */
+    this.suspendMobjectUpdating = kwargs.suspendMobjectUpdating !== undefined ? kwargs.suspendMobjectUpdating : true;
+    /**The function defining the animation progress based on the relative runtime (see  :mod:`~.rate_functions`) . For example `rateFunc(0.5)` is the proportion of the animation that is done after half of the animations run time.
+     * @type {Function}
+    */
+   this.rateFunc = kwargs.rateFunc !== undefined ? kwargs.rateFunc : (t) => t*t*(3 - 2*t);
+    /**The methods of the animation to animate.
+     * 
+     * **WARNING: This functionality is not implemented correctly.**
+     * @type {{name: string, args: any[]}[]}
+    */
+    this.methods = kwargs.methods;
+    /**How many seconds have passed since the start of the animation. In its current implementation, the timer starts once `begin()` has been called, even if there is lag time (the animation hasn't visually begun).
+     * @type {number}
+    */
     this.animationTimer = 0;
   }
-
+  
   getLagTime() {
     return this.lagRatio * this.runTime;
   }
@@ -171,7 +204,7 @@ class Animation {
    * @returns {void}
    */
   interpolate(alpha) {
-    this.interpolateMobject(alpha*alpha*(3 - 2*alpha));
+    this.interpolateMobject(this.rateFunc(alpha));
   }
 
   /**Interpolates the mobject of the :class:`Animation` based on alpha value.

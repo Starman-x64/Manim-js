@@ -1,14 +1,14 @@
 
-class GraphicMobject extends Mobject {
-  constructor(args) {
-    super(args);
-    this.fillColor = args.fillColor ? args.fillColor : RED;
-    this.strokeColor = args.strokeColor ? args.strokeColor : DARK_RED;
-    this.strokeWeight = args.strokeWeight !== undefined ? args.strokeWeight : 5;
-    this.fillOpacity = args.fillOpacity !== undefined ? args.fillOpacity : 255;
-    this.strokeOpacity = args.strokeOpacity !== undefined ? args.strokeOpacity : 255;
-    this.width = args.width ? args.width : 100;
-    this.height = args.height ? args.height : 100;
+class GMobject extends Mobject {
+  constructor(kwargs) {
+    super(kwargs);
+    this.fillColor = kwargs.fillColor ? kwargs.fillColor : RED;
+    this.strokeColor = kwargs.strokeColor ? kwargs.strokeColor : DARK_RED;
+    this.strokeWeight = kwargs.strokeWeight !== undefined ? kwargs.strokeWeight : 5;
+    this.fillOpacity = kwargs.fillOpacity !== undefined ? kwargs.fillOpacity : 255;
+    this.strokeOpacity = kwargs.strokeOpacity !== undefined ? kwargs.strokeOpacity : 255;
+    this.width = kwargs.width ? kwargs.width : 100;
+    this.height = kwargs.height ? kwargs.height : 100;
   }
 
   generatePoints() {

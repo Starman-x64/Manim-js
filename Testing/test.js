@@ -16,7 +16,7 @@ const s = ( sketch ) => {
   };
 };
 
-class Square extends GraphicMobject {
+class Square extends GMobject {
   drawGraphics(p5) {
     //super.drawGraphics(p5);
     let dimensions = this.strokeWeight == 0 ? [this.width, this.height] : [this.width - this.strokeWeight, this.height - this.strokeWeight];

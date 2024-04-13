@@ -55,7 +55,7 @@ class Scene {
     /*
     create canvas and stuff
     */
-    //console.log(p5.getColor(WHITE));
+    console.log(p5.getColor(WHITE));
     this.mobjects.forEach(mobject => { if(mobject.p5Setup) mobject.p5Setup(p5); });
   }
 
@@ -183,7 +183,7 @@ class Scene {
    * 
    * @param  {...Animation} animations Animations to add to `this.animationQueue`.
    */
-  play(...mobjectProxies) {
-    this.animationQueue.push(new _AnimationCollection(...(mobjectProxies.map(proxy => proxy.animationBuilder.buildAnimation()))));
+  play(...animations) {
+    this.animationQueue.push(new _AnimationCollection(...animations));
   }
 }

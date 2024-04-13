@@ -49,6 +49,20 @@ class GMobject extends Mobject {
     // p5.image(pg, 50, 50);
     // p5.image(pg, 0, 0, 50, 50);
   }
+  
+  // /**
+  //  * 
+  //  * Doesn't work properly as `Color` from package colorjs can't be cloned with structuredclone()
+  //  * @inheritdoc
+  //  */
+  // copy() {
+  //   let copy = new GMobject({});
+  //   for (let [key, value] of Object.entries(this)) {
+  //     console.log(key, value, copy[key]);
+  //   }
+  //   copy.points = this.points.clone();
+  //   return copy;
+  // }
 
   /**Given two bounds a and b, transforms the points of `this` into the points of the gmobject
    * passed as parameter with respect to the bounds.

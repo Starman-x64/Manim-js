@@ -42,7 +42,21 @@ class TestScene extends Scene {
   }
 
   draw(p5) {
+    console.log(p5);
+    let asds = {
+      _array: [0, 0, 0, 1],
+      hsba: null,
+      hsla: null,
+      levels: [0, 0, 0, 255],
+      maxes: {
+        hsb: [360, 100, 100, 1],
+        hsl: [360, 100, 100, 1],
+        rgb: [255, 255, 255, 255]
+      },
+      mode: "rgb"
+    };
     p5.background(p5.getColor(BLACK));
+    console.log(p5.getColor(BLACK).constructor.name);
 
     super.draw(p5);
   }

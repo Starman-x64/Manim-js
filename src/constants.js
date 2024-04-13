@@ -18,6 +18,8 @@ const DARK_ORANGE = ORANGE.range(BLACK, { space: "oklab", outputSpace: "srgb" })
 
 const PI = Math.PI;
 const TAU = 2 * Math.PI;
+const DEGREES = 180 / PI;
+const RADIANS = PI / 180;
 
 /** `[0, 0, 0]`: The center of the coordinate system. */
 const ORIGIN = nj.array(0.0, 0.0, 0.0);

@@ -222,7 +222,7 @@ class Animation {
   interpolateMobject(alpha) {
     let families = this.getAllFamiliesZipped();
     families.forEach((mobs, i) => {
-      subAlpha = this.getSubAlpha(alpha, i, families.length);
+      let subAlpha = this.getSubAlpha(alpha, i, families.length);
       this.interpolateSubmobject(...mobs, subAlpha);
     });
     // this.methods.forEach(methodObject => {

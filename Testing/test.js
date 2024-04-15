@@ -25,7 +25,7 @@ class TestScene extends Scene {
     let squareHidden = new Square({ name: "Square Hidden", strokeColor: DARK_RED, fillColor: RED });
     let square2 = new Square({ name: "Square 2", strokeColor: DARK_BLUE, fillColor: BLUE });
     //this.add(square1);
-    //this.add(square2);
+    this.add(square2);
     square1.shift(nj.array([-100, 0, 0]));
     squareHidden.shift(nj.array([-100, 0, 0]));
     square2.shift(nj.array([100, 0, 0]));
@@ -42,21 +42,7 @@ class TestScene extends Scene {
   }
 
   draw(p5) {
-    console.log(p5);
-    let asds = {
-      _array: [0, 0, 0, 1],
-      hsba: null,
-      hsla: null,
-      levels: [0, 0, 0, 255],
-      maxes: {
-        hsb: [360, 100, 100, 1],
-        hsl: [360, 100, 100, 1],
-        rgb: [255, 255, 255, 255]
-      },
-      mode: "rgb"
-    };
     p5.background(p5.getColor(BLACK));
-    console.log(p5.getColor(BLACK).constructor.name);
 
     super.draw(p5);
   }

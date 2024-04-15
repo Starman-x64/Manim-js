@@ -13,9 +13,9 @@ class Scene {
         let returnColor;
         if (args.length == 1) {
           switch(args[0].constructor.name) {
-            case "Color":
+            case "ManimColor":
               let color = args[0];
-              let p5Color = p5.color(color.srgb.map(x => 255*x));
+              let p5Color = p5.color(...(color.rgb255()), color.alpha255());
               // for (const [key, value] of Object.entries(p5Color)) {
               //   color[key] = value;
               // }

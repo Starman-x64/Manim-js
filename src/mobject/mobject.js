@@ -352,7 +352,7 @@ class Mobject {
    * @returns {Mobject} The copy.
    */
   copy() {
-    let copy = structuredClone(this);
+    let copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
     copy.points = this.points.clone();
     return copy;
   }

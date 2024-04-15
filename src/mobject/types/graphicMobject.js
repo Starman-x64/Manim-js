@@ -1,7 +1,7 @@
 
 class GMobject extends Mobject {
   /**
-   * @param {{fillColor: Color, strokeColor: Color, strokeWeight: number, fillOpacity: number, strokeOpacity: number, width: number, height: number, name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
+   * @param {{fillColor: ManimColor, strokeColor: ManimColor, strokeWeight: number, fillOpacity: number, strokeOpacity: number, width: number, height: number, name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
    */
   constructor(kwargs) {
     super(kwargs);

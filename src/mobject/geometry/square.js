@@ -89,11 +89,17 @@ class Square extends GMobject {
     console.log(estimateIndices);
     console.log(differences);
     console.log(interpolationBetweenPoints);
-    let points = gmobject.points.slice(null, [estimateIndices[0], estimateIndices[1]]);
-    let secondLastPoint = gmobject.points.slice(null, [estimateIndices[1]-1, estimateIndices[1]]);
-    let lastPoint = gmobject.points.slice(null, [estimateIndices[1], estimateIndices[1] + 1]);
-    let correctLastPoint = nj.add(lastPoint, nj.multiply(nj.subtract(secondLastPoint, lastPoint), interpolationBetweenPoints[1]));
-    points = nj.concatenate(points, correctLastPoint);
+    let points = gmobject.points.slice(null, [estimateIndices[0], estimateIndices[1] + 1]);
+    if (points.shape[1] != 1) {
+      let secondLastPoint = gmobject.points.slice(null, [estimateIndices[1]-1, estimateIndices[1]]);
+      let lastPoint = gmobject.points.slice(null, [estimateIndices[1], estimateIndices[1] + 1]);
+      console.log("Gmobject Points:\n", gmobject.points.toString());
+      console.log("Points:\n", points.toString());
+      console.log("Second Last Point:\n", [estimateIndices[1]-1, estimateIndices[1]], "\n", secondLastPoint.toString());
+      console.log("Last Point:\n", lastPoint.toString());
+      let correctLastPoint = nj.add(lastPoint, nj.multiply(nj.subtract(secondLastPoint, lastPoint), interpolationBetweenPoints[1]));
+      points = nj.concatenate(points, correctLastPoint);
+    }
     this.points = points;
   }
 }

@@ -32,7 +32,7 @@ class Create extends ShowPartial {
    * @param {GMobject} mobject The GMobject to animate.
    * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
    */
-  constructor(mobject, kwargs={ lagRatio: 1.0, introducer: true }) {
+  constructor(mobject, kwargs={ lagRatio: 0.0, introducer: true }) {
     super(mobject, kwargs);
   }
 

@@ -85,6 +85,7 @@ class Animation {
       this.finish();
       return;
     }
+    console.log(this.animationTimer, this.getLagTime());
     if (this.animationTimer >= this.getLagTime()) {
       this.interpolate(this.getAlpha());
     }
@@ -225,6 +226,7 @@ class Animation {
       let subAlpha = this.getSubAlpha(alpha, i, families.length);
       this.interpolateSubmobject(...mobs, subAlpha);
     });
+    console.log(alpha);
     // this.methods.forEach(methodObject => {
     //   //console.log(methodObject.name);
     //   //this.mobject.shiftAnimationOverride(this, alpha, nj.array([50,0,0]));

@@ -1,79 +1,24 @@
+import {Renderer2D} from "../renderer/renderer2d.js";
+import {Mobject} from "../mobject/mobject.js";
+
+/**
+ * An abstract class for all ManimJs scenes.  
+ * This class is extended to create scenes which contain all the logic of how it should play.
+ * @abstract
+ */
 class Scene {
-  constructor(args) {
-    
-    this.mobjects = [];
-    this.animationQueue = [];
-    this.currentAnimationCollection = new _AnimationCollection();
-    
-  }
-
-  initialize() {
-    this.sketch = ( p5 ) => {
-      p5.getColor = (...args) => {
-        let returnColor;
-        if (args.length == 1) {
-          switch(args[0].constructor.name) {
-            case "ManimColor":
-              let color = args[0];
-              let p5Color = p5.color(...(color.rgb255()), color.alpha255());
-              // for (const [key, value] of Object.entries(p5Color)) {
-              //   color[key] = value;
-              // }
-              returnColor = p5Color;
-              break;
-            default:
-              returnColor = p5.color(...args);
-              break; 
-          }
-        }
-        else {
-          returnColor = p5.color(...args);
-        }
-        return returnColor;
-      };
-      p5.setup = () => {
-        this.setup(p5);
-      };
-      p5.draw = () => {
-        p5.translate(p5.width/2, p5.height/2);
-        p5.scale(1, -1);
-        this.draw(p5);
-      };
-    };
-  }
-
-  runSketch() {
-    this.p5 = new p5(this.sketch);
-  }
-
   /**
-   * This is meant to be implemented by any scenes which
-   * are commonly subclassed, and have some common setup
-   * involved before the construct method is called.
+   * @param {number} width The width of the canvas.
+   * @param {number} height The height of the canvas.
    */
-  setup(p5) {
-    /*
-    create canvas and stuff
-    */
-    console.log(p5.getColor(WHITE));
-    this.mobjects.forEach(mobject => { if(mobject.p5Setup) mobject.p5Setup(p5); });
-  }
-
-  draw(p5) {
-    /*
-    draw background and stuff
-    */
-    this.animate(1/60);
-    this.mobjects.forEach(mobject => { mobject.draw(p5); });
-  }
-
-  /**
-   * This is meant to be implemented by any scenes which
-   * are commonly subclassed, and have some common method
-   * to be invoked before the scene ends.
-   */
-  tearDown() {
-    
+  constructor(width, height) {
+    //this.mobjects = [];
+    //this.animationQueue = [];
+    /**
+     * The renderer for the scene. Each scene has one renderer, and each renderer has one scene.
+     * @type {Renderer2D}
+     */
+    this.renderer = new Renderer2D(this, width, height);
   }
 
   /**Add content to the Scene.
@@ -98,40 +43,22 @@ class Scene {
   construct() {
     
   }
+  
+  /**Start the scene.  
+   * Calling this function runs the renderer.
+   * 
+   */
+  run() {
+    // Run the renderer.
+    this.renderer.beginRendering();
+  }
 
   /**Begins updating all mobjects in the Scene.
    * 
    * @param {number} dt Change in time between updates. Defaults (mostly) to `1/framesPerSecond`.
    */
   updateMobjects(dt) {
-    this.mobjects.forEach(mobject => mobject.update(dt));
-  }
-
-  /**Play queued animations frame-by-frame.
-   * 
-   */
-  animate(dt) {
-    if (this.currentAnimationCollection === null) {
-      return;
-    }
-    // Check if the animations at the start of the queue have been completed.
-    if (this.currentAnimationCollection.allAnimationsComplete()) {
-      this.currentAnimationCollection.animations.forEach(animation => { animation.finish(); animation.cleanUpFromScene(this); });
-      this.queueNextAnimations();
-    }
-    // Advance the animation.
-    if (this.currentAnimationCollection !== null) {
-      this.currentAnimationCollection.animations.forEach(animation => { animation.step(dt); });
-    }
-  }
-
-  queueNextAnimations() {
-    if (this.animationQueue.length != 0) {
-      this.currentAnimationCollection = this.animationQueue.shift();
-      this.currentAnimationCollection.animations.forEach(animation => { animation.setupScene(this); animation.begin(); });
-      return;
-    }
-    this.currentAnimationCollection = null;
+    //this.mobjects.forEach(mobject => mobject.update(dt));
   }
 
   /**Add mobjects to scene.
@@ -179,11 +106,6 @@ class Scene {
     return this;
   }
 
-  /**Queue animations to play simultaneously.
-   * 
-   * @param  {...Animation} animations Animations to add to `this.animationQueue`.
-   */
-  play(...animations) {
-    this.animationQueue.push(new _AnimationCollection(...animations));
-  }
 }
+
+export {Scene};

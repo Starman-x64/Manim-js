@@ -1,3 +1,4 @@
+import { defineUndef } from "../utils/validation.js";
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
  * @param {Mobject[]} submobjects The contained objects.
@@ -8,10 +9,14 @@ class Mobject {
    * @param {{name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
    */
   constructor(kwargs) {
-    this.name = kwargs.name !== undefined ? kwargs.name : this.constructor.name;
-    this.dim = kwargs.dim !== undefined ? kwargs.dim : 3;
-    this.target = kwargs.target !== undefined ? kwargs.target : null;
-    this.zIndex = kwargs.zIndex !== undefined ? kwargs.zIndex : 0;
+    /**
+     * The name of the Mobject.
+     * @type {string}
+     */
+    this.name = defineUndef(kwargs.name, this.constructor.name);
+    this.dim = defineUndef(kwargs.dim, 3);
+    this.target = defineUndef(kwargs.target, null);
+    this.zIndex = defineUndef(kwargs.zIndex, 0);
     this.pointHash = null;
     this.submobjects = [];
     this.updaters = [];
@@ -690,3 +695,5 @@ class _AnimationBuilder {
     return new Animation(this);
   }
 }
+
+export {Mobject};

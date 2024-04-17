@@ -108,7 +108,7 @@ class Renderer2D {
 
   /**
    * Update the mobjects in the scene.
-   * @param {number} dt Delta time.
+   * @param {number} dt Delta time in seconds.
    * @returns {void}
    */
   updateScene(dt) {
@@ -120,6 +120,8 @@ class Renderer2D {
    * @returns {void}
    */
   drawScene() {
+    let camera = this.scene.camera;
+    
     
   }
 
@@ -133,20 +135,21 @@ class Renderer2D {
   
   /**
    * Calculate the delta time since the last frame.
-   * @param {number} timeStamp Time in ms when the last frame finished processing.
-   * @returns {number} Delta time `dt`.
+   * @param {number} timeStampMillis Time in ms when the last frame finished processing.
+   * @returns {number} Delta time `dt` in seconds.
    */
-  calculateDeltaTime(timeStamp) {
+  calculateDeltaTime(timeStampMillis) {
     if (this.previousTimeStamp === null) {
       this.previousTimeStamp = this.renderStartTimeStamp;
     }
-    let dt = timeStamp - this.previousTimeStamp;
-    this.previousTimeStamp = timeStamp;
+    let dt = timeStampMillis - this.previousTimeStamp;
+    this.previousTimeStamp = timeStampMillis;
     return dt;
   }
   
   /**
    * Cancel calls to `window.requestAnimationFrame()`.
+   * @returns {void}
    */
   cancelRendering() {
     while(this.animationFrameID--) {

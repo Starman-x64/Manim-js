@@ -14,12 +14,16 @@ class Mobject {
      * @type {string}
      */
     this.name = defineUndef(kwargs.name, this.constructor.name);
-    this.dim = defineUndef(kwargs.dim, 3);
-    this.target = defineUndef(kwargs.target, null);
-    this.zIndex = defineUndef(kwargs.zIndex, 0);
-    this.pointHash = null;
+    //this.dim = defineUndef(kwargs.dim, 3);
+    //this.target = defineUndef(kwargs.target, null);
+    //this.zIndex = defineUndef(kwargs.zIndex, 0);
+    //this.pointHash = null;
     this.submobjects = [];
     this.updaters = [];
+    /**
+     * Whether or not this mobject should be updated each frame.
+     * @type {boolean}
+     */
     this.updatingSuspended = false;
     //self.color = ManimColor.parse(color)
 
@@ -33,10 +37,6 @@ class Mobject {
   // addAnimationOverride() {}
   // setDefault() {}
   // animate() {}
-
-  draw(p5) {
-    
-  }
 
   animate(kwargs) {
     this.animationBuilder = new _AnimationBuilder(this, kwargs);

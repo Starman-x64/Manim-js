@@ -1,4 +1,5 @@
 import {Renderer2D} from "../renderer/renderer2d.js";
+import {Camera} from "../mobject/camera/camera.js";
 import {Mobject} from "../mobject/mobject.js";
 
 /**
@@ -19,6 +20,11 @@ class Scene {
      * @type {Renderer2D}
      */
     this.renderer = new Renderer2D(this, width, height);
+    /**
+     * The scene camera.
+     * @type {Camera}
+     */
+    this.camera = new Camera();
   }
 
   /**Add content to the Scene.
@@ -59,6 +65,7 @@ class Scene {
    */
   updateMobjects(dt) {
     //this.mobjects.forEach(mobject => mobject.update(dt));
+    this.camera.update(dt);
   }
 
   /**Add mobjects to scene.

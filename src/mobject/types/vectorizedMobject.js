@@ -1,3 +1,10 @@
+import { Mobject } from "../mobject.js";
+import { ManimColor } from "../../color/manimColor.js";
+import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../../color/manimColor.js";
+import { defineUndef } from "../../utils/validation.js";
+
+const DEFAULT_STROKE_WIDTH = 4;
+
 /**A vectorized mobject.
  * 
  * @param {} backgroundStrokeColor The purpose of background stroke is to have something that won't overlap fill, e.g.  For text against some textured background.
@@ -10,52 +17,60 @@
 class VMobject extends Mobject {
   sheenFactor = 0.0;
 
-  constructor(
-    fillColor=null,
-    fillOpacity=0.0,
-    strokeColor=null,
-    strokeOpacity=1.0,
-    strokeWidth=DEFAULT_STROKE_WIDTH,
-    backgroundStrokeColor=BLACK,
-    backgroundStrokeOpacity=1.0,
-    backgroundStrokeWidth=0.0,
-    sheenFactor=0.0,
-    jointType=null,
-    sheenDirection=UL,
-    closeNewPoints=false,
-    preFunctionHandleToAnchorScaleFactor=0.01,
-    makeSmoothAfterApplyingFunctions=false,
-    backgroundImage=null,
-    shadeIn3d=false,
-    // TODO, do we care about accounting for varying zoom levels?
-    toleranceForPointEquality=1e-6,
-    nPointsPerCubicCurve=4,
-    capStyle="CapStyleType.AUTO" // shoudn't be a string.
-  ) {
-    this.fillOpacity = fillOpacity;
-    this.strokeOpacity = strokeOpacity;
-    this.strokeWidth = strokeWidth;
-    if (backgroundStrokeColor) {
-      this.backgroundStrokeColor = backgroundStrokeColor;
-    }
-    this.backgroundStrokeOpacity = backgroundStrokeOpacity;
-    this.backgroundStrokeWidth = this.backgroundStrokeWidth;
-    this.sheenFactor = sheenFactor;
-    this.jointType = jointType | "LineJointType.AUTO";
-    this.sheenDirection = sheenDirection;
-    this.closeNewPoints = closeNewPoints;
-    this.preFunctionHandleToAnchorScaleFactor = preFunctionHandleToAnchorScaleFactor;
-    this.makeSmoothAfterApplyingFunctions = makeSmoothAfterApplyingFunctions;
-    this.backgroundImage = backgroundImage;
-    this.shadeIn3d = shadeIn3d;
-    this.toleranceForPointEquality = toleranceForPointEquality;
-    this.nPointsPerCubicCurve = nPointsPerCubicCurve;
-    this.capStyle = capStyle;
-    super();
+  constructor(kwargs={
+    fillColor: TRANSPARENT,
+    fillOpacity: 0.0,
+    strokeColor: WHITE,
+    strokeOpacity: 0.0,
+    strokeWidth: DEFAULT_STROKE_WIDTH,
+    capStyle: CapStyleType.AUTO,
+    
+    toleranceForPointEquality: 1e-6,
+  }) {
+    /**
+     * @type {ManimColor}
+     */
+    super(kwargs);
+    this.fillColor = defineUndef(kwargs.fillColor, TRANSPARENT);
+    this.fillOpacity = defineUndef(kwargs.fillOpacity, 0.0);
+    this.strokeColor = defineUndef(kwargs.strokeColor, WHITE);
+    this.strokeOpacity = defineUndef(kwargs.strokeOpacity, 0.0);
+    this.strokeWidth = defineUndef(kwargs.strokeWidth, DEFAULT_STROKE_WIDTH);
+    this.capStyle = defineUndef(kwargs.capStyle, CapStyleType.AUTO);
+    this.jointType = defineUndef(kwargs.jointType, LineJoinType.AUTO);
+    
+    this.toleranceForPointEquality = defineUndef(kwargs.toleranceForPointEquality, 1e-6);
 
-    if (fillColor) self.fillColor = fillColor;
-    if (strokeColor) self.strokeColor = strokeColor;
   }
   
   
 }
+
+/**
+ * Cap styles for setting `ctx.lineCap`.
+ */
+const CapStyleType = {
+  /** Default value is `ROUND`.  */
+  AUTO: "round",
+  /** Ends flat exactly at the ending point. */
+  BUTT: "butt",
+  /** Ends with a semicircle with diameter of half the line width.  */
+  ROUND: "round",
+  /** Ends flat one half stroke width from the ending point. */
+  SQUARE: "square"
+}
+/**
+ * Line joining type for setting `ctx.lineJoin`.
+ */
+const LineJoinType = {
+  /** Default value is `MITER`.  */
+  AUTO: "miter",
+  /** Sharp corners are flattened.  */
+  BEVEL: "bevel",
+  /** Rounded corners with radius equalling the line width */
+  ROUND: "round",
+  /** Miter joint. */
+  MITER: "miter"
+}
+
+export { VMobject };

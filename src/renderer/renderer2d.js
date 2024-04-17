@@ -99,7 +99,7 @@ class Renderer2D {
    * @returns {number[]}
    */
   worldToScreenCoords(worldX, worldY) {
-    return [worldX + this.canvas.width/2, -(worldY - this.canvas.height/2)];
+    return [worldX + this.canvas.width/2 - this.scene.camera.x(), -(worldY - this.canvas.height/2- this.scene.camera.y())];
   }
   
   /**

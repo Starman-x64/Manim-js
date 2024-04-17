@@ -3,13 +3,29 @@ import { Mobject } from "../mobject.js";
 class Camera extends Mobject {
   constructor(kwargs={}) {
     super(kwargs);
-    console.log(this.points);
+
+    this.initMobject(); 
   }
   
   generatePoints() {
     this.points = nj.array([[0],[0],[0]]);
-    console.log(this.points);
   }
+  
+  /**
+   * x-position of the camera.
+   * @return {number}
+   */
+  x = () => this.points.get(0,0);
+  /**
+   * y-position of the camera.
+   * @return {number}
+   */
+  y = () => this.points.get(1,0);
+  /**
+   * z-position of the camera.
+   * @return {number}
+   */
+  z = () => this.points.get(2,0);
 }
 
 /**

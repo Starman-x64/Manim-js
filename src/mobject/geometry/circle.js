@@ -1,23 +1,27 @@
+import { VMobject } from "../types/vectorizedMobject.js";
 
-class Circle extends GraphicMobject {
-  constructor(args) {
-    super(args);
-    this.radius = args.radius ? args.radius : 10;
-    
-    this.resetPoints();
-    this.generatePoints();
+class Circle extends VMobject {
+  /** @inheritdoc */
+  constructor(kwargs) {
+    super(kwargs);
+
+    this.radius = kwargs.radius;
+
+    this.initMobject();
   }
   generatePoints() {
-    let n = 50;
-    for(let i = 0; i < n; i++) {
-      this.points.push(nj.array([this.radius * Math.cos(i / n * TAU), this.radius * Math.sin(i / n * TAU), 0]));
-    }
+    let controlpointDistance = this.radius * 4 * (Math.sqrt(2) - 1) / 3;
+    let r = this.radius;
+    let d = controlpointDistance;
+    
+    this.points = nj.array([
+      [-r, -r, -d,  0,  d,  r,  r,  r,  d,  0, -d, -r, -r],
+      [ 0,  d,  r,  r,  r,  d,  0, -d, -r, -r, -r, -d,  0],
+      [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+    ]);
+    this.curveTypes = ["C", "C", "C", "C", "Z"];
   }
-  show(p) {
-    this.graphics.fill(...this.fillColor);
-    this.graphics.stroke(...this.strokeColor);
-    this.graphics.beginShape(p.TESS);
-    this.points.forEach(point => this.graphics.vertex(point.get(0), point.get(1), point.get(2)));
-    this.graphics.endShape(p.CLOSE);
-  }
+
 }
+
+export { Circle };

@@ -1,4 +1,6 @@
+import { VMobject } from "../mobject/types/vectorizedMobject.js";
 import {Scene} from "../scene/scene.js";
+import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
 
 /**
  * Handles all the rendering for a 2D scene.  
@@ -26,6 +28,10 @@ class Renderer2D {
      * @type {CanvasRenderingContext2D}
      */
     this.ctx = this.canvas.getContext("2d");
+    
+    // translate and scale the drawing context so that (0,0) is the centre of the screen, and +y is up.
+    //this.ctx.translate(width/2, height/2);
+    //this.ctx.scale(1, -1);
     /**
      * The last ID returned by `window.requestAnimationFrame()`. Stored so that rendering may be cancelled.
      * @type {number | null}
@@ -75,14 +81,25 @@ class Renderer2D {
    */
   drawFPS(dt, precision=1) {
     const fps = 1000/dt;
-    this.ctx.fillStyle = "black";
-    this.ctx.strokeStyle = "white";
+    this.ctx.fillStyle = "white";
+    this.ctx.strokeStyle = this.scene.backgroundColor.hex();
     this.ctx.textBaseline = "top";
     this.ctx.lineWidth = 5;
     this.ctx.font = this.ctx.font.replace(/(?<value>\d+\.?\d*)/, 12);
-    this.ctx.strokeText(`FPS=${fps.toFixed(precision)}`, 0, 0);
+    this.ctx.strokeText(`FPS=${fps.toFixed(precision)}`, 5, 5);
     this.ctx.font = this.ctx.font.replace(/(?<value>\d+\.?\d*)/, 12);
-    this.ctx.fillText(`FPS=${fps.toFixed(precision)}`, 0, 0);
+    this.ctx.fillText(`FPS=${fps.toFixed(precision)}`, 5, 5);
+  }
+  
+
+  /**
+   * Convert the position of an object in worldspace to screenspace.
+   * @param {number} worldX Worldspace x-coordinate (0 = centre of canvas).
+   * @param {number} worldY Worldspace y-coordinate (0 = centre of canvas).
+   * @returns {number[]}
+   */
+  worldToScreenCoords(worldX, worldY) {
+    return [worldX + this.canvas.width/2, -(worldY - this.canvas.height/2)];
   }
   
   /**
@@ -93,7 +110,8 @@ class Renderer2D {
     const dt = this.calculateDeltaTime(timeStamp);
     
     // Clear the screen
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = this.scene.backgroundColor.hex();
+    this.ctx.rect(0,0, this.canvas.width, this.canvas.height);
     this.ctx.fill();
     
     // update scene mobjects
@@ -122,7 +140,69 @@ class Renderer2D {
   drawScene() {
     let camera = this.scene.camera;
     
+    this.scene.mobjects.forEach(mob => {
+      if (mob instanceof VMobject) {
+        this.drawVMobject(mob);
+      }
+    });
     
+  }
+
+  /**
+   * Draws the given VMobject.  
+   * Handled differently from `GMobject`s (graphic mobjects) because VMobjects are drawn with `Path2D`.
+   * @param {VMobject} mobject The VMobject to draw.
+   * @returns {void}
+   */
+  drawVMobject(mobject) {
+    /** @type {string[]} */
+    let curveTypes = mobject.curveTypes;
+    /** @type {number[][]} */
+    let points = [];
+    for(let i = 0; i < mobject.points.shape[1]; i++) {
+      let point = this.worldToScreenCoords(...(mobject.points.slice(null,[i,i+1]).flatten().selection.data));
+      points.push(point);
+    }
+    /** @type {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}} */
+    let paths = SVGDrawer.generatePath2D(points, curveTypes);
+
+    /** @type {boolean} */
+    let drawFill = !!mobject.fillColor.alpha();
+    /** @type {boolean} */
+    let drawStroke = !!mobject.strokeColor.alpha();
+
+    /** @type {ManimColor} */
+    let fillColor = mobject.fillColor.toString("rgba");
+    /** @type {ManimColor} */
+    let strokeColor = mobject.strokeColor.toString("rgba");
+
+
+    if (drawStroke) {
+      this.ctx.setLineDash([]);
+      this.ctx.lineWidth = mobject.lineWidth;
+      this.ctx.strokeStyle = strokeColor;
+      this.ctx.stroke(paths);//.curve);
+    }
+    if (drawFill) {
+      this.ctx.fillStyle = fillColor;
+      this.ctx.fill(paths);//.curve);
+    }
+    
+    // this.ctx.setLineDash([5, 5]);
+    // this.ctx.lineWidth = 1;
+    // this.ctx.strokeStyle = WHITE.interpolate(BLACK, 0.25).hex();
+    // this.ctx.stroke(paths.lines);
+    // this.ctx.setLineDash([]);
+
+    // this.ctx.fillStyle = RED.hex();
+    // this.ctx.fill(paths.onPath);
+
+    // this.ctx.fillStyle = BLUE.hex();
+    // this.ctx.fill(paths.quadratic);
+
+    // this.ctx.fillStyle = GREEN.hex();
+    // this.ctx.fill(paths.cubic);
+
   }
 
   /**
@@ -155,6 +235,181 @@ class Renderer2D {
     while(this.animationFrameID--) {
       window.cancelAnimationFrame(this.animationFrameID);
     }
+  }
+}
+
+/**
+ * Interprets point positions and converts them into SVG path strings.
+ */
+class SVGDrawer {
+  static QUADRATIC = "Q";
+  static CUBIC = "C";
+  static MOVE_TO = "M";
+  static LINE_TO = "L";
+  static CLOSE_PATH = "Z";
+  
+  /**
+   * Converts the given points and point types into a valid `Path2D` object.
+   * @param {number[][]} points The points of the shape.
+   * @param {string[]} mobjectCurveTypes What type of (bezier) curves the given points correspond to.
+   * @returns {Path2D}
+   */
+  static generatePath2D(points, mobjectCurveTypes) {
+    /** @type {number} */
+    let pointIndex = 0;
+    /** @type {string[]} */
+    let subPaths = [];
+    let curveTypes = ["M"].concat(structuredClone(mobjectCurveTypes));
+    curveTypes.forEach(curveType => {
+      if (curveType == SVGDrawer.MOVE_TO) {
+        subPaths.push(SVGDrawer.generateMoveToPath(points[pointIndex]));
+        pointIndex++;
+      }
+      if (curveType == SVGDrawer.LINE_TO) {
+        subPaths.push(SVGDrawer.generateLineToPath(points[pointIndex]));
+        pointIndex++;
+      }
+      else if (curveType == SVGDrawer.QUADRATIC) {
+        subPaths.push(SVGDrawer.generateQuadraticPath(points[pointIndex], points[pointIndex + 1]));
+        pointIndex += 2;
+      }
+      else if (curveType == SVGDrawer.CUBIC) {
+        subPaths.push(SVGDrawer.generateCubicPath(points[pointIndex], points[pointIndex + 1], points[pointIndex + 2]));
+        pointIndex += 3;
+      }
+      else if (curveType == SVGDrawer.CLOSE_PATH) {
+        subPaths.push("Z");
+      }
+    });
+    
+    return new Path2D(subPaths.join(" "));
+  }
+  
+  /**
+   * Generates debug graphics for a given set of points.  
+   * - Draws points on the curve as `RED`
+   * - Draws quadratic control points as `BLUE`
+   * - Draws cubic control points as `GREEN`
+   * @param {number[][]} points The points of the shape.
+   * @param {string[]} mobjectCurveTypes What type of (bezier) curves the given points correspond to.
+   * @returns {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}}
+   */
+  static generateControlPointPath2D(points, mobjectCurveTypes) {
+    /** @type {number} */
+    let pointIndex = 0;
+    /** @type {{curve: string[], onPath: string[], quadratic: string[], cubic: string[], lines: string[]}} */
+    let subPaths = { curve: [], onPath: [], quadratic: [], cubic: [], lines: [] }; 
+    /** @type {string[]} */
+    let curveTypes = ["M"].concat(structuredClone(mobjectCurveTypes));
+    /** @type {{onPath: number[][], quadratic: number[][], cubic: number[][]}} */
+    let pointFamilies = { onPath: [], quadratic: [], cubic: [] };
+    
+    curveTypes.forEach(curveType => {
+      if (curveType == SVGDrawer.MOVE_TO) {
+        subPaths.curve.push(SVGDrawer.generateMoveToPath(points[pointIndex]));
+        pointFamilies.onPath.push(points[pointIndex]);
+        pointIndex++;
+      }
+      if (curveType == SVGDrawer.LINE_TO) {
+        subPaths.curve.push(SVGDrawer.generateLineToPath(points[pointIndex]));
+        pointFamilies.onPath.push(points[pointIndex]);
+        pointIndex++;
+      }
+      else if (curveType == SVGDrawer.QUADRATIC) {
+        subPaths.curve.push(SVGDrawer.generateQuadraticPath(points[pointIndex], points[pointIndex + 1]));
+        subPaths.lines.push(SVGDrawer.generateMoveToPath(points[pointIndex - 1]));
+        subPaths.lines.push(SVGDrawer.generateLineToPath(points[pointIndex]));
+        subPaths.lines.push(SVGDrawer.generateLineToPath(points[pointIndex]));
+        subPaths.lines.push(SVGDrawer.generateLineToPath(points[pointIndex + 1]));
+        pointFamilies.quadratic.push(points[pointIndex]);
+        pointFamilies.onPath.push(points[pointIndex + 1]);
+        pointIndex += 2;
+      }
+      else if (curveType == SVGDrawer.CUBIC) {
+        subPaths.curve.push(SVGDrawer.generateCubicPath(points[pointIndex], points[pointIndex + 1], points[pointIndex + 2]));
+        subPaths.lines.push(SVGDrawer.generateMoveToPath(points[pointIndex - 1]));
+        subPaths.lines.push(SVGDrawer.generateLineToPath(points[pointIndex]));
+        subPaths.lines.push(SVGDrawer.generateMoveToPath(points[pointIndex + 1]));
+        subPaths.lines.push(SVGDrawer.generateLineToPath(points[pointIndex + 2]));
+        pointFamilies.cubic.push(points[pointIndex]);
+        pointFamilies.cubic.push(points[pointIndex + 1]);
+        pointFamilies.onPath.push(points[pointIndex + 2]);
+        pointIndex += 3;
+      }
+      else if (curveType == SVGDrawer.CLOSE_PATH) {
+        subPaths.curve.push("Z");
+      }
+    });
+    
+    /** @type {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}} */
+    let paths = { curve: new Path2D(subPaths.curve.join(" ")), onPath: new Path2D(), quadratic: new Path2D(), cubic: new Path2D(), lines: new Path2D(subPaths.lines.join(" ")) };
+
+    const RADIUS = 5;
+    
+    pointFamilies.onPath.forEach(point => {
+      paths.onPath.addPath(new Path2D(SVGDrawer.generateCircle(point, RADIUS)));
+    });
+    pointFamilies.quadratic.forEach(point => {
+      paths.quadratic.addPath(new Path2D(SVGDrawer.generateCircle(point, RADIUS)));
+    });
+    pointFamilies.cubic.forEach(point => {
+      paths.cubic.addPath(new Path2D(SVGDrawer.generateCircle(point, RADIUS)));
+    });
+
+    
+    return paths;
+  }
+  
+  /**
+   * Generates a valid SVG string for a circle composed of two arcs.  
+   * Note that this is only used for making circles in `SVGDrawer.generateControlPointPath2D()`.
+   * @param {number[]} position Position of the centre of the circle.
+   * @param {number} radius Radius of the circle.
+   * @returns {string}
+   */
+  static generateCircle(position, radius) {
+    let centreX = position[0];
+    let centreY = position[1];
+    return `M ${centreX - radius} ${centreY} a ${radius} ${radius} 0 1 0 ${2 * radius} 0  a ${radius} ${radius} 0 1 0 -${2 * radius} 0`;
+  }
+
+  /**
+   * Generates the string `"M <xPosition> <yPosition>"`.
+   * @param {number[]} position Position to move to.
+   * @returns {string}
+   */
+  static generateMoveToPath(position) {
+    return `M ${position[0]} ${position[1]}`;
+  }
+
+  /**
+   * Generates the string `"L <p2XPosition> <p2YPosition>"`.
+   * @param {number[]} endPoint End point of the line.
+   * @returns {string}
+   */
+  static generateLineToPath(endPoint) {
+    return `L ${endPoint[0]} ${endPoint[1]}`;
+  }
+
+  /**
+   * Generates the string `"Q <cXPosition> <cYPosition> <p2XPosition> <p2YPosition>"`.
+   * @param {number[]} endPoint p2 of the bezier curve.
+   * @param {number[]} controlPoint Position of the control point.
+   * @returns {string}
+   */
+  static generateQuadraticPath(controlPoint, endPoint) {
+    return `Q ${controlPoint[0]} ${controlPoint[1]} ${endPoint[0]} ${endPoint[1]}`;
+  }
+
+  /**
+   * Generates the string `"C <c1XPosition> <c1YPosition> <c2XPosition> <c2YPosition> <p2XPosition> <p2YPosition>"`.
+   * @param {number[]} endPoint p2 of the bezier curve.
+   * @param {number[]} controlPoint1 Position of the control point near the start of the curve..
+   * @param {number[]} controlPoint2 Position of the control point near the end of the curve..
+   * @returns {string}
+   */
+  static generateCubicPath(controlPoint1, controlPoint2, endPoint) {
+    return `C ${controlPoint1[0]} ${controlPoint1[1]} ${controlPoint2[0]} ${controlPoint2[1]} ${endPoint[0]} ${endPoint[1]}`;
   }
 }
 

@@ -33,6 +33,7 @@ class ManimColor {
   alpha = () => this._alpha;
   alpha255 = () => Math.round(this._alpha * 255);
   rgb = () => this._rgb;
+  rgba = () => [...(this._rgb.map(x => Math.round(x*255)))].concat(this.alpha());
   rgb255 = () => this._rgb.map(x => Math.round(x*255));
   hex = () => "#" + this.rgb().map(d => Math.round(d*255).toString(16).padStart(2, "0")).join("");
   xyz = () => ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1)).selection.data;
@@ -43,7 +44,7 @@ class ManimColor {
   oklch = () => ManimColor.OklabToOklch(ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1)))).selection.data;
 
   toString(space="rgb") {
-    if (!ManimColor.VALID_MODES.includes(space)) {
+    if (!ManimColor.VALID_MODES.includes(space) && space != "rgba") {
       space = ManimColor.MODE_SYNONYMS[space];
     }
     if (space === undefined) {
@@ -52,13 +53,17 @@ class ManimColor {
     if (space == "hex") {
       return this.hex();
     }
+    if (space == "rgba") {
+      let rgba = this.rgba();
+      return `rgba(${rgba.join(", ")})`;
+    }
     let values = this[space]().map(x => x.toFixed(3));
     return `${space}(${values.join(", ")}` + (this._alpha !== undefined ? " | " + (this._alpha * 100) + "%" : "") + ")";
   }
   
   
-  interpolate(color, t, kwargs={space: "rgb", func: (t)=>t}) {
-    let space = kwargs.space === undefined ? "rgb" : kwargs.space;
+  interpolate(color, t, kwargs={space: "oklab", func: (t)=>t}) {
+    let space = kwargs.space === undefined ? "oklab" : kwargs.space;
     let func = kwargs.func === undefined ? (t)=>t : kwargs.func;
     if (!ManimColor._isValidColorSpace(space)) {
       throw new ValueError(`Cannot interpolate in color space "${space}"!`);
@@ -71,7 +76,7 @@ class ManimColor {
     let rgba = ManimColor.convertColorNdarrayBetweenSpaces(c, space, "rgb").selection.data.concat(alpha);
     let finalColor = new ManimColor(rgba);
 
-    console.log(
+   /* console.log(
 `Interpolating
 ${this.toString("rgb")} → ${color.toString("rgb")}
 through color space ${space} with t = ${t}
@@ -81,7 +86,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
 `,
   `color: rgb(${this.rgb255()[0]} ${this.rgb255()[1]} ${this.rgb255()[2]});`, `color: white;`,
   `color: rgb(${finalColor.rgb255()[0]} ${finalColor.rgb255()[1]} ${finalColor.rgb255()[2]});`, `color: white;`,
-  `color: rgb(${color.rgb255()[0]} ${color.rgb255()[1]} ${color.rgb255()[2]});`, `color: white;`);
+  `color: rgb(${color.rgb255()[0]} ${color.rgb255()[1]} ${color.rgb255()[2]});`, `color: white;`);*/
     
     return finalColor;
   }

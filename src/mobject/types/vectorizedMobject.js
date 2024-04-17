@@ -3,7 +3,7 @@ import { ManimColor } from "../../color/manimColor.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../../color/manimColor.js";
 import { defineUndef } from "../../utils/validation.js";
 
-const DEFAULT_STROKE_WIDTH = 4;
+const DEFAULT_LINE_WIDTH = 4;
 
 /**A vectorized mobject.
  * 
@@ -15,14 +15,15 @@ const DEFAULT_STROKE_WIDTH = 4;
  * 
  */
 class VMobject extends Mobject {
-  sheenFactor = 0.0;
-
+  /**
+   * @param {{fillColor: ManimColor, fillOpacity: number, strokeColor: ManimColor, strokeOpacity: number, lineWidth: number, capStyle: CapStyleType}} kwargs 
+   */
   constructor(kwargs={
     fillColor: TRANSPARENT,
     fillOpacity: 0.0,
     strokeColor: WHITE,
     strokeOpacity: 0.0,
-    strokeWidth: DEFAULT_STROKE_WIDTH,
+    lineWidth: DEFAULT_LINE_WIDTH,
     capStyle: CapStyleType.AUTO,
     
     toleranceForPointEquality: 1e-6,
@@ -35,7 +36,7 @@ class VMobject extends Mobject {
     this.fillOpacity = defineUndef(kwargs.fillOpacity, 0.0);
     this.strokeColor = defineUndef(kwargs.strokeColor, WHITE);
     this.strokeOpacity = defineUndef(kwargs.strokeOpacity, 0.0);
-    this.strokeWidth = defineUndef(kwargs.strokeWidth, DEFAULT_STROKE_WIDTH);
+    this.lineWidth = defineUndef(kwargs.lineWidth, DEFAULT_LINE_WIDTH);
     this.capStyle = defineUndef(kwargs.capStyle, CapStyleType.AUTO);
     this.jointType = defineUndef(kwargs.jointType, LineJoinType.AUTO);
     
@@ -49,16 +50,17 @@ class VMobject extends Mobject {
 /**
  * Cap styles for setting `ctx.lineCap`.
  */
-const CapStyleType = {
+class CapStyleType extends String {
   /** Default value is `ROUND`.  */
-  AUTO: "round",
+  static AUTO = new CapStyleType("round");
   /** Ends flat exactly at the ending point. */
-  BUTT: "butt",
+  static BUTT = new CapStyleType("butt");
   /** Ends with a semicircle with diameter of half the line width.  */
-  ROUND: "round",
+  static ROUND = new CapStyleType("round");
   /** Ends flat one half stroke width from the ending point. */
-  SQUARE: "square"
+  static SQUARE = new CapStyleType("square");
 }
+
 /**
  * Line joining type for setting `ctx.lineJoin`.
  */
@@ -73,4 +75,4 @@ const LineJoinType = {
   MITER: "miter"
 }
 
-export { VMobject };
+export { VMobject, CapStyleType };

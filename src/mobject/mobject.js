@@ -27,9 +27,7 @@ class Mobject {
     this.updatingSuspended = false;
     //self.color = ManimColor.parse(color)
 
-    this.resetPoints();
-    this.generatePoints();
-    this.initColors();
+    
   }
 
   // animationOverrideFor() {}
@@ -88,6 +86,22 @@ class Mobject {
     //proxy.shift(nj.array([100, 50, 0, 0]));
     return proxy;
     //return new Animation({ mobject: this, methods: methods });
+  }
+  
+  /**
+   * Runs `resetPoints()`, `generatePoints()`, and `initColors()`.  
+   * This method is to be called by children of the `Mobject` class.  
+   * In the Python Manim implementation, the three functions were executed
+   * by the `Mobject` class only, and subclasses called `super()` after their
+   * own `__init__()`function had been run. Because in JS `this` cannot be
+   * accessed until `super()` has been run, running the three functions in 
+   * `Mobject` meant that any implementations of these functions which included
+   * attributes specific to a child class would often be erroneous.
+   */
+  initMobject() {
+    this.resetPoints();
+    this.generatePoints();
+    this.initColors();
   }
 
   /** Sets `points` to be an empty array.
@@ -560,8 +574,7 @@ class Mobject {
    */
   shift(...vectors) {
     let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
-    
-    // Shift the points of all "family members" who have points by the total vector.
+
     this.familyMembersWithPoints().forEach(mobject => {
       totalVector.tolist().forEach((coord, index) => {
         for(let i = 0; i < this.points.shape[1]; i++) {

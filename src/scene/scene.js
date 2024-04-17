@@ -1,6 +1,7 @@
 import {Renderer2D} from "../renderer/renderer2d.js";
 import {Camera} from "../mobject/camera/camera.js";
 import {Mobject} from "../mobject/mobject.js";
+import { ManimColor, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../color/manimColor.js";
 
 /**
  * An abstract class for all ManimJs scenes.  
@@ -13,7 +14,11 @@ class Scene {
    * @param {number} height The height of the canvas.
    */
   constructor(width, height) {
-    //this.mobjects = [];
+    /**
+     * All the mobjects in the scene (excluding the camera);
+     * @type {Mobject[]}
+     */
+    this.mobjects = [];
     //this.animationQueue = [];
     /**
      * The renderer for the scene. Each scene has one renderer, and each renderer has one scene.
@@ -25,6 +30,12 @@ class Scene {
      * @type {Camera}
      */
     this.camera = new Camera();
+
+    /**
+     * The background color.
+     * @type {ManimColor}
+     */
+    this.backgroundColor = BLACK.interpolate(BLUE, 0.1);
   }
 
   /**Add content to the Scene.

@@ -1,4 +1,4 @@
-import { VMobject } from "../mobject/types/vectorizedMobject.js";
+import { VMobject, CapStyleType, LineJoinType } from "../mobject/types/vectorizedMobject.js";
 import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
 
@@ -28,6 +28,8 @@ class Renderer2D {
      * @type {CanvasRenderingContext2D}
      */
     this.ctx = this.canvas.getContext("2d");
+    
+    this.setCanvasDefaults();
     
     // translate and scale the drawing context so that (0,0) is the centre of the screen, and +y is up.
     //this.ctx.translate(width/2, height/2);
@@ -66,12 +68,22 @@ class Renderer2D {
   
   /**
    * Begin the rendering process by recording the "zero" time (`this.renderStartTimeStamp`) and requesting the first frame.
+   * @returns {void}
    */
   beginRendering() {
     // Set the start time
     this.renderStartTimeStamp = document.timeline.currentTime;
     // Request the first frame.
     this.requestNextFrame();
+  }
+  
+  /**
+   * Set various default properties of the canvas context.
+   * @returns {void}
+   */
+  setCanvasDefaults() {
+    this.ctx.lineCap = CapStyleType.AUTO;
+    this.ctx.lineJoin = LineJoinType.AUTO;
   }
 
   /**

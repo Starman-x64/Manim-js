@@ -64,15 +64,15 @@ class CapStyleType extends String {
 /**
  * Line joining type for setting `ctx.lineJoin`.
  */
-const LineJoinType = {
+class LineJoinType extends String {
   /** Default value is `MITER`.  */
-  AUTO: "miter",
+  static AUTO = new LineJoinType("miter");
   /** Sharp corners are flattened.  */
-  BEVEL: "bevel",
+  static BEVEL = new LineJoinType("bevel");
   /** Rounded corners with radius equalling the line width */
-  ROUND: "round",
+  static ROUND = new LineJoinType("round");
   /** Miter joint. */
-  MITER: "miter"
+  static MITER = new LineJoinType("miter");
 }
 
-export { VMobject, CapStyleType };
+export { VMobject, CapStyleType, LineJoinType };

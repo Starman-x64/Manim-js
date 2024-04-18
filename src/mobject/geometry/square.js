@@ -1,23 +1,23 @@
-import { VMobject } from "../types/vectorizedMobject.js";
+import { Polygon } from "./polygram/polygon.js";
 
-class Square extends VMobject {
+class Square extends Polygon {
   /** @inheritdoc */
   constructor(kwargs) {
-    super(kwargs);
-
-    this.size = kwargs.size;
-
-    this.initMobject();
-  }
-  generatePoints() {
-    let halfSize = this.size/2;
+    let halfSize = 0.5;
     let hs = halfSize;
-    this.points = nj.array([
-      [ -hs,  hs,  hs, -hs],
-      [ -hs, -hs,  hs,  hs],
-      [   0,   0,   0,   0]
-    ]);
-    this.curveTypes = ["L", "L", "L", "Z"];
+    let points = [
+      nj.array([[-hs],[-hs],[0]]),
+      nj.array([[ hs],[-hs],[0]]),
+      nj.array([[ hs],[ hs],[0]]),
+      nj.array([[-hs],[ hs],[0]]),
+    ]
+    //console.log(points.map(x => x.toString()));
+    super(points, kwargs);
+
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (this.constructor.name == "Square") {
+      this.initMobject();
+    }
   }
 
 }

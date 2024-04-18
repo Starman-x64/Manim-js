@@ -41,10 +41,46 @@ class VMobject extends Mobject {
     this.jointType = defineUndef(kwargs.jointType, LineJoinType.AUTO);
     
     this.toleranceForPointEquality = defineUndef(kwargs.toleranceForPointEquality, 1e-6);
+    
+    /** 
+     * SVG codes for what type of curve (line, quad/cubic bezier, moveTo, connectToStart) the sequence of `this.points` represents.
+     * @type {string[]}
+     * */
+    this.curveTypes = []
 
   }
   
+  width() {
+    let xComponents = this.points.slice([0,1]).flatten();
+    let currentWidth = xComponents.max() - xComponents.min();
+    console.log(currentWidth);
+    return currentWidth;
+  }
+  height() {
+    let xComponents = this.points.slice([1,2]).flatten();
+    let currentWidth = xComponents.max() - xComponents.min();
+    console.log(currentWidth);
+    return currentWidth;
+  }
   
+  scaleToFitWidth(widthToFit) {
+    let xScaleFactor = widthToFit / this.width();
+    let matrix = nj.array([
+      [xScaleFactor, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1]
+    ]);
+    this.transformByMatrix(matrix);
+  }
+  scaleToFitHeight(heightToFit) {
+    let yScaleFactor = heightToFit / this.height();
+    let matrix = nj.array([
+      [1, 0, 0],
+      [0, yScaleFactor, 0],
+      [0, 0, 1]
+    ]);
+    this.transformByMatrix(matrix);
+  }
 }
 
 /**

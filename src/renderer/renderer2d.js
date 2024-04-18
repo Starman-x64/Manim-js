@@ -2,6 +2,8 @@ import { VMobject, CapStyleType, LineJoinType } from "../mobject/types/vectorize
 import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
 
+const GLOBAL_SCALE = 50;
+
 /**
  * Handles all the rendering for a 2D scene.  
  * In the future, `Renderer2D` (and `Renderer3D`) will extend a new class `Renderer`.
@@ -29,11 +31,12 @@ class Renderer2D {
      */
     this.ctx = this.canvas.getContext("2d");
     
+    
     this.setCanvasDefaults();
     
     // translate and scale the drawing context so that (0,0) is the centre of the screen, and +y is up.
-    //this.ctx.translate(width/2, height/2);
-    //this.ctx.scale(1, -1);
+    //this.ctx.translate(width/2, height/2);;
+    //this.ctx.scale(GLOBAL_SCALE, GLOBAL_SCALE);
     /**
      * The last ID returned by `window.requestAnimationFrame()`. Stored so that rendering may be cancelled.
      * @type {number | null}
@@ -111,7 +114,7 @@ class Renderer2D {
    * @returns {number[]}
    */
   worldToScreenCoords(worldX, worldY) {
-    return [worldX + this.canvas.width/2 - this.scene.camera.x(), -(worldY - this.canvas.height/2- this.scene.camera.y())];
+    return [(worldX*GLOBAL_SCALE + this.canvas.width/2 - this.scene.camera.x()), -(worldY*GLOBAL_SCALE - this.canvas.height/2- this.scene.camera.y())];
   }
   
   /**

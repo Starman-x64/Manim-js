@@ -1,7 +1,7 @@
 import { VMobject } from "../types/vectorizedMobject.js";
 import { Circle } from "./circle.js";
 
-const DEFAULT_POINT_RADIUS = 5;
+const DEFAULT_POINT_RADIUS = 0.05;
 
 class Point extends Circle {
   /** @inheritdoc */

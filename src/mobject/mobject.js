@@ -1,4 +1,6 @@
 import { defineUndef } from "../utils/validation.js";
+import { Point3D } from "../point3d.js";
+
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
  * @param {Mobject[]} submobjects The contained objects.
@@ -573,10 +575,11 @@ class Mobject {
    * @returns {this}
    */
   shift(...vectors) {
-    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
-
+    console.log(vectors[0].reshape(1,3).toString());
+    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), Point3D(0, 0, 0));
+    
     this.familyMembersWithPoints().forEach(mobject => {
-      totalVector.tolist().forEach((coord, index) => {
+      totalVector.flatten().selection.data.forEach((coord, index) => {
         for(let i = 0; i < this.points.shape[1]; i++) {
           mobject.points.set(index, i, mobject.points.get(index, i) + coord);
         }
@@ -599,6 +602,24 @@ class Mobject {
     
     this.familyMembersWithPoints().forEach(mobject => {
       mobject.points = nj.multiply(mobject.points, scaleFactor);
+    });
+
+    return this;
+  }
+
+  /**
+   * Transform the points of the mobject by applying a matrix.
+   * 
+   * Default behavior is to scale about the center of the mobject.
+   * 
+   * @param  {number} matrix The 3x3 transformation matrix.
+   * @param  {object} kwargs Additional keyword arguments passed to `applyPointsFunctionAboutPoint()`.
+   * @returns {this}
+   */
+  transformByMatrix(matrix, kwargs) {
+    //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3)); 
+    this.familyMembersWithPoints().forEach(mobject => {
+      mobject.points = nj.dot(matrix, mobject.points);
     });
 
     return this;

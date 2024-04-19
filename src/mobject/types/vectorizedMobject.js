@@ -2,6 +2,7 @@ import { Mobject } from "../mobject.js";
 import { ManimColor } from "../../color/manimColor.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../../color/manimColor.js";
 import { defineUndef } from "../../utils/validation.js";
+import { Validation } from "../../utils/validation.js";
 
 const DEFAULT_LINE_WIDTH = 4;
 
@@ -81,6 +82,19 @@ class VMobject extends Mobject {
     ]);
     this.transformByMatrix(matrix);
   }
+  
+  /**
+   * Gets the point at a specified proportion of the path of the `VMobject`.  
+   * If the path of a `VMobject` was defined as some parametric 
+   * function `f(t) -> (x, y)`, with 0 &le; t &le; 1, then the point returned
+   * by this function would be `f(alpha)`. 
+   * @param {number} alpha The proportion along the path of the `VMobject`.
+   */
+  pointFromProportion(alpha) {
+    Validation.testNumberInRange({alpha}, 0, 1);
+  }
+
+
 }
 
 /**

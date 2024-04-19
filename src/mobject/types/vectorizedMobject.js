@@ -51,19 +51,40 @@ class VMobject extends Mobject {
 
   }
   
+  /**
+   * Get the width (x-dimension) of the `Mobject`.
+   * @returns {number}
+   */
   width() {
     let xComponents = this.points.slice([0,1]).flatten();
     let currentWidth = xComponents.max() - xComponents.min();
-    console.log(currentWidth);
     return currentWidth;
   }
+
+  /**
+   * Get the height (y-dimension) of the `Mobject`.
+   * @returns {number}
+   */
   height() {
-    let xComponents = this.points.slice([1,2]).flatten();
-    let currentWidth = xComponents.max() - xComponents.min();
-    console.log(currentWidth);
+    let yComponents = this.points.slice([1,2]).flatten();
+    let currentWidth = yComponents.max() - yComponents.min();
+    return currentWidth;
+  }
+
+  /**
+   * Get the depth (z-dimension) of the `Mobject`.
+   * @returns {number}
+   */
+  depth() {
+    let zComponents = this.points.slice([2,3]).flatten();
+    let currentWidth = zComponents.max() - zComponents.min();
     return currentWidth;
   }
   
+  /**
+   * Scale the `Mobject` along the x-axis so it is the desired width.
+   * @param {number} widthToFit The desired width.
+   */
   scaleToFitWidth(widthToFit) {
     let xScaleFactor = widthToFit / this.width();
     let matrix = nj.array([
@@ -73,12 +94,31 @@ class VMobject extends Mobject {
     ]);
     this.transformByMatrix(matrix);
   }
+  
+  /**
+   * Scale the `Mobject` along the y-axis so it is the desired height.
+   * @param {number} heightToFit The desired height.
+   */
   scaleToFitHeight(heightToFit) {
     let yScaleFactor = heightToFit / this.height();
     let matrix = nj.array([
       [1, 0, 0],
       [0, yScaleFactor, 0],
       [0, 0, 1]
+    ]);
+    this.transformByMatrix(matrix);
+  }
+  
+  /**
+   * Scale the `Mobject` along the z-axis so it is the desired depth.
+   * @param {number} depthToFit The desired depth.
+   */
+  scaleToFitDepth(depthToFit) {
+    let zScaleFactor = depthToFit / this.height();
+    let matrix = nj.array([
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, zScaleFactor]
     ]);
     this.transformByMatrix(matrix);
   }
@@ -92,6 +132,7 @@ class VMobject extends Mobject {
    */
   pointFromProportion(alpha) {
     Validation.testNumberInRange({alpha}, 0, 1);
+    console.log(this.points.length);
   }
 
 

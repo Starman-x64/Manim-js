@@ -1,5 +1,6 @@
 import { Polygon } from "./polygon.js";
 import { PI, TAU } from "../../../constants.js";
+import { Point3D } from "../../../point3d.js";
 
 class RegularPolygon extends Polygon {
   /**
@@ -19,7 +20,7 @@ class RegularPolygon extends Polygon {
 
     for (let i = 0; i < n; i++) {
       let angle = startAngle + i * TAU/n;
-      vertices.push(nj.array([ [radius * Math.cos(angle)],[radius * Math.sin(angle)], [0] ]));
+      vertices.push(Point3D(radius * Math.cos(angle),radius * Math.sin(angle), 0));
     }
      
 

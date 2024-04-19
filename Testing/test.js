@@ -19,16 +19,16 @@ class TestScene extends Scene {
     let line = new Line({ startPoint: Point3D(-2, 0, 0), endPoint: Point3D(-3, -2, 0), fillColor: GREEN });
     let polygram = new Polygram([
       [
-        nj.array([[-50],[-30],[0]]),
-        nj.array([[0],[50],[0]]),
-        nj.array([[50],[-30],[0]]),
-        nj.array([[-50],[-30],[0]])
+        Point3D(-50,-30,0),
+        Point3D(0,50,0),
+        Point3D(50,-30,0),
+        Point3D(-50,-30,0)
       ], 
       [
-        nj.array([[-50],[30],[0]]),
-        nj.array([[0],[-50],[0]]),
-        nj.array([[50],[30],[0]]),
-        nj.array([[-50],[30],[0]])
+        Point3D(-50,30,0),
+        Point3D(0,-50,0),
+        Point3D(50,30,0),
+        Point3D(-50,30,0)
       ]
     ], { fillColor: RED });
     let polygon = new Polygon([

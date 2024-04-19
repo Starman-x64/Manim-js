@@ -8,8 +8,8 @@ class Curve extends VMobject {
     this.initMobject();
   }
   generatePoints() {
-    this.points = nj.array([[-300, -200, -100, 0, 100, 200, 300], [0, 50, 0, 0, 50, -50, 0], [0, 0, 0, 0, 0, 0, 0]]);
-    this.curveTypes = ["Q","L","C"];
+    //this.points = nj.array([[-300, -200, -100, 0, 100, 200, 300], [0, 50, 0, 0, 50, -50, 0], [0, 0, 0, 0, 0, 0, 0]]);
+    //this.curveTypes = ["Q","L","C"];
   }
 
 }

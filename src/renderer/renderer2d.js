@@ -170,12 +170,13 @@ class Renderer2D {
    * @returns {void}
    */
   drawVMobject(mobject) {
+    // console.log("Drawing", mobject.name);
     /** @type {string[]} */
     let curveTypes = mobject.curveTypes;
     /** @type {number[][]} */
     let points = [];
-    for(let i = 0; i < mobject.points.shape[1]; i++) {
-      let point = this.worldToScreenCoords(...(mobject.points.slice(null,[i,i+1]).flatten().selection.data));
+    for(let i = 0; i < mobject.points.shape[0]; i++) {
+      let point = this.worldToScreenCoords(...(mobject.points.slice([i,i+1]).flatten().selection.data));
       points.push(point);
     }
     /** @type {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}} */
@@ -275,6 +276,8 @@ class SVGDrawer {
     /** @type {string[]} */
     let subPaths = [];
     let curveTypes = ["M"].concat(structuredClone(mobjectCurveTypes));
+    // console.log(points);
+    // console.log(curveTypes);
     curveTypes.forEach(curveType => {
       if (curveType == SVGDrawer.MOVE_TO) {
         subPaths.push(SVGDrawer.generateMoveToPath(points[pointIndex]));

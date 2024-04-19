@@ -13,9 +13,10 @@ class ArrowTip extends VMobject {
     let halfSize = this.size/2;
     let hs = halfSize;
     this.points = nj.array([
-      [ -hs,  hs,  hs, -hs],
-      [ -hs, -hs,  hs,  hs],
-      [   0,   0,   0,   0]
+      [ -hs, -hs,  0 ],
+      [  hs, -hs,  0 ],
+      [  hs,  hs,  0 ],
+      [ -hs,  hs,  0 ]
     ]);
     this.curveTypes = ["L", "L", "L", "Z"];
   }

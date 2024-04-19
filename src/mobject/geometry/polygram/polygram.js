@@ -31,6 +31,8 @@ class Polygram extends VMobject {
     // append the group to this.points, ignoring the last point if it is the same as the first.
     /** @type {Ndarray | null} */
     let pointsMatrix = null;
+    /** @type {Ndarray[]} */
+    let pointsArray = [];
     this._tmp_vertexGroups.forEach((vertexGroup, index) => {
       if (index != 0) {
         this.curveTypes.push("M");
@@ -45,24 +47,29 @@ class Polygram extends VMobject {
       
       if (firstVertex.flatten().selection.data.toString() == lastVertex.flatten().selection.data.toString()) {
         this.curveTypes.push("Z");
-        // Concatenate all the points into one array except for the last point (as it is the first repeated).
-        groupVertexMatrix = vertexGroup.reduce((a, x, i) => i != 0 && i != vertexGroup.length - 1 ? nj.concatenate(a, x) : a, firstVertex);
+        // Concatenate all the points into one array except for the last point (as it is the first repeated)
+        pointsArray = pointsArray.concat(vertexGroup.slice(0, vertexGroup.length - 1));
+        // groupVertexMatrix = nj.stack(vertexGroup.slice(0, vertexGroup.length - 1));
       }
       else {
         this.curveTypes.push("L");
         // Concatenate all the points into one array including the last point.
-        groupVertexMatrix = vertexGroup.reduce((a, x, i) => i != 0 ? nj.concatenate(a, x) : a, firstVertex);
+        pointsArray = pointsArray.concat(vertexGroup);
+        // groupVertexMatrix = nj.stack(vertexGroup);
       }
       
-      if (pointsMatrix === null) {
-        pointsMatrix = groupVertexMatrix.clone();
-      }
-      else {
-        pointsMatrix = nj.concatenate(pointsMatrix, groupVertexMatrix);
-      }
+      
+      // if (pointsMatrix === null) {
+      //   pointsMatrix = groupVertexMatrix.clone();
+      // }
+      // else {
+      //   console.log(pointsMatrix.toString());
+      //   console.log(groupVertexMatrix.toString());
+      //   pointsMatrix = nj.stack([pointsMatrix, groupVertexMatrix]);
+      //   console.log(pointsMatrix.toString());
+      // }
     });
-    
-    this.points = pointsMatrix.clone();
+    this.points = nj.stack(pointsArray);
 
     // console.log(this.points.toString());
     // console.log(this.curveTypes);

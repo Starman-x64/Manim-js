@@ -575,13 +575,11 @@ class Mobject {
    * @returns {this}
    */
   shift(...vectors) {
-    console.log(vectors[0].reshape(1,3).toString());
     let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), Point3D(0, 0, 0));
-    
     this.familyMembersWithPoints().forEach(mobject => {
       totalVector.flatten().selection.data.forEach((coord, index) => {
-        for(let i = 0; i < this.points.shape[1]; i++) {
-          mobject.points.set(index, i, mobject.points.get(index, i) + coord);
+        for(let i = 0; i < this.points.shape[0]; i++) {
+          mobject.points.set(i, index, mobject.points.get(i, index) + coord);
         }
       });
     });
@@ -619,11 +617,34 @@ class Mobject {
   transformByMatrix(matrix, kwargs) {
     //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3)); 
     this.familyMembersWithPoints().forEach(mobject => {
-      mobject.points = nj.dot(matrix, mobject.points);
+      // Matrix is postmultiplied because points are row-major.
+      mobject.points = nj.dot(mobject.points, matrix);
     });
 
     return this;
   }
+
+  /**
+   * Check if this `Mobject` contains points.
+   * @returns {boolean}
+   */
+  hasPoints() {
+    return this.points.length > 0;
+  }
+
+  /**
+   * Check if this `Mobject` *does not* contains points.
+   * @returns {boolean}
+   */
+  hasNoPoints() {
+    return !this.hasPoints();
+  }
+
+  
+
+
+
+
   
   shiftAnimationOverride(animation, alpha, ...vectors) {
     let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));

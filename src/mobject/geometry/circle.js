@@ -15,9 +15,19 @@ class Circle extends VMobject {
     let d = controlpointDistance;
     
     this.points = nj.array([
-      [-r, -r, -d,  0,  d,  r,  r,  r,  d,  0, -d, -r, -r],
-      [ 0,  d,  r,  r,  r,  d,  0, -d, -r, -r, -r, -d,  0],
-      [ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0]
+      [-r,  0,  0],
+      [-r,  d,  0],
+      [-d,  r,  0],
+      [ 0,  r,  0],
+      [ d,  r,  0],
+      [ r,  d,  0],
+      [ r,  0,  0],
+      [ r, -d,  0],
+      [ d, -r,  0],
+      [ 0, -r,  0],
+      [-d, -r,  0],
+      [-r, -d,  0],
+      [-r,  0,  0],
     ]);
     this.curveTypes = ["C", "C", "C", "C", "Z"];
   }

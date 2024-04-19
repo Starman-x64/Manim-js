@@ -1,4 +1,5 @@
 import { Polygon } from "./polygram/polygon.js";
+import { Point3D } from "../../point3d.js";
 
 class Square extends Polygon {
   /** @inheritdoc */
@@ -6,10 +7,10 @@ class Square extends Polygon {
     let halfSize = 0.5;
     let hs = halfSize;
     let points = [
-      nj.array([[-hs],[-hs],[0]]),
-      nj.array([[ hs],[-hs],[0]]),
-      nj.array([[ hs],[ hs],[0]]),
-      nj.array([[-hs],[ hs],[0]]),
+      Point3D(-hs,-hs,0),
+      Point3D( hs,-hs,0),
+      Point3D( hs, hs,0),
+      Point3D(-hs, hs,0),
     ]
     //console.log(points.map(x => x.toString()));
     super(points, kwargs);

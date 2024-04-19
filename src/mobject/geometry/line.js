@@ -13,7 +13,7 @@ class Line extends TippableVMobject {
     this.initMobject();
   }
   generatePoints() {
-    this.points = nj.concatenate(this.startPoint, this.endPoint);
+    this.points = nj.stack([this.startPoint, this.endPoint]);
     this.curveTypes = ["L"];
   }
 

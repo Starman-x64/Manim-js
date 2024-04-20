@@ -1,3 +1,4 @@
+import { defineUndef } from "../../utils/validation.js";
 import { VMobject } from "../types/vectorizedMobject.js";
 
 class Circle extends VMobject {
@@ -5,7 +6,7 @@ class Circle extends VMobject {
   constructor(kwargs) {
     super(kwargs);
 
-    this.radius = kwargs.radius;
+    this.radius = defineUndef(kwargs.radius, 1);
 
     this.initMobject();
   }

@@ -1,6 +1,8 @@
 import { VMobject, CapStyleType, LineJoinType } from "../mobject/types/vectorizedMobject.js";
 import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
+import { bezier } from "../utils/bezier.js";
+import { Point3D } from "../point3d.js";
 
 const GLOBAL_SCALE = 50;
 
@@ -170,7 +172,7 @@ class Renderer2D {
    * @returns {void}
    */
   drawVMobject(mobject) {
-    // console.log("Drawing", mobject.name);
+    // console.log("Drawing", mobject.name); 
     /** @type {string[]} */
     let curveTypes = mobject.curveTypes;
     /** @type {number[][]} */
@@ -179,8 +181,6 @@ class Renderer2D {
       let point = this.worldToScreenCoords(...(mobject.points.slice([i,i+1]).flatten().selection.data));
       points.push(point);
     }
-    /** @type {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}} */
-    let paths = SVGDrawer.generatePath2D(points, curveTypes);
 
     /** @type {boolean} */
     let drawFill = !!mobject.fillColor.alpha();
@@ -193,31 +193,43 @@ class Renderer2D {
     let strokeColor = mobject.strokeColor.toString("rgba");
 
 
+    /** @type {{onPath: Path2D, quadratic: Path2D, cubic: Path2D, lines: Path2D}} */
+    let paths;
+    if (mobject.drawBezierHandles) {
+      paths = SVGDrawer.generateControlPointPath2D(points, curveTypes);
+    }
+    else {
+      paths = SVGDrawer.generatePath2D(points, curveTypes);
+    }
+
     if (drawStroke) {
-      this.ctx.setLineDash([]);
+      this.ctx.setLineDash(mobject.lineDash);
       this.ctx.lineWidth = mobject.lineWidth;
       this.ctx.strokeStyle = strokeColor;
-      this.ctx.stroke(paths);//.curve);
+      this.ctx.stroke(paths.curve);
     }
     if (drawFill) {
       this.ctx.fillStyle = fillColor;
-      this.ctx.fill(paths);//.curve);
+      this.ctx.fill(paths.curve);
     }
     
-    // this.ctx.setLineDash([5, 5]);
-    // this.ctx.lineWidth = 1;
-    // this.ctx.strokeStyle = WHITE.interpolate(BLACK, 0.25).hex();
-    // this.ctx.stroke(paths.lines);
-    // this.ctx.setLineDash([]);
+    if (mobject.drawBezierHandles) {
+      this.ctx.setLineDash([5, 5]);
+      this.ctx.lineWidth = 1;
+      this.ctx.strokeStyle = WHITE.interpolate(BLACK, 0.25).hex();
+      this.ctx.stroke(paths.lines);
+      this.ctx.setLineDash([]);
 
-    // this.ctx.fillStyle = RED.hex();
-    // this.ctx.fill(paths.onPath);
+      this.ctx.fillStyle = RED.hex();
+      this.ctx.fill(paths.onPath);
 
-    // this.ctx.fillStyle = BLUE.hex();
-    // this.ctx.fill(paths.quadratic);
+      this.ctx.fillStyle = BLUE.hex();
+      this.ctx.fill(paths.quadratic);
 
-    // this.ctx.fillStyle = GREEN.hex();
-    // this.ctx.fill(paths.cubic);
+      this.ctx.fillStyle = GREEN.hex();
+      this.ctx.fill(paths.cubic);
+    }
+    
 
   }
 
@@ -300,7 +312,8 @@ class SVGDrawer {
       }
     });
     
-    return new Path2D(subPaths.join(" "));
+    let paths = { curve: new Path2D(subPaths.join(" ")), onPath: new Path2D(), quadratic: new Path2D(), cubic: new Path2D(), lines: new Path2D() };
+    return paths;
   }
   
   /**
@@ -431,4 +444,4 @@ class SVGDrawer {
   }
 }
 
-export {Renderer2D};
+export { Renderer2D, SVGDrawer };

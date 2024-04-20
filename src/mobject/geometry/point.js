@@ -1,3 +1,5 @@
+import { WHITE } from "../../color/manimColor.js";
+import { defineUndef } from "../../utils/validation.js";
 import { VMobject } from "../types/vectorizedMobject.js";
 import { Circle } from "./circle.js";
 
@@ -6,6 +8,8 @@ const DEFAULT_POINT_RADIUS = 0.05;
 class Point extends Circle {
   /** @inheritdoc */
   constructor(kwargs) {
+    kwargs.fillColor = defineUndef(kwargs.fillColor, WHITE);
+    kwargs.strokeColor = defineUndef(kwargs.strokeColor, kwargs.fillColor);
     super(kwargs);
 
     this.initMobject();

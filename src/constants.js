@@ -12,7 +12,3 @@ const UL = nj.add(UP, LEFT);
 const UR = nj.add(UP, RIGHT);
 const DL = nj.add(DOWN, LEFT);
 const DR = nj.add(DOWN, RIGHT);
-
-
-export { PI, TAU };
-export { UP, DOWN, LEFT, RIGHT, UL, UR, DL, DR };

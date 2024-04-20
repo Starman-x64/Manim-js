@@ -1,7 +1,6 @@
 import { Polygon } from "./polygon.js";
 import { defineUndef } from "../../../utils/validation.js";
-import { PI } from "../../../constants.js";
-import { UL, UR, DL, DR } from "../../../constants.js";
+import { UL, UR, DL, DR } from "../../../math.js";
 
 /**
  * Quadrilateral with two sets of parallel sides.
@@ -21,7 +20,6 @@ class Rectangle extends Polygon {
     
     this.scaleToFitWidth(kwargs.width);
     this.scaleToFitHeight(kwargs.height);
-    console.log(this.width());
   }
 }
 

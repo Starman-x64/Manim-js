@@ -8,54 +8,40 @@ import { Polygon } from "../src/mobject/geometry/polygram/polygon.js";
 import { RegularPolygon } from "../src/mobject/geometry/polygram/regularPolygon.js";
 import { Triangle } from "../src/mobject/geometry/polygram/triangle.js";
 import { Rectangle } from "../src/mobject/geometry/polygram/rectangle.js";
-import { WHITE, TRANSPARENT, RED, DARK_RED, BLUE, DARK_BLUE, GREEN, DARK_GREEN } from "../src/color/manimColor.js";
+import { WHITE, TRANSPARENT, RED, DARK_RED, BLUE, DARK_BLUE, GREEN, DARK_GREEN, ORANGE } from "../src/color/manimColor.js";
 import { Point3D } from "../src/point3d.js";
+import { Curve } from "../src/mobject/geometry/curve.js";
+import { LineDash } from "../src/mobject/types/vectorizedMobject.js";
 
 class TestScene extends Scene {
   construct() {
-    let square = new Square({ strokeColor: DARK_BLUE, fillColor: BLUE });
-    let circle = new Circle({ radius: 0.5, strokeColor: DARK_RED, fillColor: RED });
-    let point = new Point({ fillColor: WHITE });
-    let line = new Line({ startPoint: Point3D(-2, 0, 0), endPoint: Point3D(-3, -2, 0), fillColor: GREEN });
-    let polygram = new Polygram([
-      [
-        Point3D(-50,-30,0),
-        Point3D(0,50,0),
-        Point3D(50,-30,0),
-        Point3D(-50,-30,0)
-      ], 
-      [
-        Point3D(-50,30,0),
-        Point3D(0,-50,0),
-        Point3D(50,30,0),
-        Point3D(-50,30,0)
-      ]
-    ], { fillColor: RED });
-    let polygon = new Polygon([
-      Point3D(-0.5, -0.3, 0),
-      Point3D(0, 0.5, 0),
-      Point3D(0.6, -0.6, 0),
-      Point3D(-0.1, -0.2, 0),
-    ]);
-    let regularPolygon = new RegularPolygon(6, { fillColor: GREEN, strokeColor: DARK_GREEN });
-    let triangle = new Triangle();
-    let rectangle = new Rectangle();
+    // let square = new Square({ strokeColor: DARK_BLUE, fillColor: BLUE });
+    let targetShape = new Square({ drawBezierHandles: true, });//strokeColor: DARK_RED, fillColor: RED });
+    let startPointMarker = new Circle({ radius: 0.25, lineWidth: 3, });
+    let xAxis = new Line({ startPoint: Point3D(0, -100, 0), endPoint: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, lineDash: LineDash.DASHED });
+    let yAxis = new Line({ startPoint: Point3D(-100, 0, 0), endPoint: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
+    let pointFunctionPoint = new Point({});
+    let proportionPoint = new Point({ fillColor: ORANGE });
+
+
+    let n = 0;
+    startPointMarker.shift(targetShape.getStartPointOfNthCurve(n));
     
-    square.shift(Point3D(0, 2, 0));
-    circle.shift(Point3D(2, 0, 0));
-    point.shift(Point3D(-3, 0, 0));
-    polygram.shift(Point3D(2, -2, 0));
-    polygon.shift(Point3D(-2, -2, 0));
+    let curve = new Curve({ points: targetShape.getNthCurvePoints(n), curveTypes: [targetShape.getNthCurveType(n)], strokeColor: BLUE });
+    console.log(targetShape.getNthCurveFunction(n)(0.5));
+    pointFunctionPoint.shift(targetShape.getNthCurveFunction(n)(0.25));
     
-    this.add(square);
-    this.add(circle);
-    this.add(point);
-    this.add(line);
-    this.add(polygram);
-    this.add(polygon);
-    this.add(regularPolygon);
-    this.add(triangle);
-    this.add(rectangle);
+    let alpha = 1;
+    console.log(targetShape.pointFromProportion(alpha));
+    proportionPoint.shift(targetShape.pointFromProportion(alpha));
+
+    this.add(xAxis);
+    this.add(yAxis);
+    this.add(targetShape);
+    this.add(curve);
+    this.add(startPointMarker);
+    this.add(pointFunctionPoint);
+    this.add(proportionPoint);
   }
 }
 

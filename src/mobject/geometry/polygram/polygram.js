@@ -27,7 +27,7 @@ class Polygram extends VMobject {
     // if this isn't the first group, push "M" into this.curveTypes.
     // push vertexGroup.length - 2 "L"s into this.curveTypes
     // (with n points, there will be n-1 lines between them. We ignore the last point so only consider n-2 lines for now)
-    // if the last point is the first point, we will need to append a "Z" to this.curveTypes, otherwise append an "L".
+    // ~~if the last point is the first point, we will need to append a "Z" to this.curveTypes, otherwise append an "L".~~
     // append the group to this.points, ignoring the last point if it is the same as the first.
     /** @type {Ndarray | null} */
     let pointsMatrix = null;
@@ -45,18 +45,10 @@ class Polygram extends VMobject {
       /** @type {Ndarray} */
       let groupVertexMatrix = nj.array(firstVertex);
       
-      if (firstVertex.flatten().selection.data.toString() == lastVertex.flatten().selection.data.toString()) {
-        this.curveTypes.push("Z");
-        // Concatenate all the points into one array except for the last point (as it is the first repeated)
-        pointsArray = pointsArray.concat(vertexGroup.slice(0, vertexGroup.length - 1));
-        // groupVertexMatrix = nj.stack(vertexGroup.slice(0, vertexGroup.length - 1));
-      }
-      else {
-        this.curveTypes.push("L");
-        // Concatenate all the points into one array including the last point.
-        pointsArray = pointsArray.concat(vertexGroup);
-        // groupVertexMatrix = nj.stack(vertexGroup);
-      }
+      this.curveTypes.push("L");
+      // Concatenate all the points into one array including the last point.
+      pointsArray = pointsArray.concat(vertexGroup);
+      // groupVertexMatrix = nj.stack(vertexGroup);
       
       
       // if (pointsMatrix === null) {

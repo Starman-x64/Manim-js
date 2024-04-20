@@ -7,10 +7,11 @@ class Square extends Polygon {
     let halfSize = 0.5;
     let hs = halfSize;
     let points = [
-      Point3D(-hs,-hs,0),
-      Point3D( hs,-hs,0),
-      Point3D( hs, hs,0),
-      Point3D(-hs, hs,0),
+      Point3D(-hs, hs, 0),
+      Point3D( hs, hs, 0),
+      Point3D( hs,-hs, 0),
+      Point3D(-hs,-hs, 0),
+      Point3D(-hs, hs, 0),
     ]
     //console.log(points.map(x => x.toString()));
     super(points, kwargs);

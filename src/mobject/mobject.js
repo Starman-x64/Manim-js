@@ -99,7 +99,7 @@ class Mobject {
    * accessed until `super()` has been run, running the three functions in 
    * `Mobject` meant that any implementations of these functions which included
    * attributes specific to a child class would often be erroneous.
-   */
+  */
   initMobject() {
     this.resetPoints();
     this.generatePoints();
@@ -629,7 +629,7 @@ class Mobject {
    * @returns {boolean}
    */
   hasPoints() {
-    return this.points.length > 0;
+    return this.points.shape[0] > 0;
   }
 
   /**
@@ -638,6 +638,12 @@ class Mobject {
    */
   hasNoPoints() {
     return !this.hasPoints();
+  }
+
+  throwErrorIfNoPoints() {
+    if (this.hasNoPoints()) {
+      throw new Error("Cannot call function for a Mobject with no points.");
+    }
   }
 
   
@@ -693,7 +699,7 @@ class Mobject {
    * @returns {number}
    */
   getNumPoints() {
-    return 1;//this.points.length;
+    return  this.points.shape[0];
   }
   
   

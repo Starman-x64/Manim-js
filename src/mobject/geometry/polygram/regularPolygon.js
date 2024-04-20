@@ -1,5 +1,5 @@
 import { Polygon } from "./polygon.js";
-import { PI, TAU } from "../../../constants.js";
+import { PI, TAU } from "../../../math.js";
 import { Point3D } from "../../../point3d.js";
 
 class RegularPolygon extends Polygon {

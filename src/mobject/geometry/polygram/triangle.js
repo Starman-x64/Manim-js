@@ -1,6 +1,6 @@
 import { RegularPolygon } from "./regularPolygon.js";
 import { defineUndef } from "../../../utils/validation.js";
-import { PI } from "../../../constants.js";
+import { PI } from "../../../math.js";
 
 /**
  * An equilateral triangle.

@@ -35,11 +35,14 @@ class VMobject extends Mobject {
 
     drawBezierHandles: false,
   }) {
-    /**
-     * @type {ManimColor}
-     */
-    super(kwargs);
+    super();
     
+    if (Validation.isOfClass(this, "VMobject")) {
+      this._init(kwargs);
+    }
+  }
+
+  _init(kwargs) {
     /** @type {ManimColor} */
     this.fillColor = defineUndef(kwargs.fillColor, TRANSPARENT);
     /** @type {number} */
@@ -70,8 +73,9 @@ class VMobject extends Mobject {
      * SVG codes for what type of curve (line, quad/cubic bezier, moveTo, connectToStart) the sequence of `this.points` represents.
      * @type {string[]}
      * */
-    this.curveTypes = []
+    this.curveTypes = [];
 
+    super._init(kwargs);
   }
   
   /**
@@ -164,16 +168,16 @@ class VMobject extends Mobject {
     let curvesAndLengths = this.getCurveFunctionsWithLengths();
     /** @type {number} */
     let totalLength = curvesAndLengths.map(x => x[1]).reduce((x, a) => x + a);
-    console.log(totalLength);
+    // console.log("totalLength", totalLength);
     /** @type {number} */
     let targetLength = alpha * totalLength;
     /** @type {number} */
     let currentLength = 0;
     
-    console.log("targetLength", targetLength);
+    // console.log("targetLength", targetLength);
     for (let i = 0; i < curvesAndLengths.length; i++) {
       let [curve, length] = curvesAndLengths[i];
-      console.log("currentLength", currentLength);
+      // console.log("currentLength", currentLength);
       if (currentLength + length >= targetLength) {
         let residue = 0;
         if (length != 0) {

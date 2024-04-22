@@ -1,5 +1,5 @@
 import { RegularPolygon } from "./regularPolygon.js";
-import { defineUndef } from "../../../utils/validation.js";
+import { Validation, defineUndef } from "../../../utils/validation.js";
 import { PI } from "../../../math.js";
 
 /**
@@ -11,13 +11,17 @@ class Triangle extends RegularPolygon {
    * @param {{}} kwargs Additional arguments to be passed to `RegularPolygon`.
    */
   constructor (kwargs={}) {
-    kwargs.startAngle = defineUndef(kwargs.startAngle, -PI/6);
-    super(3, kwargs);
+    super();
 
     // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
-    if (this.constructor.name == "Triangle") {
-      this.initMobject();
+    if (Validation.isOfClass(this, "Triangle")) {
+      this._init(kwargs);
     }
+  }
+  
+  _init(kwargs) {
+    kwargs.startAngle = defineUndef(kwargs.startAngle, -PI/6);
+    super._init(3, kwargs);
   }
 }
 

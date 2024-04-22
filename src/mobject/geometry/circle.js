@@ -1,18 +1,23 @@
-import { defineUndef } from "../../utils/validation.js";
+import { Validation, defineUndef } from "../../utils/validation.js";
 import { VMobject } from "../types/vectorizedMobject.js";
 
 class Circle extends VMobject {
   /** @inheritdoc */
   constructor(kwargs) {
-    super(kwargs);
-
-    this.radius = defineUndef(kwargs.radius, 1);
+    super();
 
     // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
-    if (this.constructor.name == "Circle") {
-      this.initMobject();
+    if (Validation.isOfClass(this, "Circle")) {
+      this._init(kwargs);
     }
   }
+
+  _init(kwargs) {
+    this.radius = defineUndef(kwargs.radius, 1);
+
+    super._init(kwargs);
+  }
+
   generatePoints() {
     let controlpointDistance = this.radius * 4 * (Math.sqrt(2) - 1) / 3;
     let r = this.radius;

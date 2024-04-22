@@ -11,6 +11,12 @@ class Mobject {
    * @param {{name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
    */
   constructor(kwargs) {
+    if (Validation.isOfClass(this, "Mobject")) {
+      this._init(kwargs);
+    }
+  }
+
+  _init(kwargs) {
     /**
      * The name of the Mobject.
      * @type {string}
@@ -29,7 +35,7 @@ class Mobject {
     this.updatingSuspended = false;
     //self.color = ManimColor.parse(color)
 
-    
+    this.initMobject();
   }
 
   // animationOverrideFor() {}
@@ -346,7 +352,7 @@ class Mobject {
    * @returns {Ndarray}
    */
   getPoint(index) {
-    Validation.testNumberInRange(index, 0, this.points.shape[0] - 1);
+    Validation.testNumberInRange({index}, 0, this.points.shape[0] - 1);
     return this.points.slice([index, index+1]).flatten();
   }
   
@@ -671,6 +677,34 @@ class Mobject {
   }
 
   
+  getStartAndEnd() {
+    return [this.getStart(), this.getEnd()];
+  }
+
+  getStart() {
+    return this.getPoint(0);
+  }
+
+  getEnd() {
+    return this.getPoint(this.points.shape[0] - 1);
+  }
+
+  /**
+   * 
+   * @param {Ndarray} start The new starting position.
+   * @param {Ndarray} end The new ending position.
+   * @returns {this}
+   */
+  putStartAndEndOn(start, end) {
+    let [currStart, currEnd] = this.getStartAndEnd();
+    let currVector = nj.subtract(currEnd, currStart);
+    if (currVector = nj.zeros(3)) {
+      throw new Error("Cannot position endpoints of a closed loop!");
+    }
+    let targetVector = nj.subtract(end, start);
+
+    return this;
+  }  
 
 
 

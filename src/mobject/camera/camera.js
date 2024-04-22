@@ -1,10 +1,13 @@
+import { Validation } from "../../utils/validation.js";
 import { Mobject } from "../mobject.js";
 
 class Camera extends Mobject {
   constructor(kwargs={}) {
-    super(kwargs);
+    super();
 
-    this.initMobject(); 
+    if (Validation.isOfClass(this, "Camera")) {
+      this._init(kwargs);
+    }
   }
   
   generatePoints() {

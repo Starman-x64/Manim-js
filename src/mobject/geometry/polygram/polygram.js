@@ -1,3 +1,4 @@
+import { Validation } from "../../../utils/validation.js";
 import { VMobject } from "../../types/vectorizedMobject.js";
 
 /**
@@ -9,18 +10,21 @@ class Polygram extends VMobject {
    * @param {Ndarray[][]} vertexGroups The groups of vertices making up the `Polygram`. The first vertex in each group is repeated to close the loop. Each point must be 3-dimensional: `[x,y,z]`.
    */
   constructor(vertexGroups, kwargs) {
-    super(kwargs);
+    super();
     
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (Validation.isOfClass(this, "Polygram")) {
+      this._init(vertexGroups, kwargs);
+    }
+  }
+  _init(vertexGroups, kwargs) {
     /**
      * Temporary property storing the passed vertex groups to be accessed by `this.generatePoints()`.
      * @type {Ndarray[][]}
      */
     this._tmp_vertexGroups = vertexGroups;
     
-    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
-    if (this.constructor.name == "Polygram") {
-      this.initMobject();
-    }
+    super._init(kwargs);
   }
   generatePoints() {
     // loop through each vertex group

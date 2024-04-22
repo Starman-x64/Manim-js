@@ -1,7 +1,7 @@
 import { DEFAULT_ARROW_TIP_LENGTH } from "../../../constants.js";
 import { NotImplementedError } from "../../../error/errorClasses.js";
 import { PI } from "../../../math.js";
-import { defineUndef } from "../../../utils/validation.js";
+import { Validation, defineUndef } from "../../../utils/validation.js";
 import { VMobject } from "../../types/vectorizedMobject.js";
 import { Triangle } from "../polygram/triangle.js";
 
@@ -11,11 +11,15 @@ import { Triangle } from "../polygram/triangle.js";
 class ArrowTip extends VMobject {
   /** @inheritdoc */
   constructor(kwargs) {
-    super(kwargs);
+    super();
 
-    if (this.constructor.name == "ArrowTip") {
+    if (Validation.isOfClass(this, "ArrowTip")) {
       throw new NotImplementedError("`ArrowTip` constructor has to be implemented in inheriting subclasses.");
     }
+  }
+
+  _init(kwargs) {
+    super._init(kwargs); 
   }
   
   /**
@@ -24,6 +28,7 @@ class ArrowTip extends VMobject {
    * @returns {Ndarray}
    */
   base() {
+    console.log(this.points.toString());
     return this.pointFromProportion(0.5);
   }
 
@@ -65,8 +70,15 @@ class ArrowTip extends VMobject {
 
 class ArrowTriangleTip extends ArrowTip {
   constructor(kwargs) {
-    super(kwargs);
+    super();    
 
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (Validation.isOfClass(this, "ArrowTriangleTip")) {
+      this._init(kwargs);
+    }
+  }
+
+  _init(kwargs) {
     /** @type {number} */
     let length = defineUndef(kwargs.length, DEFAULT_ARROW_TIP_LENGTH);
     /** @type {number} */
@@ -84,18 +96,15 @@ class ArrowTriangleTip extends ArrowTip {
       width: width,
       startAngle: startAngle
     }
-    
 
-    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
-    if (this.constructor.name == "ArrowTriangleTip") {
-      this.initMobject();
-    }
+    super._init(kwargs);
   }
 
   generatePoints() {
     let triangle = new Triangle({ fillOpacity: this.fillOpacity, lineWidth: this.strokeWidth, startAngle: this._tmp_genPointsArgs.startAngle });
 
     this.points = triangle.points.clone();
+    this.curveTypes = structuredClone(triangle.curveTypes);
     this.stretchToFitWidth(this._tmp_genPointsArgs.width);
     this.stretchToFitHeight(this._tmp_genPointsArgs.length);
     delete this._tmp_genPointsArgs;
@@ -103,7 +112,18 @@ class ArrowTriangleTip extends ArrowTip {
 }
 
 class ArrowTriangleFilledTip extends ArrowTriangleTip {
+  constructor(kwargs) {
+    super();    
 
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (Validation.isOfClass(this, "ArrowTriangleFilledTip")) {
+      this._init(kwargs);
+    }
+  }
+  
+  _init(kwargs) {
+    super._init(kwargs);
+  }
 }
 
 export { ArrowTip, ArrowTriangleTip, ArrowTriangleFilledTip };

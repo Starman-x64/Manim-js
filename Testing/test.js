@@ -17,8 +17,8 @@ import { PI } from "../src/math.js";
 
 class TestScene extends Scene {
   construct() {
-    let xAxis = new Line({ startPoint: Point3D(0, -100, 0), endPoint: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, });
-    let yAxis = new Line({ startPoint: Point3D(-100, 0, 0), endPoint: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
+    // let xAxis = new Line({ startPoint: Point3D(0, -100, 0), endPoint: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, });
+    // let yAxis = new Line({ startPoint: Point3D(-100, 0, 0), endPoint: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
     // this.add(xAxis);
     // this.add(yAxis);
 

@@ -1,5 +1,5 @@
 import { VMobject } from "./vectorizedMobject.js";
-import { defineUndef } from "../../utils/validation.js";
+import { Validation, defineUndef } from "../../utils/validation.js";
 import { DEFAULT_ARROW_TIP_LENGTH } from "../../constants.js";
 import { OUT, PI } from "../../math.js";
 import { ArrowTip, ArrowTriangleFilledTip, ArrowTriangleTip } from "../geometry/tips/tip.js";
@@ -13,9 +13,17 @@ class TippableVMobject extends VMobject {
   constructor(kwargs) {
     super(kwargs);
 
+    if (Validation.isOfClass(this, "TippableVMobject")) {
+      this._init(kwargs);
+    }
+  }
+
+  _init(kwargs) {
     this.tipLength = defineUndef(kwargs.tipLength, DEFAULT_ARROW_TIP_LENGTH);
     this.normalVector = defineUndef(kwargs.normalVector, OUT);
     this.tipStyle = defineUndef(kwargs.tipStyle, {});
+    
+    super._init(kwargs);
   }
 
   /**
@@ -26,6 +34,7 @@ class TippableVMobject extends VMobject {
    * @returns {ArrowTip}
    */
   addTip(kwargs) {
+    console.log(this.points.toString());
     /** @type {typeof ArrowTip | null} */
     let tipShape = defineUndef(kwargs.tipShape, null);
     /** @type {number | null} */
@@ -38,12 +47,11 @@ class TippableVMobject extends VMobject {
     let tip = defineUndef(kwargs.tip, null);
 
     if (tip === null) {
-      this.createTip(tipShape, tipLength, tipWidth, atStart)
+      tip = this.createTip(tipShape, tipLength, tipWidth, atStart)
     }
     else {
       this.positionTip(tip, atStart);
     }
-    
     this.resetEndpointsBasedOnTip(tip, atStart);
     this.assignTipAttribute(tip, atStart);
     this.add(tip);
@@ -168,22 +176,11 @@ class TippableVMobject extends VMobject {
   }
 
 
-  getStartAndEnd() {
-    return [this.getStart(), this.getEnd()];
-  }
-
-  getStart() {
-    return this.getPoint(0);
-  }
-
-  getEnd() {
-    return this.getPoint(this.points.shape[0]);
-  }
 
   getLength() {
     let [start, end] = this.getStartAndEnd();
-    let difference = nj.sub(end, start);
-    return nj.sqrt(nj.dot(difference, difference.T)).toList()[0];
+    let difference = nj.subtract(end, start);
+    return nj.sqrt(nj.dot(difference, difference.T)).selection.data[0];
   }
 }
 

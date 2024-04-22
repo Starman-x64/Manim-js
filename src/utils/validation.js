@@ -64,7 +64,7 @@ class Validation {
       }
       return;
     }
-    if (min >= max) {
+    if (min > max) {
       throw new ValueError(`The minimum value must be smaller than the maximum!\n${min} < ${max} is false.`);
     }
     if (value < min || value > max) {
@@ -79,6 +79,27 @@ class Validation {
    */
   static isNumber(value) {
     return typeof value == "number";
+  }
+
+  /**
+   * Returns `typeof value == "string"`. 
+   * @param {any} value The value to test.
+   * @returns {boolean}
+   */
+  static isString(value) {
+    return typeof value == "string";
+  }
+
+  /**
+   * Returns `value.constructor.name == className`.
+   * @param {any} value The value to test.
+   * @param {string} className The name of the class to test against.
+   */
+  static isOfClass(value, className) {
+    if (!Validation.isString(className)) {
+      throw new TypeError(`Class name to validate against must be a string, not a ${className.constructor.name}!`);
+    }
+    return value.constructor.name == className;
   }
 }
 

@@ -21,21 +21,29 @@ class TestScene extends Scene {
     // let yAxis = new Line({ startPoint: Point3D(-100, 0, 0), endPoint: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
     // this.add(xAxis);
     // this.add(yAxis);
-
+    
     let triangle = new Triangle();
     let square = new Square();
-    let line = new Line({ start: Point3D(-1.5, -1.5, 0), end: Point3D(1, 1, 0) });
-    let arrow = new Arrow({ start: Point3D(-1.5, -1.5, 0), end: Point3D(1, 1, 0) });
+    let line = new Line({ end: Point3D(-1.5, -1.5, 0), start: Point3D(1, 1, 0) });
+    let arrow2 = new Arrow({ end: Point3D(-1.5, -1.5, 0), start: Point3D(1, 1, 0) });
+    let arrow = new Arrow({ strokeColor: ORANGE, start: Point3D(-1.5, -1.5, 0), end: Point3D(1, 1, 0) });
+    let point1 = new Point({ fillColor: RED });
+    let point2 = new Point({ fillColor: BLUE });
     
     square.rotate(PI/10).shift(Point3D(2, 2, 0));
-    triangle.rotate(-PI/12).shift(Point3D(-2, -2, 0));
+    triangle/*.rotate(-PI/12)*/.shift(Point3D(-2, -2, 0));
     line.shift(Point3D(-0.25, 0.25, 0)).shift(Point3D(0.25, 0.25, 0));
     arrow.shift(Point3D(0.25, -0.25, 0)).shift(Point3D(0.25, 0.25, 0));
+    point1.shift(arrow.tip.base());
+    point2.shift(arrow.tip.tipPoint());
 
     this.add(triangle);
     this.add(square);
     this.add(line);
     this.add(arrow);
+    this.add(arrow2);
+    this.add(point1);
+    this.add(point2);
   }
 }
 

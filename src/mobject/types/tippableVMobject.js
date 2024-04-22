@@ -1,10 +1,11 @@
 import { VMobject } from "./vectorizedMobject.js";
 import { Validation, defineUndef } from "../../utils/validation.js";
 import { DEFAULT_ARROW_TIP_LENGTH } from "../../constants.js";
-import { OUT, PI } from "../../math.js";
+import { DEGREES, OUT, PI } from "../../math.js";
 import { ArrowTip, ArrowTriangleFilledTip, ArrowTriangleTip } from "../geometry/tips/tip.js";
 import { SVGDrawer } from "../../renderer/renderer2d.js";
 import { Point3D } from "../../point3d.js";
+import { SpaceOps } from "../../utils/spaceOps.js";
 
 /**
  * VMobjects which can have "tips" (e.g., arrow heads) on its path's endpoints.
@@ -116,19 +117,39 @@ class TippableVMobject extends VMobject {
     if (atStart) {
       /** @type {Ndarray[]} */
       let points = this.getNthCurvePoints(0);
-      anchor = this.getStart();
+      console.log(points);
+      anchor = points[0];
       handle = points[1]; // even if the curve is linear, treating the curve's endpoint as a handle is okay.
     }
     else {
       /** @type {Ndarray[]} */
-      let points = this.getNthCurvePoints(0);
-      anchor = this.getEnd();
-      handle = points[1]; // even if the curve is linear, treating the curve's endpoint as a handle is okay.
+      let points = this.getNthCurvePoints(this.getNumCurves() - 1);
+      anchor = points[points.length - 1];
+      console.log(points);
+      handle = points[points.length - 2]; // even if the curve is linear, treating the curve's endpoint as a handle is okay.
     }
     
-    let vec = nj.subtract(handle, anchor)
-    let angle = Math.atan2(vec.get(0, 1), vec.get(0, 0));
-    tip.rotate(angle - PI - tip.tipAngle());
+    let vec = nj.subtract(handle, anchor);
+    console.log(handle.toString());
+    console.log(anchor.toString());
+    console.log(vec.toString());
+    let angles = SpaceOps.cartesianToSpherical(vec);
+    console.log(angles[0], angles[1] * DEGREES, angles[2] * DEGREES);
+    console.log("tipangle", tip.tipAngle() * DEGREES);
+    console.log("base\n", tip.base().toString());
+    console.log("tippoint\n", tip.tipPoint().toString());
+    let a = angles[1] + PI/2 - tip.tipAngle();
+    console.log("a", a * DEGREES);
+    tip.rotate(a);
+
+    if (!("_initPositioningAxis" in this)) {
+      let axis = Point3D(Math.sin(angles[1]), Math.cos(angles[1]), 0);
+      console.log(axis.toString());
+      
+      //tip.rotate(-angles[2] + PI/2, { axis: axis });
+
+      this._initPositioningAxis = axis;
+    }
 
     //let axis = Point3D(Math.sin(angle), -Matah.cos(angle), 0); // obtains the perpendicular of the tip
     //tip.rotate()

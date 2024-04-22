@@ -24,6 +24,8 @@ class Line extends TippableVMobject {
   }
   
   generatePoints() {
+    // console.log(this.start.toString());
+    // console.log(this.end.toString());
     this.points = nj.stack([this.start, this.end]);
     this.curveTypes = ["L"];
   }
@@ -35,9 +37,14 @@ class Line extends TippableVMobject {
    * @returns {this}
    */
   putStartAndEndOn(start, end) {
+    // console.log("LINE!!!");
     let [currStart, currEnd] = this.getStartAndEnd();
+    // console.log(currStart.toString());
+    // console.log(currEnd.toString());
+    // console.log(start.toString());
+    // console.log(end.toString());
     
-    if (currStart == currEnd) {
+    if (currStart != currEnd) {
       this.start = start;
       this.end = end;
       this.generatePoints();

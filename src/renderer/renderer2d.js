@@ -4,7 +4,7 @@ import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, 
 import { bezier } from "../utils/bezier.js";
 import { Point3D } from "../point3d.js";
 
-const GLOBAL_SCALE = 75;
+const GLOBAL_SCALE = 50;
 
 /**
  * Handles all the rendering for a 2D scene.  

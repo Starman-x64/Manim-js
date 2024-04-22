@@ -7,7 +7,7 @@ const DEFAULT_POINT_RADIUS = 0.05;
 
 class Point extends Circle {
   /** @inheritdoc */
-  constructor(kwargs) {
+  constructor(kwargs={}) {
     super();
 
     if (Validation.isOfClass(this, "Point")) {

@@ -1,5 +1,6 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
+import { OUT } from "../math.js";
 
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
@@ -623,16 +624,38 @@ class Mobject {
   }
 
   rotate(angle, kwargs) {
-    let sinAngle = Math.sin(angle);
-    let cosAngle = Math.cos(angle);
-    let transformationMatrix = nj.array([
-      [cosAngle, -sinAngle, 0],
-      [sinAngle,  cosAngle, 0],
-      [       0,         0, 1]
-    ])
-
+    // p' = q*pq
+    kwargs = defineUndef(kwargs, { axis: OUT });
+    let axis = defineUndef(kwargs.axis, OUT);
+    let sinHalfAngle = Math.sin(angle/2);
+    let cosHalfAngle = Math.cos(angle/2);
+    
+    let rotationmatrix;
+    
+    if (axis == OUT) {
+      let sinAngle = Math.sin(angle);
+      let cosAngle = Math.cos(angle);
+      rotationmatrix = nj.array([
+        [cosAngle, -sinAngle, 0],
+        [sinAngle,  cosAngle, 0],
+        [       0,         0, 1]
+      ]);
+    }
+    else {
+      let q0 = cosHalfAngle;
+      let q1 =sinHalfAngle * axis.get(0,0);
+      let q2 =sinHalfAngle * axis.get(0,1);
+      let q3 =sinHalfAngle * axis.get(0,2);
+  
+      rotationmatrix = nj.array([
+        [1-2*q2*q2-q3*q3, 2*q1*q2-2*q0*q3, 2*q1*q3+2*q0*q2],
+        [2*q1*q2+2*q0*q3, 1-2*q1*q1-q3*q3, 2*q2*q3-2*q0*q1],
+        [2*q1*q3-2*q0*q2, 2*q2*q3+2*q0*q1, 1-2*q1*q1-q2*q2]
+      ]);
+    }
+    
     this.familyMembersWithPoints().forEach(mobject => {
-      mobject.transformByMatrix(transformationMatrix, kwargs);
+      mobject.transformByMatrix(rotationmatrix, kwargs);
     });
     
     return this;

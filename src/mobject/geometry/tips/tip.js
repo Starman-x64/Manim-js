@@ -28,7 +28,6 @@ class ArrowTip extends VMobject {
    * @returns {Ndarray}
    */
   base() {
-    console.log(this.points.toString());
     return this.pointFromProportion(0.5);
   }
 
@@ -54,7 +53,7 @@ class ArrowTip extends VMobject {
    */
   tipAngle() {
     let vector = this.vector();
-    return Math.atan2(vector.get(0, 1), vector.get(0, 0));
+    return Math.atan2(vector.get(1, 0), vector.get(0, 0));
   }
 
   /**
@@ -80,7 +79,7 @@ class ArrowTriangleTip extends ArrowTip {
 
   _init(kwargs) {
     /** @type {number} */
-    let length = defineUndef(kwargs.length, DEFAULT_ARROW_TIP_LENGTH);
+    let length = defineUndef(kwargs.length, DEFAULT_ARROW_TIP_LENGTH/2);
     /** @type {number} */
     let width = defineUndef(kwargs.width, DEFAULT_ARROW_TIP_LENGTH);
     /** @type {number} */
@@ -122,7 +121,11 @@ class ArrowTriangleFilledTip extends ArrowTriangleTip {
   }
   
   _init(kwargs) {
+    
     super._init(kwargs);
+    
+    this.fillColor = this.strokeColor;
+    this.fillOpacity = 1;
   }
 }
 

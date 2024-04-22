@@ -8,7 +8,10 @@ class Circle extends VMobject {
 
     this.radius = defineUndef(kwargs.radius, 1);
 
-    this.initMobject();
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (this.constructor.name == "Circle") {
+      this.initMobject();
+    }
   }
   generatePoints() {
     let controlpointDistance = this.radius * 4 * (Math.sqrt(2) - 1) / 3;

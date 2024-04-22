@@ -4,7 +4,7 @@ import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, 
 import { bezier } from "../utils/bezier.js";
 import { Point3D } from "../point3d.js";
 
-const GLOBAL_SCALE = 50;
+const GLOBAL_SCALE = 75;
 
 /**
  * Handles all the rendering for a 2D scene.  
@@ -204,7 +204,7 @@ class Renderer2D {
 
     if (drawStroke) {
       this.ctx.setLineDash(mobject.lineDash);
-      this.ctx.lineWidth = mobject.lineWidth;
+      this.ctx.lineWidth = mobject.strokeWidth;
       this.ctx.strokeStyle = strokeColor;
       this.ctx.stroke(paths.curve);
     }

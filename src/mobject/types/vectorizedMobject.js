@@ -49,7 +49,7 @@ class VMobject extends Mobject {
     /** @type {number} */
     this.strokeOpacity = defineUndef(kwargs.strokeOpacity, 0.0);
     /** @type {number} */
-    this.lineWidth = defineUndef(kwargs.lineWidth, DEFAULT_LINE_WIDTH);
+    this.strokeWidth = defineUndef(kwargs.lineWidth, DEFAULT_LINE_WIDTH);
     /** @type {CapStyleType} */
     this.capStyle = defineUndef(kwargs.capStyle, CapStyleType.AUTO);
     /** @type {LineJoinType} */
@@ -108,7 +108,7 @@ class VMobject extends Mobject {
    * Scale the `Mobject` along the x-axis so it is the desired width.
    * @param {number} widthToFit The desired width.
    */
-  scaleToFitWidth(widthToFit) {
+  stretchToFitWidth(widthToFit) {
     let xScaleFactor = widthToFit / this.width();
     let matrix = nj.array([
       [xScaleFactor, 0, 0],
@@ -122,7 +122,7 @@ class VMobject extends Mobject {
    * Scale the `Mobject` along the y-axis so it is the desired height.
    * @param {number} heightToFit The desired height.
    */
-  scaleToFitHeight(heightToFit) {
+  stretchToFitHeight(heightToFit) {
     let yScaleFactor = heightToFit / this.height();
     let matrix = nj.array([
       [1, 0, 0],
@@ -136,7 +136,7 @@ class VMobject extends Mobject {
    * Scale the `Mobject` along the z-axis so it is the desired depth.
    * @param {number} depthToFit The desired depth.
    */
-  scaleToFitDepth(depthToFit) {
+  stretchToFitDepth(depthToFit) {
     let zScaleFactor = depthToFit / this.height();
     let matrix = nj.array([
       [1, 0, 0],

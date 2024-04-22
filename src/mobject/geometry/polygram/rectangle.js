@@ -18,8 +18,8 @@ class Rectangle extends Polygon {
       this.initMobject();
     }
     
-    this.scaleToFitWidth(kwargs.width);
-    this.scaleToFitHeight(kwargs.height);
+    this.stretchToFitWidth(kwargs.width);
+    this.stretchToFitHeight(kwargs.height);
   }
 }
 

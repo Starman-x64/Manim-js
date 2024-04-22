@@ -1,4 +1,4 @@
-import { defineUndef } from "../utils/validation.js";
+import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
 
 /**Mathematical Object: base class for objects that can be displayed on screen.
@@ -340,6 +340,16 @@ class Mobject {
     this.points = points;
   }
   
+  /**
+   * Get a specific point by its index.
+   * @param {number} index The index of the point to get.
+   * @returns {Ndarray}
+   */
+  getPoint(index) {
+    Validation.testNumberInRange(index, 0, this.points.shape[0] - 1);
+    return this.points.slice([index, index+1]).flatten();
+  }
+  
 
   // Displaying
   
@@ -602,6 +612,20 @@ class Mobject {
       mobject.points = nj.multiply(mobject.points, scaleFactor);
     });
 
+    return this;
+  }
+
+  rotate(angle, kwargs) {
+    let sinAngle = Math.sin(angle);
+    let cosAngle = Math.cos(angle);
+    let transformationMatrix = nj.array([
+      [cosAngle, -sinAngle, 0],
+      [sinAngle,  cosAngle, 0],
+      [       0,         0, 1]
+    ])
+
+    this.transformByMatrix(transformationMatrix, kwargs);
+    
     return this;
   }
 

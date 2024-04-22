@@ -230,7 +230,10 @@ class Renderer2D {
       this.ctx.fill(paths.cubic);
     }
     
-
+    // Now draw each of the submobjects
+    mobject.submobjects.forEach(mob => {
+      this.drawVMobject(mob);
+    });
   }
 
   /**

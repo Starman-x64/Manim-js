@@ -22,7 +22,7 @@ class RegularPolygon extends Polygon {
     /** @type {Ndarray[]} */
     let vertices = [];
     /** @type {number} */
-    let radius = kwargs.radius ? kwargs.radius : 0.5;
+    let radius = kwargs.radius ? kwargs.radius : 2;
     /** @type {number} */
     let startAngle = kwargs.startAngle ? kwargs.startAngle : 0;
 

@@ -1,5 +1,5 @@
 
-const DEFAULT_ARROW_TIP_LENGTH = 0.25;//0.35;
+const DEFAULT_ARROW_TIP_LENGTH = 0.35;
 
 
 

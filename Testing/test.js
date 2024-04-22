@@ -7,7 +7,7 @@ import { Polygram } from "../src/mobject/geometry/polygram/polygram.js";
 import { Polygon } from "../src/mobject/geometry/polygram/polygon.js";
 import { RegularPolygon } from "../src/mobject/geometry/polygram/regularPolygon.js";
 import { Triangle } from "../src/mobject/geometry/polygram/triangle.js";
-import { Rectangle } from "../src/mobject/geometry/polygram/rectangle.js";
+import { Rectangle } from "../src/mobject/geometry/rectangle.js";
 import { WHITE, TRANSPARENT, RED, DARK_RED, BLUE, DARK_BLUE, GREEN, DARK_GREEN, ORANGE, DARK_ORANGE } from "../src/color/manimColor.js";
 import { Point3D } from "../src/point3d.js";
 import { Curve } from "../src/mobject/geometry/curve.js";
@@ -17,10 +17,10 @@ import { PI } from "../src/math.js";
 
 class TestScene extends Scene {
   construct() {
-    // let xAxis = new Line({ startPoint: Point3D(0, -100, 0), endPoint: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, });
-    // let yAxis = new Line({ startPoint: Point3D(-100, 0, 0), endPoint: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
-    // this.add(xAxis);
-    // this.add(yAxis);
+    let xAxis = new Line({ start: Point3D(0, -100, 0), end: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, });
+    let yAxis = new Line({ start: Point3D(-100, 0, 0), end: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
+    this.add(xAxis);
+    this.add(yAxis);
     
     let triangle = new Triangle();
     let square = new Square();

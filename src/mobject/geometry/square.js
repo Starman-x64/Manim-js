@@ -1,10 +1,11 @@
-import { Polygon } from "./polygram/polygon.js";
+import { Rectangle } from "./rectangle.js";
 import { Point3D } from "../../point3d.js";
-import { Validation } from "../../utils/validation.js";
+import { Validation, defineUndef } from "../../utils/validation.js";
+import { UL, UR, DL, DR } from "../../math.js";
 
-class Square extends Polygon {
+class Square extends Rectangle {
   /** @inheritdoc */
-  constructor(kwargs={}) {
+  constructor(kwargs={width: 4}) {
     //console.log(points.map(x => x.toString()));
     super();
 
@@ -15,17 +16,11 @@ class Square extends Polygon {
   }
 
   _init(kwargs) {
-    let halfSize = 0.5;
-    let hs = halfSize;
-    let vertices = [
-      Point3D(-hs, hs, 0),
-      Point3D( hs, hs, 0),
-      Point3D( hs,-hs, 0),
-      Point3D(-hs,-hs, 0),
-      Point3D(-hs, hs, 0),
-    ];
-
-    super._init(vertices, kwargs);
+    // Yes, future me, both of these should be (kwargs.width, 4).
+    kwargs.width = defineUndef(kwargs.width, 4);
+    kwargs.height = defineUndef(kwargs.width, 4);
+    
+    super._init(kwargs);
   }
 
 }

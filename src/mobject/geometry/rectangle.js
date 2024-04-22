@@ -1,6 +1,6 @@
-import { Polygon } from "./polygon.js";
-import { Validation, defineUndef } from "../../../utils/validation.js";
-import { UL, UR, DL, DR } from "../../../math.js";
+import { Polygon } from "./polygram/polygon.js";
+import { Validation, defineUndef } from "../../utils/validation.js";
+import { UL, UR, DL, DR } from "../../math.js";
 
 /**
  * Quadrilateral with two sets of parallel sides.

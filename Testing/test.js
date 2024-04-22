@@ -2,7 +2,7 @@ import { Scene } from "../src/scene/scene.js";
 import { Square } from "../src/mobject/geometry/square.js";
 import { Circle } from "../src/mobject/geometry/circle.js";
 import { Point } from "../src/mobject/geometry/point.js";
-import { Arrow, Line } from "../src/mobject/geometry/line.js";
+import { Arrow, DashedLine, Line } from "../src/mobject/geometry/line.js";
 import { Polygram } from "../src/mobject/geometry/polygram/polygram.js";
 import { Polygon } from "../src/mobject/geometry/polygram/polygon.js";
 import { RegularPolygon } from "../src/mobject/geometry/polygram/regularPolygon.js";
@@ -17,33 +17,13 @@ import { PI } from "../src/math.js";
 
 class TestScene extends Scene {
   construct() {
-    let xAxis = new Line({ start: Point3D(0, -100, 0), end: Point3D(0, 100, 0), lineWidth: 3, strokeColor: RED, });
-    let yAxis = new Line({ start: Point3D(-100, 0, 0), end: Point3D(100, 0, 0), lineWidth: 3, strokeColor: GREEN, });
-    this.add(xAxis);
-    this.add(yAxis);
-    
-    let triangle = new Triangle();
-    let square = new Square();
-    let line = new Line({ end: Point3D(-1.5, -1.5, 0), start: Point3D(1, 1, 0) });
-    let arrow2 = new Arrow({ end: Point3D(-1.5, -1.5, 0), start: Point3D(1, 1, 0) });
-    let arrow = new Arrow({ strokeColor: ORANGE, start: Point3D(-1.5, -1.5, 0), end: Point3D(1, 1, 0) });
-    let point1 = new Point({ fillColor: RED });
-    let point2 = new Point({ fillColor: BLUE });
-    
-    square.rotate(PI/10).shift(Point3D(2, 2, 0));
-    triangle/*.rotate(-PI/12)*/.shift(Point3D(-2, -2, 0));
-    line.shift(Point3D(-0.25, 0.25, 0)).shift(Point3D(0.25, 0.25, 0));
-    arrow.shift(Point3D(0.25, -0.25, 0)).shift(Point3D(0.25, 0.25, 0));
-    point1.shift(arrow.tip.base());
-    point2.shift(arrow.tip.tipPoint());
+    let line = new Line({ start: Point3D(-100, 0, 0), end: Point3D(100, 0, 0) });
+    let dashedLine = new DashedLine(5, 0.5, { start: Point3D(-100, 1, 0), end: Point3D(100, 1, 0) });
+    let dottedLine = new DashedLine(1, 0.1, { start: Point3D(-100, -1, 0), end: Point3D(100, -1, 0) });
 
-    this.add(triangle);
-    this.add(square);
     this.add(line);
-    this.add(arrow);
-    this.add(arrow2);
-    this.add(point1);
-    this.add(point2);
+    this.add(dashedLine);
+    this.add(dottedLine);
   }
 }
 

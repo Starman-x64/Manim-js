@@ -1,3 +1,4 @@
+import { DEFAULT_DASH_LENGTH } from "../../constants.js";
 import { LEFT, RIGHT } from "../../math.js";
 import { Validation, defineUndef } from "../../utils/validation.js";
 import { TippableVMobject } from "../types/tippableVMobject.js";
@@ -57,7 +58,7 @@ class Line extends TippableVMobject {
 
 class Arrow extends Line {
   constructor(kwargs) {
-    super(kwargs);
+    super();
 
     // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
     if (Validation.isOfClass(this, "Arrow")) {
@@ -83,4 +84,36 @@ class Arrow extends Line {
   }
 }
 
-export { Line, Arrow };
+class DashedLine extends Line {
+  /**
+   * A dashed `Line`.
+   * @param {number} dashLength The length of each individual dash of the line
+   * @param {number} dashRatio The ratio of dash to empty space. Range of 0-1.
+   * @param {{}} kwargs Additional arguments to be passed to `Line`.
+   */
+  constructor(dashLength, dashRatio, kwargs) {
+    super();
+    
+    // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.
+    if (Validation.isOfClass(this, "DashedLine")) {
+      this._init(dashLength, dashRatio, kwargs);
+    }
+  }
+  
+  _init(dashLength, dashRatio, kwargs) {
+    Validation.testNumberInRange({dashRatio}, 0, 1);
+    dashLength = defineUndef(dashLength, DEFAULT_DASH_LENGTH);
+    dashRatio = defineUndef(dashRatio, 0.5);
+
+    this.dashLength = dashLength;
+    this.dashRatio = dashRatio;
+    
+    super._init(kwargs);
+    
+    console.log(dashLength * (1 - dashRatio))
+    this.lineDash = [dashLength, dashLength * (1 - dashRatio) / dashRatio];
+  }
+}
+
+
+export { Line, Arrow, DashedLine };

@@ -166,7 +166,7 @@ class Mobject {
      * `Array` is converted into a `Set` which will remove duplicates, before being turned back into an `Array`.
      */ 
     let uniqueMobjects = Array.from(new Set(mobjects.filter(mobject => !existingChildren.includes(mobject))));
-    console.log(uniqueMobjects);
+    // console.log(uniqueMobjects);
     if (uniqueMobjects.length != mobjects.length - existingChildren.length) {
       console.warn("Attempted adding some Mobject as a child more than once, this is not possible. Repetitions are ignored."); 
     }
@@ -592,9 +592,10 @@ class Mobject {
    */
   shift(...vectors) {
     let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), Point3D(0, 0, 0));
+    // console.log(this.constructor.name, this.familyMembersWithPoints());
     this.familyMembersWithPoints().forEach(mobject => {
       totalVector.flatten().selection.data.forEach((coord, index) => {
-        for(let i = 0; i < this.points.shape[0]; i++) {
+        for(let i = 0; i < mobject.points.shape[0]; i++) {
           mobject.points.set(i, index, mobject.points.get(i, index) + coord);
         }
       });
@@ -630,7 +631,9 @@ class Mobject {
       [       0,         0, 1]
     ])
 
-    this.transformByMatrix(transformationMatrix, kwargs);
+    this.familyMembersWithPoints().forEach(mobject => {
+      mobject.transformByMatrix(transformationMatrix, kwargs);
+    });
     
     return this;
   }
@@ -776,7 +779,7 @@ class Mobject {
   getFamily(recurse=true) {
     let subFamilies = [];
     this.submobjects.forEach(mobject => {
-      subFamilies.concat(mobject.getFamily());
+      subFamilies = subFamilies.concat(mobject.getFamily());
     });
     let allMobjects = [this].concat(subFamilies);
     return Array.from(new Set(allMobjects));

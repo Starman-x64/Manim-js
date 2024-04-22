@@ -72,9 +72,6 @@ class Arrow extends Line {
 
     super._init(kwargs);
     
-    console.log(this.points.toString());
-    console.log(this.curveTypes);
-    console.log(this.getNumCurves());
     this.addTip({ tipShape: tipShape });
   }
 }

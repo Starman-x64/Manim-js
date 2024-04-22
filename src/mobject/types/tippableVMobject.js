@@ -34,7 +34,6 @@ class TippableVMobject extends VMobject {
    * @returns {ArrowTip}
    */
   addTip(kwargs) {
-    console.log(this.points.toString());
     /** @type {typeof ArrowTip | null} */
     let tipShape = defineUndef(kwargs.tipShape, null);
     /** @type {number | null} */

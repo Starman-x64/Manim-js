@@ -27,7 +27,7 @@ class TestScene extends Scene {
     //let circle = new Circle({ radius: 2 });
 
     // circle.shift(Point3D(7, 0, 0));
-    square.shift(Point3D(-5, 2, 0));
+    square.shift(Point3D(-5, 2, 0)).rotate(PI/4);
 
     // this.add(line);
     // this.add(dashedLine);

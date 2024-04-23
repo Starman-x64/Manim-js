@@ -601,9 +601,7 @@ class Mobject {
    * @returns {this}
    */
   scale(scaleFactor, kwargs) {
-    //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
     kwargs = defineUndef(kwargs, { center: this.getCenter() });
-    console.log(kwargs);
     this.applyPointsFunctionAboutPoint(points => nj.multiply(points, scaleFactor), kwargs.center);
 
     return this;
@@ -672,9 +670,9 @@ class Mobject {
       ]);
     }
     
-    this.familyMembersWithPoints().forEach(mobject => {
-      mobject.transformByMatrix(rotationmatrix, kwargs);
-    });
+    kwargs = defineUndef(kwargs, { center: this.getCenter() });
+    kwargs.center = defineUndef(kwargs.center, this.getCenter());
+    this.applyPointsFunctionAboutPoint(points => nj.dot(points, rotationmatrix), kwargs.center);
     
     return this;
   }

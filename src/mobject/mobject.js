@@ -4,6 +4,7 @@ import { ORIGIN, OUT } from "../math.js";
 import { ManimColor } from "../color/manimColor.js";
 import { Animation } from "../animation/animation.js";
 import { NotImplementedError, ValueError } from "../error/errorClasses.js";
+import { Paths } from "../utils/paths.js";
 
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
@@ -715,7 +716,7 @@ class Mobject {
       return this;
     }
 
-    pathFunc = defineUndef(pathFunc, (a, b, t) => nj.add(nj.multiply(a, 1 - t), nj.multiply(b, t)));
+    pathFunc = defineUndef(pathFunc, Paths.straightPath());
     this.points = pathFunc(mobject1.points, mobject2.points, alpha);
     return this;
   }

@@ -1,5 +1,7 @@
+import { DOWN, LEFT, ORIGIN, RIGHT, UP } from "../math.js";
 import { Mobject } from "../mobject/mobject.js";
 import { Scene } from "../scene/scene.js";
+import { Paths } from "../utils/paths.js";
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Animation } from "./animation.js";
 
@@ -15,8 +17,8 @@ const TransformFactory = (mobject, targetMobject, kwargs={}) => {
 };
 /**
  * Animate the shifting of a `Mobject`.
- * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
- * @param {Mobject} targetMobject The target of the transformation.
+ * @param {Mobject} mobject The `Mobject` to be shifted.
+ * @param {Ndarray} shiftVector The vector to shift by.
  * @param {{}} kwargs
  */
 const ShiftFactory = (mobject, shiftVector, kwargs) => {
@@ -26,13 +28,24 @@ const ShiftFactory = (mobject, shiftVector, kwargs) => {
 };
 /**
  * Animate the scaling of a `Mobject`.
- * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
- * @param {Mobject} targetMobject The target of the transformation.
+ * @param {Mobject} mobject The `Mobject` to be scaled.
+ * @param {number} scaleFactor The factor to scale by.
  * @param {{}} kwargs
  */
 const ScaleFactory = (mobject, scaleFactor, kwargs) => {
   let targetMobject = mobject.copy();
   targetMobject.scale(scaleFactor, kwargs);
+  return TransformFactory(mobject, targetMobject, kwargs);
+};
+/**
+ * Animate the rotation of a `Mobject`.
+ * @param {Mobject} mobject The `Mobject` to be rotated.
+ * @param {Mobject} angle The angle in radians to rotate by.
+ * @param {{}} kwargs
+ */
+const RotateFactory = (mobject, angle, kwargs) => {
+  let targetMobject = mobject.copy();
+  targetMobject.rotate(angle, kwargs);
   return TransformFactory(mobject, targetMobject, kwargs);
 };
 
@@ -106,9 +119,9 @@ class _Transform extends Animation {
   interpolateSubmobject(submobject, startingSubmobject, targetCopy, alpha) {
     // console.log(startingSubmobject);
     // console.log(targetCopy);
-    submobject.interpolate(startingSubmobject, targetCopy, alpha);
+    submobject.interpolate(startingSubmobject, targetCopy, alpha, Paths.straightPath());
     return this;
   }
 }
 
-export { _Transform, TransformFactory as Transform, ShiftFactory as Shift, ScaleFactory as Scale };
+export { _Transform, TransformFactory as Transform, ShiftFactory as Shift, ScaleFactory as Scale, RotateFactory as Rotate };

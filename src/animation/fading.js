@@ -2,7 +2,7 @@ import { ValueError } from "../error/errorClasses.js";
 import { ORIGIN } from "../math.js";
 import { Mobject } from "../mobject/mobject.js";
 import { Validation, defineUndef } from "../utils/validation.js";
-import { Transform } from "./transform.js";
+import { _Transform } from "./transform.js";
 
 /**
  * @param {Mobject} mobject 
@@ -27,7 +27,7 @@ const FadeOut = (mobject, kwargs) => {
 }
 
 
-class __Fade extends Transform {
+class __Fade extends _Transform {
   /**
    * @param {Mobject} mobject 
    * @param {{shiftVector: Ndarray, scaleFactor: number}} kwargs 
@@ -51,14 +51,15 @@ class __Fade extends Transform {
     this.shiftVector = defineUndef(kwargs.shiftVector, ORIGIN);
     this.scaleFactor = defineUndef(kwargs.scaleFactor, 1);
     this.fadeIn = defineUndef(kwargs.fadeIn, false);
-    console.log(kwargs);
-    console.log(this.fadeIn);
     
     let targetMobject = mobject.copy();
-    let targetOpacity = this.fadeIn ? targetMobject.opacity * 1 : 0;
-    targetMobject.fade(targetOpacity);
-    mobject.fade(mobject.opacity);
     targetMobject.scale(this.scaleFactor).shift(this.shiftVector);
+    
+    let targetOpacity = this.fadeIn ? targetMobject.opacity * 1 : 0;
+    console.log(targetMobject.opacity, mobject.opacity);
+    targetMobject.opacity = targetOpacity;
+    mobject.opacity = this.fadeIn ? 0 : mobject.opacity * 1;
+    console.log(targetMobject.opacity, mobject.opacity);
      
     super._init(mobject, targetMobject, kwargs);
   }

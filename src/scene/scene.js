@@ -167,7 +167,17 @@ class Scene {
    * @param  {...Animation} animations The animations to play.
    */
   play(...animations) {
-    let animationCollection = new _AnimationCollection(...animations);
+    console.log(animations);
+    console.log(animations.map(x => x.constructor.name));
+    console.log(animations.map(x => x instanceof Mobject));
+    let animationsWithMobjectAnimationsBuilt = animations.map(x => {
+      if (x instanceof Mobject) {
+        x.animationBuilder.mobject = x;
+        return x.buildAnimation();
+      }
+      return x;
+    });
+    let animationCollection = new _AnimationCollection(...animationsWithMobjectAnimationsBuilt);
     this.queueAnimationCollection(animationCollection);
   }
   

@@ -122,6 +122,25 @@ class VMobject extends Mobject {
     let currentWidth = zComponents.max() - zComponents.min();
     return currentWidth;
   }
+
+  getCenter() {
+    let xComponents = this.points.slice(null,[0,1]).flatten();
+    let yComponents = this.points.slice(null,[1,2]).flatten();
+    let zComponents = this.points.slice(null,[2,3]).flatten();
+    let centerX = (xComponents.max() + xComponents.min()) / 2;
+    let centerY = (yComponents.max() + yComponents.min()) / 2;
+    let centerZ = (zComponents.max() + zComponents.min()) / 2;
+
+    console.log("this.points", this.points.toString());
+    console.log("xComponents", xComponents.toString());
+    console.log("yComponents", yComponents.toString());
+    console.log("zComponents", zComponents.toString());
+    console.log("centerX", centerX.toString());
+    console.log("centerY", centerY.toString());
+    console.log("centerZ", centerZ.toString());
+
+    return Point3D(centerX, centerY, centerZ);
+  }
   
   /**
    * Scale the `Mobject` along the x-axis so it is the desired width.

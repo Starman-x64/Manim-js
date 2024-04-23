@@ -1,7 +1,9 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
-import { OUT } from "../math.js";
+import { ORIGIN, OUT } from "../math.js";
 import { ManimColor } from "../color/manimColor.js";
+import { Animation } from "../animation/animation.js";
+import { NotImplementedError, ValueError } from "../error/errorClasses.js";
 
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
@@ -48,55 +50,21 @@ class Mobject {
   // animate() {}
 
   animate(kwargs) {
-    this.animationBuilder = new _AnimationBuilder(this, kwargs);
-    let proxy = new Proxy(this, {
-      get(target, prop, receiver) {
-        const value = target[prop];
-        console.log(
-          `<func>(get()) called on mobject proxy
-          > -target:- <<class>(${target.constructor.name})>(\`${target.name}\`)
-          > -prop:- <prop>(${prop})
-          > -value:- <class>(${value.constructor.name})`
-          );
-        if (value instanceof Function) {
-          if (!this.animationBuilder) {
-            //this.animationBuilder = new _AnimationBuilder(target);
-          }
-          return function (...args) {
-            this.animationBuilder.addMethod(prop, ...args);
-            return this;
-          };
-        }
-        else {
-          // console.log(`Reflecting <func>(get) of \`${target.name}.\`<prop>(${prop}).`);
-          let reflected = Reflect.get(...arguments);
-          //console.log(reflected);
-          return reflected;
-        }
-      },
-      set(obj, prop, value) {
-        // console.log(
-        //   `<func>(set)() called on mobject proxy
-        //   > -target:- <<class>(${obj.constructor.name})>(\`${obj.name}\`)
-        //   > -prop:- <var>(${prop})
-        //   > -value:- <class>(${value.constructor.name})`
-        //   );
-        if (prop === "animationBuilder") {
-          // console.log(`<func>(set()) was called to set \`${obj.name}.\`<prop>(animationBuilder).`);
-        }
-        // console.log(`Reflecting <func>(set) of \`${obj.name}.\`<prop>(${prop}).`);
-        let reflected = Reflect.set(...arguments);
-        return reflected;
+    let animationBuilder = new _AnimationBuilder(this, kwargs);
+    this.animationBuilder = animationBuilder;
+    this.animationBuilder.targetMobject.animationBuilder = animationBuilder;
+    console.log(animationBuilder);
+    return animationBuilder.targetMobject;
+  }
 
-      }
-    });
-    //proxy.animationBuilder = this.animationBuilder;
-    //console.log(proxy.animationBuilder);
-    //delete this.animationBuilder;
-    //console.log(proxy.animationBuilder);
-    //proxy.shift(nj.array([100, 50, 0, 0]));
-    return proxy;
-    //return new Animation({ mobject: this, methods: methods });
+  buildAnimation() {
+    if (Validation.isUndefined(this.animationBuilder)) {
+      throw new ValueError("Mobject has no animation to build!");
+    }
+    console.log(this.animationBuilder);
+    let animation = this.animationBuilder.buildAnimation();
+    this.animationBuilder = undefined;
+    return animation;
   }
   
   /**
@@ -115,13 +83,15 @@ class Mobject {
     this.initColors();
   }
 
-  /** Sets `points` to be an empty array.
+  /**
+   * Sets `points` to be an empty array.
    */
   resetPoints() {
     this.points = [];
   }
   
-  /**Initializes the colors.
+  /**
+   * Initializes the colors.
    * 
    * Gets called upon creation. This is an empty method that can be implemented by
    * subclasses.
@@ -130,7 +100,8 @@ class Mobject {
     
   }
   
-  /**Initializes `points` and therefore the shape.
+  /**
+   * Initializes `points` and therefore the shape.
    * 
    * Gets called upon creation. This is an empty method that can be implemented by
    * subclasses.
@@ -139,7 +110,8 @@ class Mobject {
     
   }
 
-  /**Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
+  /**
+   * Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
    * 
    * A mobject cannot contain itself, and it cannot contain a submobject
    * more than once. If the parent mobject is displayed, the newly-added
@@ -327,6 +299,10 @@ class Mobject {
   lengthOverDim(dim) {
     let componentsInDim = this.points.slice([dim, dim+1]).flatten();
     return componentsInDim.max() - componentsInDim.min();
+  }
+
+  getCenter() {
+    throw new NotImplementedError(`Cannot get the centre of ${this.constructor.name}!`);
   }
 
   /**
@@ -627,11 +603,42 @@ class Mobject {
    */
   scale(scaleFactor, kwargs) {
     //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
-    
-    this.familyMembersWithPoints().forEach(mobject => {
-      mobject.points = nj.multiply(mobject.points, scaleFactor);
-    });
+    kwargs = defineUndef(kwargs, { center: this.getCenter() });
+    console.log(kwargs);
+    this.applyPointsFunctionAboutPoint(points => nj.multiply(points, scaleFactor), kwargs.center);
 
+    return this;
+  }
+
+  applyPointsFunctionAboutPoint(func, point) {
+    point = defineUndef(point, ORIGIN);
+    console.log(point.toString());
+    let subtractPoint = nj.array([
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [-point.get(0,0), -point.get(1,0), -point.get(2,0), 1],
+    ]);
+    let addPoint = nj.array([
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [point.get(0,0), point.get(1,0), point.get(2,0), 1],
+    ]);
+    console.log(point.toString());
+    console.log(subtractPoint.toString());
+    console.log(addPoint.toString());
+    this.familyMembersWithPoints().forEach(mobject => {
+      let ones = nj.ones(mobject.points.shape[0]).reshape(-1,1);
+      let newPoints = nj.concatenate(mobject.points, ones);
+      let originalShape = [...(mobject.points.shape)];
+      newPoints = nj.dot(newPoints, subtractPoint);
+      newPoints = func(newPoints.slice(null,[-1]));
+      newPoints = nj.concatenate(newPoints, ones);
+      newPoints = nj.dot(newPoints, addPoint);
+      mobject.points = newPoints.slice(null,[-1]);
+    });
+    
     return this;
   }
 
@@ -701,9 +708,18 @@ class Mobject {
    * @returns {this}
    */
   interpolate(mobject1, mobject2, alpha, pathFunc) {
+    this.interpolateColor(mobject1, mobject2, alpha);
+    if (alpha == 0) {
+      this.points = mobject1.points.clone();
+      return this;
+    }
+    if (alpha == 1) {
+      this.points = mobject2.points.clone();
+      return this;
+    }
+
     pathFunc = defineUndef(pathFunc, (a, b, t) => nj.add(nj.multiply(a, 1 - t), nj.multiply(b, t)));
     this.points = pathFunc(mobject1.points, mobject2.points, alpha);
-    this.interpolateColor(mobject1, mobject2, alpha);
     return this;
   }
 
@@ -714,6 +730,23 @@ class Mobject {
    * @param {number} alpha 
    */
   interpolateColor(mobject1, mobject2, alpha) {
+    if (alpha == 0) {
+      this.fillColor = mobject1.fillColor;
+      this.strokeColor = mobject1.strokeColor;
+      this.fillOpacity = mobject1.fillOpacity;
+      this.strokeOpacity = mobject1.strokeOpacity;
+      this.opacity = mobject1.opacity;
+      this.fade(mobject1.opacity);
+      return this;
+    }
+    if (alpha == 1) {
+      this.fillColor = mobject2.fillColor;
+      this.strokeColor = mobject2.strokeColor;
+      this.fillOpacity = mobject2.fillOpacity;
+      this.strokeOpacity = mobject2.strokeOpacity;
+      this.fade(mobject2.opacity);
+      return this;
+    }
     this.fillColor = mobject1.fillColor.interpolate(mobject2.fillColor, alpha);
     this.strokeColor = mobject1.strokeColor.interpolate(mobject2.strokeColor, alpha);
     this.fillOpacity = mobject1.fillOpacity * (1 - alpha) + mobject2.fillOpacity * alpha;
@@ -837,24 +870,15 @@ class Mobject {
 class _AnimationBuilder {
   constructor(mobject, animationKwargs) {
     this.mobject = mobject;
-    this.methods = [];
-    
-    if (animationKwargs) {
-      for (const [key, value] of Object.entries(animationKwargs)) {
-        this[key] = value;
-      }
-    }
+    this.targetMobject = mobject.copy();
+    this.animationKwargs = defineUndef(animationKwargs, {});
   }
-
-  addMethod(methodName, ...args) {
-    this.methods.push({
-      name: methodName,
-      args: args
-    });
-  }
-
+  
   buildAnimation() {
-    return new Animation(this);
+    console.log("built");
+    console.log(this.mobject);
+    console.log(this.targetMobject);
+    return new Animation(this.mobject, this.targetMobject, this.animationKwargs);
   }
 }
 

@@ -4,11 +4,17 @@ import { Validation } from "../utils/validation.js";
 const DEFAULT_ANIMATION_RUN_TIME = 1.0;
 const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
 
+const Animate = (mobject, targetMobject, kwargs) => {
+  return new Animation(mobject, targetMobject, kwargs);
+};
+
 /**An animation.
  */
 class Animation {
   /**
-   * @param {{mobject: Mobject, runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function}} kwargs Keyword arguments.
+   * @param {Mobject} mobject
+   * @param {Mobject} targetMobject
+   * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function}} kwargs Keyword arguments.
    */
   constructor(mobject, targetMobject, kwargs) {
     if (Validation.isOfClass(this, "Animation")) {
@@ -16,6 +22,11 @@ class Animation {
     }
   }
 
+  /**
+   * @param {Mobject} mobject
+   * @param {Mobject} targetMobject
+   * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function}} kwargs Keyword arguments.
+   */
   _init(mobject, targetMobject, kwargs) {
     /**
      * The `Mobject` to be animated. This is not required for all types of animations.
@@ -27,7 +38,12 @@ class Animation {
      * @type {Mobject}
      */
     this.targetMobject = targetMobject;
-    /**The duration of the animation in seconds.
+    this.startingMobject = mobject.copy();
+    console.log(targetMobject.opacity, mobject.opacity);
+    mobject.interpolate(targetMobject, targetMobject, 1);
+    console.log(targetMobject.opacity, mobject.opacity);
+    /**
+     * The duration of the animation in seconds.
      * @type {number}
     */
     this.runTime = kwargs.runTime !== undefined ? kwargs.runTime : DEFAULT_ANIMATION_RUN_TIME;
@@ -84,7 +100,7 @@ class Animation {
       throw new Error(`${this.name} has a runTime of <= 0 seconds, this cannot be rendered correctly. Please set the runTime to be positive.`)
     }
     
-    this.startingMobject = this.createStartingMobject();
+    //this.startingMobject = this.createStartingMobject();
     if (this.suspendMobjectUpdating) this.mobject.suspendUpdating();
     this.setupScene(scene);
     this.interpolate(0);
@@ -95,7 +111,7 @@ class Animation {
       this.finish(scene);
       return;
     }
-    console.log(this.animationTimer, this.getLagTime());
+    // console.log(this.animationTimer, this.getLagTime());
     if (this.animationTimer >= this.getLagTime()) {
       this.interpolate(this.getAlpha());
     }
@@ -159,7 +175,8 @@ class Animation {
    * @returns {Mobject}
    */
   createStartingMobject() {
-    return this.mobject.copy();
+    let startingMobject = this.mobject.copy();
+    return startingMobject;
   }
   
   /**Get all mobjects involved in the animation.  

@@ -16,6 +16,7 @@ import { ArrowTip } from "../src/mobject/geometry/tips/tip.js";
 import { PI } from "../src/math.js";
 import { Create } from "../src/animation/creation.js";
 import { FadeIn, FadeOut } from "../src/animation/fading.js";
+import { Scale, Shift } from "../src/animation/transform.js";
 
 class TestScene extends Scene {
   construct() {
@@ -32,8 +33,14 @@ class TestScene extends Scene {
     // this.add(dashedLine);
     // this.add(dottedLine);
     this.add(circle);
+    this.add(square);
     this.play(FadeIn(square, { shiftVector: Point3D(0, -2, 0) }));
-    this.play(FadeOut(circle, { shiftVector: Point3D(0, -2, 0) }));
+    this.play(Shift(square, Point3D(4, 0, 0)));
+    this.play(Shift(square, Point3D(4, 0, 0)));
+    this.play(FadeIn((new Point()).shift(square.getCenter())));
+    this.play(Scale(square, 2));
+    //this.play(square.animate().shift(Point3D(4, 0, 0)));
+    //this.play(FadeOut(circle, { shiftVector: Point3D(0, -2, 0) }));
 
   }
 }

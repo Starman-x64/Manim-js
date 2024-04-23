@@ -4,9 +4,36 @@ import { Validation, defineUndef } from "../utils/validation.js";
 import { Animation } from "./animation.js";
 
 
-const Transform = (mobject, targetMobject, kwargs) => {
+  /**
+   * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
+   * @param {Mobject} targetMobject The target of the transformation.
+   * @param {{}} kwargs
+   */
+const Transform = (mobject, targetMobject, kwargs={}) => {
   kwargs.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
   return new _Transform(mobject, targetMobject, kwargs);
+};
+/**
+ * Animate the shifting of a `Mobject`.
+ * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
+ * @param {Mobject} targetMobject The target of the transformation.
+ * @param {{}} kwargs
+ */
+const Shift = (mobject, shiftVector, kwargs) => {
+  let targetMobject = mobject.copy();
+  targetMobject.shift(shiftVector);
+  return Transform(mobject, targetMobject, kwargs);
+};
+/**
+ * Animate the scaling of a `Mobject`.
+ * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
+ * @param {Mobject} targetMobject The target of the transformation.
+ * @param {{}} kwargs
+ */
+const Scale = (mobject, scaleFactor, kwargs) => {
+  let targetMobject = mobject.copy();
+  targetMobject.scale(scaleFactor, kwargs);
+  return Transform(mobject, targetMobject, kwargs);
 };
 
 /**
@@ -16,6 +43,7 @@ class _Transform extends Animation {
   /**
    * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
    * @param {Mobject} targetMobject The target of the transformation.
+   * @param {{}} kwargs
    */
   constructor(mobject, targetMobject, kwargs={}) {
     super();
@@ -31,6 +59,8 @@ class _Transform extends Animation {
     //this.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
     
     super._init(mobject, targetMobject, kwargs);
+    
+    //this.mobject.interpolate(this.targetMobject, this.targetMobject, 1);
   }
 
   begin(scene) {
@@ -74,11 +104,11 @@ class _Transform extends Animation {
    * @param {number} alpha 
    */
   interpolateSubmobject(submobject, startingSubmobject, targetCopy, alpha) {
-    console.log(startingSubmobject);
-    console.log(targetCopy);
+    // console.log(startingSubmobject);
+    // console.log(targetCopy);
     submobject.interpolate(startingSubmobject, targetCopy, alpha);
     return this;
   }
 }
 
-export { _Transform as Transform };
+export { _Transform, Shift, Scale };

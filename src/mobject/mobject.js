@@ -679,6 +679,22 @@ class Mobject {
 
     return this;
   }
+  
+  /**
+   * Turns this `Mobject` into an interpolation between `mobject1` and `mobject2`.
+   * @param {Mobject} mobject1 
+   * @param {Mobject} mobject2 
+   * @param {number} alpha 
+   * @param {(a: NdArray, b: NdArray, t: number) => Ndarray} pathFunc
+   * @returns {this}
+   */
+  interpolate(mobject1, mobject2, alpha, pathFunc) {
+    this.points = pathFunc(mobject1.points, mobject2.points, alpha);
+    // this.interpolateColor(mobject1, mobject2, alpha)
+    return this;
+  }
+
+
 
   /**
    * Check if this `Mobject` contains points.

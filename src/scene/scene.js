@@ -2,6 +2,7 @@ import {Renderer2D} from "../renderer/renderer2d.js";
 import {Camera} from "../mobject/camera/camera.js";
 import {Mobject} from "../mobject/mobject.js";
 import { ManimColor, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../color/manimColor.js";
+import { Animation, _AnimationCollection } from "../animation/animation.js";
 
 /**
  * An abstract class for all ManimJs scenes.  
@@ -123,7 +124,15 @@ class Scene {
 
     return this;
   }
-
+  
+  /**
+   * 
+   * @param  {...Animation} animations The animations to play.
+   */
+  play(...animations) {
+    let animationCollection = new _AnimationCollection(...animations);
+    console.log(animationCollection);
+  }
 }
 
-export {Scene};
+export { Scene };

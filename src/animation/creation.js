@@ -1,13 +1,26 @@
+import { VMobject } from "../mobject/types/vectorizedMobject.js";
+import { Validation } from "../utils/validation.js";
+import { Animation } from "./animation.js";
+
 /**Abstract class for Animations that show the GMobject partially.
  */
 class ShowPartial extends Animation {
   /**
-   * @param {GMobject} mobject The GMobject to animate.
+   * @param {VMobject} mobject The `VMobject` to animate.
    * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
    */
   constructor(mobject, kwargs={}) {
+    super();
+    
+    if (Validation.isOfClass(this, "ShowPartial")) {
+      this._init(mobject, kwargs);
+    }
+  }
+
+  _init(mobject, kwargs) {
     kwargs.mobject = mobject;
-    super(kwargs);
+
+    super._init(kwargs);
   }
 
   /**To be implemented by subclasses.
@@ -29,11 +42,21 @@ class ShowPartial extends Animation {
  */
 class Create extends ShowPartial {
   /**
-   * @param {GMobject} mobject The GMobject to animate.
+   * @param {VMobject} mobject The `VMobject` to animate.
    * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
    */
   constructor(mobject, kwargs={ lagRatio: 0.0, introducer: true }) {
-    super(mobject, kwargs);
+    super();
+    
+    if (Validation.isOfClass(this, "Create")) {
+      this._init(mobject, kwargs);
+    }
+  }
+
+  _init(mobject, kwargs) {
+    kwargs.mobject = mobject;
+
+    super._init(mobject, kwargs);
   }
 
   /**_getBounds
@@ -51,11 +74,22 @@ class Create extends ShowPartial {
  */
 class Uncreate extends Create {
   /**
-   * @param {GMobject} mobject The GMobject to animate.
+   * @param {VMobject} mobject The `VMobject` to animate.
    * @param {{runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
    */
   constructor(mobject, kwargs={ reverseRateFunction: true, remover: true, introducer: false }) {
-    super(mobject, kwargs);
+    super();
+    
+    if (Validation.isOfClass(this, "uncreate")) {
+      this._init(mobject, kwargs);
+    }
   }
 
+  _init(mobject, kwargs) {
+    kwargs.mobject = mobject;
+
+    super._init(mobject, kwargs);
+  }
 }
+
+export { ShowPartial, Create, Uncreate };

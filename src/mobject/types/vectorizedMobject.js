@@ -6,6 +6,7 @@ import { Validation } from "../../utils/validation.js";
 import { bezier } from "../../utils/bezier.js";
 import { Point3D } from "../../point3d.js";
 import { SVGDrawer } from "../../renderer/renderer2d.js";
+import { NotImplementedError } from "../../error/errorClasses.js";
 
 const DEFAULT_LINE_WIDTH = 4;
 
@@ -149,6 +150,10 @@ class VMobject extends Mobject {
     ]);
     this.transformByMatrix(matrix);
   }
+
+  getPerimeter(samplePoints=10) {
+    return this.getCurveFunctionsWithLengths(samplePoints).map(x => x[1]).reduce((x, a) => x + a);
+  }
   
   /**
    * Gets the point at a specified proportion of the path of the `VMobject`.  
@@ -268,7 +273,7 @@ class VMobject extends Mobject {
    */
   getNthCurvePoints(n) {
     Validation.testNumberInRange({n}, 0, this.getNumCurves() - 1);
-    let curveType = this.curveTypes.filter(x => x != "M")[n];
+    let curveType = this.getCurveTypes()[n];
     let numPointsInCurve = curveType == SVGDrawer.CUBIC ? 4 : curveType === SVGDrawer.QUADRATIC ? 3 : curveType === SVGDrawer.LINE_TO ? 2 : -1;
     
     /** @type {number} */
@@ -289,7 +294,7 @@ class VMobject extends Mobject {
    */
   getNthCurveType(n) {
     Validation.testNumberInRange({n}, 0, this.getNumCurves() - 1);
-    return this.curveTypes.filter(x => x != "M")[n];
+    return this.getCurveTypes()[n];
   }
   
   /**
@@ -303,7 +308,7 @@ class VMobject extends Mobject {
     /** @type {number} */
     let pointIndex =  0;
     /** @type {string[]} */
-    let curveTypes = this.curveTypes.filter(x => x != "M");
+    let curveTypes = this.getCurveTypes();
     for(let i = 0; i < n; i++) {
       /** @type {string} */
       let curveType = curveTypes[i];
@@ -316,9 +321,6 @@ class VMobject extends Mobject {
           break;
         case SVGDrawer.LINE_TO:
           pointIndex += 1;
-          break;
-        case SVGDrawer.CLOSE_PATH:
-          pointIndex += 0;
           break;
       }
     }
@@ -341,7 +343,6 @@ class VMobject extends Mobject {
    * @returns {Ndarray}
    */
   getNthPoint(n) {
-    
     return this.points.slice([n,  n+1]).flatten();
   }
 
@@ -350,9 +351,53 @@ class VMobject extends Mobject {
    * @returns {number}
    */
   getNumCurves() {
-    return this.curveTypes.filter(x => x != SVGDrawer.MOVE_TO && x != SVGDrawer.CLOSE_PATH).length;
+    return this.getCurveTypes().length;
   }
 
+  /**
+   * Returns the curve types of each curve making up the mobject.  
+   * I.e., returns `this.curveTypes`, filtering out any "M"s and "Z"s.
+   */
+  getCurveTypes() {
+    this.curveTypes.filter(x => x != SVGDrawer.MOVE_TO && x != SVGDrawer.CLOSE_PATH);
+  }
+  
+  /**
+   * **NEED TO FIx THIS, IMPLEMENTATION INCOMPLETE**
+   * Given two bounds a and b, transforms the points of the self `VMobject` into the points of the `VMobject`
+   * passed as parameter with respect to the bounds. Points here stand for control points of
+   * the bezier curves (anchors and handles)
+   * @param {VMobject} vmobject The `VMobject` that will serve as a model.
+   * @param {number} a Upper-bound.
+   * @param {number} b Lower-bound.
+   * @returns {this}
+   */
+  pointwiseBecomePartial(vmobject, a, b) {
+    throw new NotImplementedError("**NEED TO FIx THIS, IMPLEMENTATION INCOMPLETE**");
+    if (!Validation.isInstanceOf(vmobject, VMobject)) {
+      throw new TypeError("Only `VMobject`s can be model vmobjects for `VMobject.pointwiseBecomePartial()`!")
+    }
+
+    if (a <= 0 && b >= 1) {
+      this.setPoints(vmobject.points.clone());
+      return this;
+    }
+
+    let curvesAndLengths = vmobject.getCurveFunctionsWithLengths();
+    let curveTypes = vmobject.curveTypes;
+    let lowerIndex, lowerResidue;
+    let upperIndex, upperResidue;
+    let totalPerimeter = this.getPerimeter();
+    let [lowerLength, upperLength] = [a*totalPerimeter, b*totalPerimeter];
+    
+    let lengthRunningTotal = 0;
+    for (let i = 0; i < this.getNumCurves(); i++) {
+      let [curve, length] = curvesAndLengths[i];
+      if (lengthRunningTotal + length >= lowerLength) {
+        lowerIndex = i;
+      }
+    }
+  }
 
 }
 

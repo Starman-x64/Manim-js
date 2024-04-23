@@ -101,6 +101,16 @@ class Validation {
     }
     return value.constructor.name == className;
   }
+
+  
+  /**
+   * Returns `value instanceof class`.
+   * @param {any} value The value to test.
+   * @param {class} classInstance The name of the class to test against.
+   */
+  static isInstanceOf(value, classInstance) {
+    return value instanceof classInstance;
+  }
 }
 
 

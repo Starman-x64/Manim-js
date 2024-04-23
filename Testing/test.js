@@ -14,16 +14,19 @@ import { Curve } from "../src/mobject/geometry/curve.js";
 import { LineDash } from "../src/mobject/types/vectorizedMobject.js";
 import { ArrowTip } from "../src/mobject/geometry/tips/tip.js";
 import { PI } from "../src/math.js";
+import { Create } from "../src/animation/creation.js";
 
 class TestScene extends Scene {
   construct() {
     let line = new Line({ start: Point3D(-100, 0, 0), end: Point3D(100, 0, 0) });
     let dashedLine = new DashedLine(5, 0.5, { start: Point3D(-100, 1, 0), end: Point3D(100, 1, 0) });
     let dottedLine = new DashedLine(1, 0.1, { start: Point3D(-100, -1, 0), end: Point3D(100, -1, 0) });
+    let square = new Square();
 
     this.add(line);
     this.add(dashedLine);
     this.add(dottedLine);
+    this.play(new Create(square));
   }
 }
 

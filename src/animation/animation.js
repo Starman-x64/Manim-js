@@ -1,3 +1,6 @@
+import { Mobject } from "../mobject/mobject.js";
+import { Validation } from "../utils/validation.js";
+
 const DEFAULT_ANIMATION_RUN_TIME = 1.0;
 const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
 
@@ -5,13 +8,19 @@ const DEFAULT_ANIMATION_LAG_RATIO = 0.0;
  */
 class Animation {
   /**
-   * @param {{mobject: Mobject, runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function, methods: {name: string, args: any[]}[]}} kwargs Keyword arguments.
+   * @param {{mobject: Mobject, runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function}} kwargs Keyword arguments.
    */
-  constructor(kwargs) {
+  constructor(mobject, kwargs) {
+    if (Validation.isOfClass(this, "Animation")) {
+      this._init(mobject, kwargs);
+    }
+  }
+
+  _init(kwargs) {
     /**The mobject to be animated. This is not required for all types of animations.
      * @type {Mobject}
     */
-    this.mobject = kwargs.mobject;
+    this.mobject = mobject;
     /**The duration of the animation in seconds.
      * @type {number}
     */
@@ -44,12 +53,6 @@ class Animation {
      * @type {Function}
     */
    this.rateFunc = kwargs.rateFunc !== undefined ? kwargs.rateFunc : (t) => t*t*(3 - 2*t);
-    /**The methods of the animation to animate.
-     * 
-     * **WARNING: This functionality is not implemented correctly.**
-     * @type {{name: string, args: any[]}[]}
-    */
-    this.methods = kwargs.methods;
     /**How many seconds have passed since the start of the animation. In its current implementation, the timer starts once `begin()` has been called, even if there is lag time (the animation hasn't visually begun).
      * @type {number}
     */
@@ -227,15 +230,6 @@ class Animation {
       this.interpolateSubmobject(...mobs, subAlpha);
     });
     console.log(alpha);
-    // this.methods.forEach(methodObject => {
-    //   //console.log(methodObject.name);
-    //   //this.mobject.shiftAnimationOverride(this, alpha, nj.array([50,0,0]));
-    //   //this.mobject.scaleAnimationOverride(this, alpha, 2);
-    //   // this.mobject.shiftAnimationOverride(this, alpha, nj.array([0,50,0]));
-    //   //this.mobject.shift(nj.array([0,1,0]));
-    //   //this.mobject = this.mobject[methodObject.name+"AnimationOverride"].call(this.mobject, this, alpha, ...(methodObject.args));
-    //   //this.mobject[methodObject.name+"AnimationOverride"](this, alpha, ...(methodObject.args));
-    // })
   }
 
   /**Interpolate Submobject.
@@ -297,3 +291,5 @@ class _AnimationCollection {
     return true;
   }
 }
+
+export { Animation, _AnimationCollection };

@@ -96,7 +96,16 @@ class Validation {
    * @returns {boolean}
    */
   static isDefined(value) {
-    return value !== undefined;
+    return !Validation.isUndefined(value);
+  }
+  
+  /**
+   * Returns `value === undefined`. 
+   * @param {any} value The value to test.
+   * @returns {boolean}
+   */
+  static isUndefined(value) {
+    return value === undefined;
   }
 
   /**

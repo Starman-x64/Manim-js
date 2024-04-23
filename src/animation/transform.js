@@ -9,7 +9,7 @@ import { Animation } from "./animation.js";
    * @param {Mobject} targetMobject The target of the transformation.
    * @param {{}} kwargs
    */
-const Transform = (mobject, targetMobject, kwargs={}) => {
+const TransformFactory = (mobject, targetMobject, kwargs={}) => {
   kwargs.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
   return new _Transform(mobject, targetMobject, kwargs);
 };
@@ -19,10 +19,10 @@ const Transform = (mobject, targetMobject, kwargs={}) => {
  * @param {Mobject} targetMobject The target of the transformation.
  * @param {{}} kwargs
  */
-const Shift = (mobject, shiftVector, kwargs) => {
+const ShiftFactory = (mobject, shiftVector, kwargs) => {
   let targetMobject = mobject.copy();
   targetMobject.shift(shiftVector);
-  return Transform(mobject, targetMobject, kwargs);
+  return TransformFactory(mobject, targetMobject, kwargs);
 };
 /**
  * Animate the scaling of a `Mobject`.
@@ -30,10 +30,10 @@ const Shift = (mobject, shiftVector, kwargs) => {
  * @param {Mobject} targetMobject The target of the transformation.
  * @param {{}} kwargs
  */
-const Scale = (mobject, scaleFactor, kwargs) => {
+const ScaleFactory = (mobject, scaleFactor, kwargs) => {
   let targetMobject = mobject.copy();
   targetMobject.scale(scaleFactor, kwargs);
-  return Transform(mobject, targetMobject, kwargs);
+  return TransformFactory(mobject, targetMobject, kwargs);
 };
 
 /**
@@ -111,4 +111,4 @@ class _Transform extends Animation {
   }
 }
 
-export { _Transform, Shift, Scale };
+export { _Transform, TransformFactory as Transform, ShiftFactory as Shift, ScaleFactory as Scale };

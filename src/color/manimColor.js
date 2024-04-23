@@ -569,11 +569,11 @@ const BLUE = new ManimColor("rgb255", 77, 177, 255);
 const YELLOW = new ManimColor("rgb255", 247, 227, 47);
 const ORANGE = new ManimColor("rgb255", 247, 137, 27);
 const TRANSPARENT = new ManimColor("rgb255", 0, 0, 0, 0);
-const DARK_RED = RED.interpolate(BLACK, 0.5, { space: "oklab" });
-const DARK_GREEN = GREEN.interpolate(BLACK, 0.5, { space: "oklab" });
-const DARK_BLUE = BLUE.interpolate(BLACK, 0.5, { space: "oklab" });
-const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.5, { space: "oklab" });
-const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.5, { space: "oklab" });
+const DARK_RED = RED.interpolate(BLACK, 0.25, { space: "oklab" });
+const DARK_GREEN = GREEN.interpolate(BLACK, 0.25, { space: "oklab" });
+const DARK_BLUE = BLUE.interpolate(BLACK, 0.25, { space: "oklab" });
+const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25, { space: "oklab" });
+const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25, { space: "oklab" });
 
 export { ManimColor };
 export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };

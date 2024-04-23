@@ -233,11 +233,10 @@ class Mobject {
    * @returns {this Mobject}
    */
   set(kvp) {
-    kvp.forEach((key, value) => {
+    for (let [key, value] of Object.entries(kvp)) {
       this[key] = value;
       this.width
-    });
-
+    }
     return this;
   }
   

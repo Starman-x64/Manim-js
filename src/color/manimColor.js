@@ -1,3 +1,6 @@
+import { Validation } from "../utils/validation.js";
+import { ValidationError } from "../error/errorClasses.js";
+
 /**
  * Color object with conversions between different spaces.
  */
@@ -42,6 +45,12 @@ class ManimColor {
   hsv = () => ManimColor.RGBtoHSV(nj.array(this._rgb).reshape(3,1)).selection.data;
   oklab = () => ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1))).selection.data;
   oklch = () => ManimColor.OklabToOklch(ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1)))).selection.data;
+
+  setAlpha(newAlpha) {
+    Validation.testNumberInRange({newAlpha}, 0, 1);
+    this._alpha = newAlpha;
+    return this;
+  }
 
   toString(space="rgb") {
     if (!ManimColor.VALID_MODES.includes(space) && space != "rgba") {
@@ -199,6 +208,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
         case "ManimColor":
           inputMode = "manimcolor";
           values = args;
+          break;
         default:
           throw new ValidationError(`Cannot determine colour from object of type "${args[0].constructor.name}".`);
       }

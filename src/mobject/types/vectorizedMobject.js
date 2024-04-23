@@ -24,7 +24,7 @@ class VMobject extends Mobject {
    * @param {{fillColor: ManimColor, fillOpacity: number, strokeColor: ManimColor, strokeOpacity: number, lineWidth: number, capStyle: CapStyleType}} kwargs 
    */
   constructor(kwargs={
-    fillColor: TRANSPARENT,
+    fillColor: new ManimColor(TRANSPARENT),
     fillOpacity: 0.0,
     strokeColor: WHITE,
     strokeOpacity: 0.0,
@@ -45,15 +45,29 @@ class VMobject extends Mobject {
 
   _init(kwargs) {
     /** @type {ManimColor} */
-    this.fillColor = defineUndef(kwargs.fillColor, TRANSPARENT);
-    /** @type {number} */
+    this.fillColor = defineUndef(kwargs.fillColor, new ManimColor(TRANSPARENT));
+    /**
+     * The default fill opacity of this `Mobject`. The actual opacity the `Mobject`'s fill is drawn at is stored
+     * in the alpha channel of `this.fillColor`.  
+     * See {@link Mobject.fade}.
+     * @type {number}
+     */
     this.fillOpacity = defineUndef(kwargs.fillOpacity, 0.0);
     /** @type {ManimColor} */
-    this.strokeColor = defineUndef(kwargs.strokeColor, WHITE);
-    /** @type {number} */
-    this.strokeOpacity = defineUndef(kwargs.strokeOpacity, 0.0);
+    this.strokeColor = defineUndef(kwargs.strokeColor, new ManimColor(WHITE));
+    /**
+     * The default stroke opacity of this `Mobject`. The actual opacity the `Mobject`'s stroke is drawn at is stored
+     * in the alpha channel of `this.strokeColor`.  
+     * See {@link Mobject.fade}.
+     * @type {number}
+     */
+    this.strokeOpacity = defineUndef(kwargs.strokeOpacity, 1.0);
     /** @type {number} */
     this.strokeWidth = defineUndef(kwargs.lineWidth, DEFAULT_LINE_WIDTH);
+
+    this.fillColor.setAlpha(this.fillOpacity);
+    this.strokeColor.setAlpha(this.strokeOpacity);
+    
     /** @type {CapStyleType} */
     this.capStyle = defineUndef(kwargs.capStyle, CapStyleType.AUTO);
     /** @type {LineJoinType} */

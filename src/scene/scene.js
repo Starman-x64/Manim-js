@@ -20,7 +20,16 @@ class Scene {
      * @type {Mobject[]}
      */
     this.mobjects = [];
-    //this.animationQueue = [];
+    /**
+     * The queue of animations to play.
+     * @type {_AnimationCollection[]}
+     */
+    this.animationQueue = [];
+    /**
+     * The current animation playing;
+     * @type {_AnimationCollection}
+     */
+    this.currentAnimations = _AnimationCollection.nullCollection;
     /**
      * The renderer for the scene. Each scene has one renderer, and each renderer has one scene.
      * @type {Renderer2D}
@@ -71,8 +80,36 @@ class Scene {
     this.renderer.beginRendering();
   }
 
-  /**Begins updating all mobjects in the Scene.
-   * 
+  /**
+   * Update all mobjects in the `Scene` and update each animation currently playing.
+   * @param {number} dt Change in time between updates. Defaults (mostly) to `1/framesPerSecond`.
+   */
+  update(dt) {
+    this.updateAnimations(dt);
+    this.updateMobjects(dt);
+  }
+
+  /**
+   * Update each animation currently playing in the `Scene`.
+   * @param {number} dt Change in time between updates. Defaults (mostly) to `1/framesPerSecond`.
+   */
+  updateAnimations(dt) {
+    // retrieve the next animation collection if the current one has completed.
+    if (this.currentAnimations.isNullCollection || this.currentAnimations.allAnimationsComplete()){
+      this.beginNextAnimations();
+    }
+    else {
+      this.currentAnimations.step(dt);
+    }
+  }
+
+  beginNextAnimations() {
+    this.currentAnimations = this.animationQueue.length != 0 ? this.animationQueue.shift() : _AnimationCollection.nullCollection;
+    this.currentAnimations.begin(this);
+  }
+  
+  /**
+   * Begins updating all mobjects in the `Scene`.
    * @param {number} dt Change in time between updates. Defaults (mostly) to `1/framesPerSecond`.
    */
   updateMobjects(dt) {
@@ -131,7 +168,15 @@ class Scene {
    */
   play(...animations) {
     let animationCollection = new _AnimationCollection(...animations);
-    console.log(animationCollection);
+    this.queueAnimationCollection(animationCollection);
+  }
+  
+  /**
+   * Queue the given `_AnimationCollection` to `this.animationQueue`.
+   * @param {_AnimationCollection} animationCollection The `_AnimationCollection` to queue.
+   */
+  queueAnimationCollection(animationCollection) {
+    this.animationQueue.push(animationCollection);
   }
 }
 

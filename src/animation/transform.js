@@ -3,38 +3,46 @@ import { Scene } from "../scene/scene.js";
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Animation } from "./animation.js";
 
+
+const Transform = (mobject, targetMobject, kwargs) => {
+  kwargs.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
+  return new _Transform(mobject, targetMobject, kwargs);
+};
+
 /**
  * A `Transform` transforms a `Mobject` into a target `Mobject`.
  */
-class Transform extends Animation {
+class _Transform extends Animation {
   /**
    * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
    * @param {Mobject} targetMobject The target of the transformation.
    */
-  constructor(mobject, targetMobject, kwargs) {
-    if (Validation.isOfClass("Transform")) {
-      this._init(mobject, targetMobject, kwargs);
+  constructor(mobject, propertyInterpolationFunctions, kwargs) {
+    super();
+
+    if (Validation.isOfClass(this, "_Transform")) {
+      this._init(mobject, propertyInterpolationFunctions, kwargs);
     }
   }
 
-  _init(mobject, targetMobject, kwargs) {
+  _init(mobject, propertyInterpolationFunctions, kwargs) {
     /** @type {Mobject} */
-    this.targetMobject = defineUndef(targetMobject, new Mobject());
-    this.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
+    //this.targetMobject = defineUndef(targetMobject, new Mobject());
+    //this.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
     
-    super._init(mobject, kwargs)
+    super._init(mobject, propertyInterpolationFunctions, kwargs)
   }
 
-  begin() {
-    this.targetMobject = this.createTarget();
-    this.targetCopy = this.targetMobject.copy();
+  // begin() {
+  //   //this.targetMobject = this.createTarget();
+  //   //this.targetCopy = this.targetMobject.copy();
 
-    super.begin();
-  }
+  //   super.begin();
+  // }
 
   createTarget() {
     // Has no meaningful effect here, but may be useful in subclases.
-    return this.targetMobject;
+    //return this.targetMobject;
   }
 
   /**
@@ -43,9 +51,9 @@ class Transform extends Animation {
    */
   cleanUpFromScene(scene) {
     super.cleanUpFromScene(scene);
-    if (this.replaceMobjectWithTargetInScene) {
-      scene.replace(this.mobject, this.targetMobject);
-    }
+    //if (this.replaceMobjectWithTargetInScene) {
+    //  scene.replace(this.mobject, this.targetMobject);
+    //}
   }
 
   /**
@@ -55,9 +63,15 @@ class Transform extends Animation {
    * @param {Mobject} targetCopy 
    * @param {number} alpha 
    */
-  interpolateSubmobject(submobject, startingSubmobject, targetCopy, alpha) {
-    submobject.interpolate(startingSubmobject, targetCopy, alpha,  this.pathFunc);
+  interpolateSubmobject(submobject, startingSubmobject, alpha) {
+    for (let [property, interpolationFunc] of Object.entries(this.propertyInterpolationFunctions)) {
+      let funcName = "set"+property[0].toUpperCase()+property.substring(1);
+      submobject[funcName](interpolationFunc(alpha));
+      console.log(property, "=", interpolationFunc(alpha));
+      console.log("alpha =", alpha);
+      console.log("real value=", submobject[property]);
+    }
   }
 }
 
-export { Transform };
+export { _Transform as Transform };

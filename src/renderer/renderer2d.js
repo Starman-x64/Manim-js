@@ -132,7 +132,7 @@ class Renderer2D {
     this.ctx.fill();
     
     // update scene mobjects
-    this.updateScene(dt);
+    this.updateScene(dt/1000);
     // draw scene mobjects (incl. vmobjects)
     this.drawScene();
 
@@ -143,11 +143,11 @@ class Renderer2D {
 
   /**
    * Update the mobjects in the scene.
-   * @param {number} dt Delta time in seconds.
+   * @param {number} dt Delta time in miliseconds.
    * @returns {void}
    */
   updateScene(dt) {
-    this.scene.updateMobjects(dt);
+    this.scene.update(dt);
   }
 
   /**
@@ -183,9 +183,9 @@ class Renderer2D {
     }
 
     /** @type {boolean} */
-    let drawFill = !!mobject.fillColor.alpha();
+    let drawFill = !!(mobject.fillColor.alpha() * mobject.fillOpacity);
     /** @type {boolean} */
-    let drawStroke = !!mobject.strokeColor.alpha();
+    let drawStroke = !!(mobject.strokeColor.alpha() * mobject.strokeOpacity);
 
     /** @type {ManimColor} */
     let fillColor = mobject.fillColor.toString("rgba");
@@ -202,14 +202,14 @@ class Renderer2D {
       paths = SVGDrawer.generatePath2D(points, curveTypes);
     }
 
+    this.ctx.strokeStyle = strokeColor;
+    this.ctx.fillStyle = fillColor;
     if (drawStroke) {
       this.ctx.setLineDash(mobject.lineDash);
       this.ctx.lineWidth = mobject.strokeWidth;
-      this.ctx.strokeStyle = strokeColor;
       this.ctx.stroke(paths.curve);
     }
     if (drawFill) {
-      this.ctx.fillStyle = fillColor;
       this.ctx.fill(paths.curve);
     }
     
@@ -247,7 +247,7 @@ class Renderer2D {
   /**
    * Calculate the delta time since the last frame.
    * @param {number} timeStampMillis Time in ms when the last frame finished processing.
-   * @returns {number} Delta time `dt` in seconds.
+   * @returns {number} Delta time `dt` in milliseconds.
    */
   calculateDeltaTime(timeStampMillis) {
     if (this.previousTimeStamp === null) {

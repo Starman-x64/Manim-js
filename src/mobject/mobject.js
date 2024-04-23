@@ -23,6 +23,7 @@ class Mobject {
      * @type {string}
      */
     this.name = defineUndef(kwargs.name, this.constructor.name);
+    this.opacity = defineUndef(this.opacity, defineUndef(kwargs.opacity, 1));
     //this.dim = defineUndef(kwargs.dim, 3);
     //this.target = defineUndef(kwargs.target, null);
     //this.zIndex = defineUndef(kwargs.zIndex, 0);
@@ -747,10 +748,25 @@ class Mobject {
 
     return this;
   }  
-
-
-
-
+  
+  /**
+   * Sets the alpha channels pf `this.fillColor` and `this.strokeColor` to their defaults (`this.fillOpacity` and `this.strokeOpacity`, respectively) multiplied by the given `opacity`.
+   * @param {number} opacity Opacity value to set the fill and stroke.
+   * @returns {this}
+   */
+  fade(opacity) {
+    Validation.testNumberInRange({opacity}, 0, 1);
+    this.opacity = opacity;
+    this.fillColor.setAlpha(this.fillOpacity * opacity);
+    this.strokeColor.setAlpha(this.strokeOpacity * opacity);
+    return this;
+  }
+  
+  setOpacity(opacity) {
+    return this.fade(opacity);
+  }
+  
+  
   
   shiftAnimationOverride(animation, alpha, ...vectors) {
     let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));

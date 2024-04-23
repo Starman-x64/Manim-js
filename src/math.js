@@ -35,7 +35,13 @@ const UR = nj.add(UP, RIGHT);
 const DL = nj.add(DOWN, LEFT);
 /** `[1, -1, 0]`: One step down plus one step right. */
 const DR = nj.add(DOWN, RIGHT);
+/**
+ * The logistic function, a common example of a sigmoid function, is defined as:
+ * $$\frac{1}{1 + e^{-x}}$$
+ */
+const sigmoid = (x) => 1 / (1 + Math.exp(-x));
 
 
 export { PI, TAU, DEGREES, RADIANS };
 export { ORIGIN, UP, DOWN, RIGHT, LEFT, OUT, IN, X_AXIS, Y_AXIS, Z_AXIS, UL, UR, DL, DR };
+export { sigmoid };

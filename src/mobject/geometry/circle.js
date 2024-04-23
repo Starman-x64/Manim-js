@@ -3,7 +3,7 @@ import { VMobject } from "../types/vectorizedMobject.js";
 
 class Circle extends VMobject {
   /** @inheritdoc */
-  constructor(kwargs) {
+  constructor(kwargs={}) {
     super();
 
     // Don't initialise the mobject if this mobject is of a child class. Let the child class do it.

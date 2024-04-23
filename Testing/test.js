@@ -15,6 +15,7 @@ import { LineDash } from "../src/mobject/types/vectorizedMobject.js";
 import { ArrowTip } from "../src/mobject/geometry/tips/tip.js";
 import { PI } from "../src/math.js";
 import { Create } from "../src/animation/creation.js";
+import { FadeIn } from "../src/animation/fading.js";
 
 class TestScene extends Scene {
   construct() {
@@ -22,11 +23,14 @@ class TestScene extends Scene {
     let dashedLine = new DashedLine(5, 0.5, { start: Point3D(-100, 1, 0), end: Point3D(100, 1, 0) });
     let dottedLine = new DashedLine(1, 0.1, { start: Point3D(-100, -1, 0), end: Point3D(100, -1, 0) });
     let square = new Square();
+    let circle = new Circle();
 
     this.add(line);
     this.add(dashedLine);
     this.add(dottedLine);
-    this.play(new Create(square));
+    this.play(FadeIn(square));
+    this.play(FadeIn(circle));
+
   }
 }
 

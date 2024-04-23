@@ -793,48 +793,6 @@ class Mobject {
     return this.fade(opacity);
   }
   
-  
-  
-  shiftAnimationOverride(animation, alpha, ...vectors) {
-    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
-    let referencePoints = animation.startingMobject.points.clone();
-    // Shift the points of all "family members" who have points by the total vector.
-    this.familyMembersWithPoints().forEach(mobject => {
-      totalVector.tolist().forEach((coord, index) => {
-        for(let i = 0; i < this.points.shape[1]; i++) {
-          mobject.points.set(index, i, referencePoints.get(index, i) + coord*alpha);
-        }
-      });
-      console.log("shifted points:\n", mobject.points.toString());
-    });
-    
-    return this;
-
-    // totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3));
-    
-    // // Shift the points of all "family members" who have points by the total vector.
-    // this.familyMembersWithPoints().forEach(mobject => {
-    //   totalVector.tolist().forEach((coord, index) => {
-    //     for(let i = 0; i < this.points.shape[1]; i++) {
-    //       mobject.points.set(index, i, mobject.points.get(index, i) + coord);
-    //     }
-    //   });
-    //   console.log("shifted points:\n", mobject.points.toString());
-    // });
-
-    // return this;
-  }
-
-  scaleAnimationOverride(animation, alpha, scaleFactor, kwargs) {
-    this.familyMembersWithPoints().forEach(mobject => {
-      mobject.points = nj.multiply(mobject.points, scaleFactor);//mobject.points = ;
-      console.log("scaled points:\n", mobject.points.toString());
-    });
-
-    return this;
-  }
-
-
 
   //
   /**Get the number of points that define the mobjects shape.

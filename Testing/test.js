@@ -25,14 +25,15 @@ class TestScene extends Scene {
     let square = new Square();
     let circle = new Circle({ radius: 2 });
 
-    circle.shift(Point3D(0, 5, 0));
+    circle.shift(Point3D(5, 0, 0));
+    square.shift(Point3D(-5, 2, 0));
 
-    this.add(line);
-    this.add(dashedLine);
-    this.add(dottedLine);
+    // this.add(line);
+    // this.add(dashedLine);
+    // this.add(dottedLine);
     this.add(circle);
-    this.play(FadeIn(square));
-    this.play(FadeOut(circle));
+    this.play(FadeIn(square, { shiftVector: Point3D(0, -2, 0) }));
+    this.play(FadeOut(circle, { shiftVector: Point3D(0, -2, 0) }));
 
   }
 }

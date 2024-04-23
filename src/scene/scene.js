@@ -99,7 +99,7 @@ class Scene {
       this.beginNextAnimations();
     }
     else {
-      this.currentAnimations.step(dt);
+      this.currentAnimations.step(this, dt);
     }
   }
 

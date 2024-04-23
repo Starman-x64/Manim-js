@@ -1,4 +1,4 @@
-import { Validation } from "../utils/validation.js";
+import { Validation, defineUndef } from "../utils/validation.js";
 import { ValidationError } from "../error/errorClasses.js";
 
 /**
@@ -72,7 +72,7 @@ class ManimColor {
   
   
   interpolate(color, t, kwargs={space: "oklab", func: (t)=>t}) {
-    let space = kwargs.space === undefined ? "oklab" : kwargs.space;
+    let space = defineUndef(kwargs.space, "oklab");
     let func = kwargs.func === undefined ? (t)=>t : kwargs.func;
     if (!ManimColor._isValidColorSpace(space)) {
       throw new ValueError(`Cannot interpolate in color space "${space}"!`);

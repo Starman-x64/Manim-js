@@ -10,6 +10,9 @@ const _Fade = (mobject, kwargs) => {
 const FadeIn = (mobject, kwargs) => {
   return new _FadeIn(mobject, kwargs);
 }
+const FadeOut = (mobject, kwargs) => {
+  return new _FadeOut(mobject, kwargs);
+}
 
 
 class __Fade extends Transform {
@@ -33,22 +36,24 @@ class __Fade extends Transform {
     if (Validation.isUndefined(mobject)) {
       throw new ValueError("At least one Mobject must be passed into `_Fade` animation!");
     }
-
     this.shiftVector = defineUndef(kwargs.shiftVector, ORIGIN);
     this.scaleFactor = defineUndef(kwargs.scaleFactor, 1);
-    kwargs.fadeIn = defineUndef(kwargs.fadeIn, false);
+    this.fadeIn = defineUndef(kwargs.fadeIn, false);
+    console.log(kwargs);
+    console.log(this.fadeIn);
     
-    
-    let fadeInterpolationFunc = this.createOpacityInterpolationFunc(mobject, kwargs.fadeIn);
-
-    super._init(mobject, { opacity: fadeInterpolationFunc }, kwargs);
+    let targetMobject = mobject.copy();
+    let targetOpacity = this.fadeIn ? targetMobject.opacity * 1 : 0;
+    targetMobject.fade(targetOpacity);
+    mobject.fade(mobject.opacity);
+    //targetMobject.scale(this.scaleFactor).shift(this.shiftVector);
+     
+    super._init(mobject, targetMobject, kwargs);
   }
 
-  createOpacityInterpolationFunc(mobject, fadeIn) {
-    let start = fadeIn ? 0 : mobject.opacity;
-    let end = fadeIn ? mobject.opacity : 0;
-
-    return (t) => start*(1-t) + end * t;
+  createStartingMobject() {
+    this.mobject.fade(this.fadeIn ? 0 : this.mobject.opacity);
+    return this.mobject.copy();
   }
 }
 
@@ -68,5 +73,21 @@ class _FadeIn extends __Fade {
   }
 }
 
+class _FadeOut extends __Fade {
+  constructor(mobject, kwargs={}) {
+    super();
+    
+    if (Validation.isOfClass(this, "_FadeOut")) {
+      this._init(mobject, kwargs);
+    }
+  }
 
-export { FadeIn };
+  _init(mobject, kwargs) {
+    kwargs.fadeIn = false;
+    kwargs.remover = true;
+    super._init(mobject, kwargs);
+  }
+}
+
+
+export { FadeIn, FadeOut };

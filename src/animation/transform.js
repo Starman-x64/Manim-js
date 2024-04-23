@@ -17,32 +17,32 @@ class _Transform extends Animation {
    * @param {Mobject} mobject The `Mobject` to be transformed. It will be mutated to become the `targetMobject`.
    * @param {Mobject} targetMobject The target of the transformation.
    */
-  constructor(mobject, propertyInterpolationFunctions, kwargs) {
+  constructor(mobject, targetMobject, kwargs={}) {
     super();
 
     if (Validation.isOfClass(this, "_Transform")) {
-      this._init(mobject, propertyInterpolationFunctions, kwargs);
+      this._init(mobject, targetMobject, kwargs);
     }
   }
 
-  _init(mobject, propertyInterpolationFunctions, kwargs) {
+  _init(mobject, targetMobject, kwargs) {
     /** @type {Mobject} */
-    //this.targetMobject = defineUndef(targetMobject, new Mobject());
+    this.targetMobject = defineUndef(targetMobject, new Mobject());
     //this.pathFunc = defineUndef(kwargs.pathFunc, (a, b, t) => nj.add(nj.multiply(b, t), nj.multiply(a, 1 - t)));
     
-    super._init(mobject, propertyInterpolationFunctions, kwargs)
+    super._init(mobject, targetMobject, kwargs);
   }
 
-  // begin() {
-  //   //this.targetMobject = this.createTarget();
-  //   //this.targetCopy = this.targetMobject.copy();
+  begin(scene) {
+    this.targetMobject = this.createTarget();
+    this.targetCopy = this.targetMobject.copy();
 
-  //   super.begin();
-  // }
+    super.begin(scene);
+  }
 
   createTarget() {
     // Has no meaningful effect here, but may be useful in subclases.
-    //return this.targetMobject;
+    return this.targetMobject;
   }
 
   /**
@@ -51,9 +51,19 @@ class _Transform extends Animation {
    */
   cleanUpFromScene(scene) {
     super.cleanUpFromScene(scene);
-    //if (this.replaceMobjectWithTargetInScene) {
-    //  scene.replace(this.mobject, this.targetMobject);
-    //}
+    if (this.replaceMobjectWithTargetInScene) {
+      scene.replace(this.mobject, this.targetMobject);
+    }
+  }
+
+  getAllFamiliesZipped() {
+    let mobjects = [
+      this.mobject,
+      this.startingMobject,
+      this.targetCopy
+    ]
+    let allMobjects = mobjects.map(mob => mob.familyMembersWithPoints());
+    return allMobjects[0].map((mob, i) => [mob, allMobjects[1][i], allMobjects[2][i]]);
   }
 
   /**
@@ -63,14 +73,11 @@ class _Transform extends Animation {
    * @param {Mobject} targetCopy 
    * @param {number} alpha 
    */
-  interpolateSubmobject(submobject, startingSubmobject, alpha) {
-    for (let [property, interpolationFunc] of Object.entries(this.propertyInterpolationFunctions)) {
-      let funcName = "set"+property[0].toUpperCase()+property.substring(1);
-      submobject[funcName](interpolationFunc(alpha));
-      console.log(property, "=", interpolationFunc(alpha));
-      console.log("alpha =", alpha);
-      console.log("real value=", submobject[property]);
-    }
+  interpolateSubmobject(submobject, startingSubmobject, targetCopy, alpha) {
+    console.log(startingSubmobject);
+    console.log(targetCopy);
+    submobject.interpolate(startingSubmobject, targetCopy, alpha);
+    return this;
   }
 }
 

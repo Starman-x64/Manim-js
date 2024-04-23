@@ -1,6 +1,7 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
 import { OUT } from "../math.js";
+import { ManimColor } from "../color/manimColor.js";
 
 /**Mathematical Object: base class for objects that can be displayed on screen.
  * 
@@ -11,7 +12,7 @@ class Mobject {
   /**
    * @param {{name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
    */
-  constructor(kwargs) {
+  constructor(kwargs={}) {
     if (Validation.isOfClass(this, "Mobject")) {
       this._init(kwargs);
     }
@@ -392,7 +393,17 @@ class Mobject {
    */
   copy() {
     let copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    copy.points = this.points.clone();
+    copy.points = Validation.isOfClass(this.points, "Array") ? [] : this.points.clone();
+    copy.opacity = this.opacity.valueOf() * 1;
+    // for (let [key, value] of Object.entries(this)) {
+    //   if (key == "points") continue;
+    //   try {
+    //     copy[key] = structuredClone(value);
+    //   }
+    //   catch (error) {
+
+    //   }
+    // }
     return copy;
   }
   
@@ -690,8 +701,24 @@ class Mobject {
    * @returns {this}
    */
   interpolate(mobject1, mobject2, alpha, pathFunc) {
+    pathFunc = defineUndef(pathFunc, (a, b, t) => nj.add(nj.multiply(a, 1 - t), nj.multiply(b, t)));
     this.points = pathFunc(mobject1.points, mobject2.points, alpha);
-    // this.interpolateColor(mobject1, mobject2, alpha)
+    this.interpolateColor(mobject1, mobject2, alpha);
+    return this;
+  }
+
+  /**
+   * 
+   * @param {Mobject} mobject2 
+   * @param {Mobject} mobject2 
+   * @param {number} alpha 
+   */
+  interpolateColor(mobject1, mobject2, alpha) {
+    this.fillColor = mobject1.fillColor.interpolate(mobject2.fillColor, alpha);
+    this.strokeColor = mobject1.strokeColor.interpolate(mobject2.strokeColor, alpha);
+    this.fillOpacity = mobject1.fillOpacity * (1 - alpha) + mobject2.fillOpacity * alpha;
+    this.strokeOpacity = mobject1.strokeOpacity * (1 - alpha) + mobject2.strokeOpacity * alpha;
+    this.fade(mobject1.opacity * (1 - alpha) + mobject2.opacity * alpha);
     return this;
   }
 

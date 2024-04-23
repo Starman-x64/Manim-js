@@ -10,17 +10,23 @@ class Animation {
   /**
    * @param {{mobject: Mobject, runTime: number, lagRatio: number, reverseRateFunction: boolean, name: string,  remover: boolean, introducer: boolean, suspendMobjectUpdating: boolean, rateFunc: Function}} kwargs Keyword arguments.
    */
-  constructor(mobject, propertyInterpolationFunctions, kwargs) {
+  constructor(mobject, targetMobject, kwargs) {
     if (Validation.isOfClass(this, "Animation")) {
-      this._init(mobject, propertyInterpolationFunctions, kwargs);
+      this._init(mobject, targetMobject, kwargs);
     }
   }
 
-  _init(mobject, propertyInterpolationFunctions, kwargs) {
-    /**The mobject to be animated. This is not required for all types of animations.
+  _init(mobject, targetMobject, kwargs) {
+    /**
+     * The `Mobject` to be animated. This is not required for all types of animations.
      * @type {Mobject}
-    */
+     */
     this.mobject = mobject;
+    /**
+     * The `Mobject` for `this.mobject` to animate into.
+     * @type {Mobject}
+     */
+    this.targetMobject = targetMobject;
     /**The duration of the animation in seconds.
      * @type {number}
     */
@@ -57,18 +63,6 @@ class Animation {
      * @type {number}
     */
     this.animationTimer = 0;
-    
-    /**
-     * A dictionary of functions `(t) => {}` which output the given intermediate values of the property to animate.  
-     * **NOTE:** These functions will be passed `t`/`alpha` values that have been smoothed by `this.rateFunc`, so
-     * ensure that the functions expect linear `t`-values.
-     * @example
-     * {
-     *   points: (t) => Point3D(-1, -1, 0)*(1 - t) + Point3D(1, 1, 0)*t,
-     *   fillColor: (t) => RED.interpolate(WHITE, t)
-     * }
-     */
-    this.propertyInterpolationFunctions = propertyInterpolationFunctions;
   }
   
   getLagTime() {
@@ -96,9 +90,9 @@ class Animation {
     this.interpolate(0);
   }
 
-  step(dt) {
+  step(scene, dt) {
     if (this.animationTimer >= this.runTime) {
-      this.finish();
+      this.finish(scene);
       return;
     }
     console.log(this.animationTimer, this.getLagTime());
@@ -114,8 +108,9 @@ class Animation {
    * 
    * @returns {void}
    */
-  finish() {
+  finish(scene) {
     this.interpolate(1);
+    this.cleanUpFromScene(scene);
     
     if (this.suspendMobjectUpdating && this.mobject) {
       this.mobject.resumeUpdating();
@@ -311,17 +306,15 @@ class _AnimationCollection {
   }
   
   begin(scene) {
-    for (let i = 0; i < this.animations.length; i++) {
-      this.animations[i].begin(scene);
-    }
+    this.animations.forEach(anim => anim.begin(scene));
   }
   
-  step(dt) {
-    this.animations.forEach(anim => anim.step(dt));
+  step(scene, dt) {
+    this.animations.forEach(anim => anim.step(scene, dt));
   }
   
-  finish() {
-    this.animations.forEach(anim => anim.finish());
+  finish(scene) {
+    this.animations.forEach(anim => anim.finish(scene));
   }
 
   static nullCollection = (() => { let nc = new _AnimationCollection(); nc.isNullCollection = true; return nc; })(); 

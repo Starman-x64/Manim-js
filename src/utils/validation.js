@@ -91,6 +91,15 @@ class Validation {
   }
 
   /**
+   * Returns `value !== undefined`. 
+   * @param {any} value The value to test.
+   * @returns {boolean}
+   */
+  static isDefined(value) {
+    return value !== undefined;
+  }
+
+  /**
    * Returns `value.constructor.name == className`.
    * @param {any} value The value to test.
    * @param {string} className The name of the class to test against.

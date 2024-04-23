@@ -7,8 +7,7 @@ import { bezier } from "../../utils/bezier.js";
 import { Point3D } from "../../point3d.js";
 import { SVGDrawer } from "../../renderer/renderer2d.js";
 import { NotImplementedError } from "../../error/errorClasses.js";
-
-const DEFAULT_LINE_WIDTH = 4;
+import { DEFAULT_LINE_WIDTH } from "../../constants.js";
 
 /**A vectorized mobject.
  * 

@@ -1,6 +1,6 @@
 import { ManimColor, TRANSPARENT, WHITE } from "../../color/manimColor.js";
 import { DEFAULT_FONT_SIZE } from "../../constants.js";
-import { ORIGIN } from "../../math.js";
+import { ORIGIN } from "../../mathConstants.js";
 import { Validation, defineUndef } from "../../utils/validation.js";
 import { GMobject } from "../types/graphicMobject.js";
 

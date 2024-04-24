@@ -39,12 +39,12 @@ class ManimColor {
   rgba = () => [...(this._rgb.map(x => Math.round(x*255)))].concat(this.alpha());
   rgb255 = () => this._rgb.map(x => Math.round(x*255));
   hex = () => "#" + this.rgb().map(d => Math.round(d*255).toString(16).padStart(2, "0")).join("");
-  xyz = () => ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1)).selection.data;
-  linearrgb = () =>  ManimColor.sRGBToLinearRGB(nj.array(this._rgb).reshape(3,1)).selection.data;
-  hsl = () => ManimColor.RGBtoHSL(nj.array(this._rgb).reshape(3,1)).selection.data;
-  hsv = () => ManimColor.RGBtoHSV(nj.array(this._rgb).reshape(3,1)).selection.data;
-  oklab = () => ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1))).selection.data;
-  oklch = () => ManimColor.OklabToOklch(ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(nj.array(this._rgb).reshape(3,1)))).selection.data;
+  xyz = () => ManimColor.sRGBToXYZ(this._rgb);
+  linearrgb = () =>  ManimColor.sRGBToLinearRGB(this._rgb);
+  hsl = () => ManimColor.RGBtoHSL(this._rgb);
+  hsv = () => ManimColor.RGBtoHSV(this._rgb);
+  oklab = () => ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(this._rgb));
+  oklch = () => ManimColor.OklabToOklch(ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(this._rgb)));
 
   setAlpha(newAlpha) {
     Validation.testNumberInRange({newAlpha}, 0, 1);
@@ -329,7 +329,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** Linear RGBLinear RGB to CIE XYZ.
    * @type {Ndarray}
   */
-  static LINEAR_RGB_TO_XYZ_MATRIX = nj.array([
+  static LINEAR_RGB_TO_XYZ_MATRIX = math.matrix([
     [0.4124564,  0.3575761,  0.1804375],
     [0.2126729,  0.7151522,  0.0721750],
     [0.0193339,  0.1191920,  0.9503041],
@@ -337,7 +337,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** CIE XYZ to Linear RGB.
    * @type {Ndarray}
   */
-  static XYZ_TO_LINEAR_RGB = nj.array([
+  static XYZ_TO_LINEAR_RGB = math.matrix([
     [ 3.2404542, -1.5371385, -0.4985314],
     [-0.9692660,  1.8760108,  0.0415560],
     [ 0.0556434, -0.2040259,  1.0572252],
@@ -345,7 +345,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** CIE XYZ to LMS cone response.
    * @type {Ndarray}
   */
-  static OKLAB_M1 = nj.array([
+  static OKLAB_M1 = math.matrix([
     [ 0.8189330101,  0.3618667424, -0.1288597137],
     [ 0.0329845436,  0.9293118715,  0.0361456387],
     [ 0.0482003018,  0.2643662691,  0.6338517070]
@@ -353,7 +353,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** LMS cone response to Oklab.
    * @type {Ndarray}
   */
-  static OKLAB_M2 = nj.array([
+  static OKLAB_M2 = math.matrix([
     [ 0.2104542553,  0.7936177850, -0.0040720468],
     [ 1.9779984951, -2.4285922050,  0.4505937099],
     [ 0.0259040371,  0.7827717662, -0.8086757660]
@@ -361,7 +361,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** LMS cone response to XYZ.
    * @type {Ndarray}
   */
-  static OKLAB_M1_INV = nj.array([
+  static OKLAB_M1_INV = math.matrix([
     [ 1.22701385, -0.55779998,  0.28125615],
     [-0.04058018,  1.11225687, -0.07167668],
     [-0.07638128, -0.42148198,  1.58616322]
@@ -369,7 +369,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   /** Oklab to LMS cone response.
    * @type {Ndarray}
   */
-  static OKLAB_M2_INV = nj.array([
+  static OKLAB_M2_INV = math.matrix([
     [ 1         ,  0.39633779,  0.21580376],
     [ 1.00000001, -0.10556134, -0.06385417],
     [ 1.00000005, -0.08948418, -1.29148554]
@@ -569,11 +569,11 @@ const BLUE = new ManimColor("rgb255", 77, 177, 255);
 const YELLOW = new ManimColor("rgb255", 247, 227, 47);
 const ORANGE = new ManimColor("rgb255", 247, 137, 27);
 const TRANSPARENT = new ManimColor("rgb255", 0, 0, 0, 0);
-const DARK_RED = RED.interpolate(BLACK, 0.25, { space: "oklab" });
-const DARK_GREEN = GREEN.interpolate(BLACK, 0.25, { space: "oklab" });
-const DARK_BLUE = BLUE.interpolate(BLACK, 0.25, { space: "oklab" });
-const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25, { space: "oklab" });
-const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25, { space: "oklab" });
+// const DARK_RED = RED.interpolate(BLACK, 0.25, { space: "oklab" });
+// const DARK_GREEN = GREEN.interpolate(BLACK, 0.25, { space: "oklab" });
+// const DARK_BLUE = BLUE.interpolate(BLACK, 0.25, { space: "oklab" });
+// const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25, { space: "oklab" });
+// const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25, { space: "oklab" });
 
 export { ManimColor };
-export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };
+export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT };//, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };

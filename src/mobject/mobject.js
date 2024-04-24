@@ -1,6 +1,6 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
-import { ORIGIN, OUT } from "../math.js";
+import { ORIGIN, OUT } from "../mathConstants.js";
 import { ManimColor } from "../color/manimColor.js";
 import { Animation } from "../animation/animation.js";
 import { NotImplementedError, ValueError } from "../error/errorClasses.js";

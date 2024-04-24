@@ -1,3 +1,4 @@
+import { Point3D } from "../../point3d.js";
 import { Validation } from "../../utils/validation.js";
 import { Mobject } from "../mobject.js";
 
@@ -11,7 +12,7 @@ class Camera extends Mobject {
   }
   
   generatePoints() {
-    this.points = nj.array([[0],[0],[0]]);
+    this.points = Point3D(0, 0, 0);
   }
   
   /**

@@ -1,6 +1,6 @@
 import { VMobject, CapStyleType, LineJoinType } from "../mobject/types/vectorizedMobject.js";
 import {Scene} from "../scene/scene.js";
-import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
+import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, ManimColor } from "../color/manimColor.js";
 import { bezier } from "../utils/bezier.js";
 import { Point3D } from "../point3d.js";
 import { Validation } from "../utils/validation.js";

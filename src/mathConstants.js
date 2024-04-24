@@ -28,13 +28,13 @@ const Y_AXIS = Point3D(0.0, 1.0, 0.0);
 const Z_AXIS = Point3D(0.0, 0.0, 1.0);
 
 /** `[-1, 1, 0]`: One step up plus one step left. */
-const UL = nj.add(UP, LEFT);
+const UL = math.add(UP, LEFT);
 /** `[1, 1, 0]`: One step up plus one step right. */
-const UR = nj.add(UP, RIGHT);
+const UR = math.add(UP, RIGHT);
 /** `[-1, -1, 0]`: One step down plus one step left. */
-const DL = nj.add(DOWN, LEFT);
+const DL = math.add(DOWN, LEFT);
 /** `[1, -1, 0]`: One step down plus one step right. */
-const DR = nj.add(DOWN, RIGHT);
+const DR = math.add(DOWN, RIGHT);
 /**
  * The logistic function, a common example of a sigmoid function, is defined as:
  * $$\frac{1}{1 + e^{-x}}$$

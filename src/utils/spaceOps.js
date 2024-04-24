@@ -1,4 +1,4 @@
-import { OUT } from "../math.js";
+import { OUT } from "../mathConstants.js";
 
 class SpaceOps {
   /**

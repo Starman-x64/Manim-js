@@ -1,6 +1,6 @@
 import { Mobject } from "../mobject.js";
 import { ManimColor } from "../../color/manimColor.js";
-import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE } from "../../color/manimColor.js";
+import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT } from "../../color/manimColor.js";
 import { defineUndef } from "../../utils/validation.js";
 import { Validation } from "../../utils/validation.js";
 import { bezier } from "../../utils/bezier.js";

@@ -609,8 +609,8 @@ class Mobject {
   }
 
   applyPointsFunctionAboutPoint(func, point) {
-    point = defineUndef(point, ORIGIN);
-    console.log(point.toString());
+    point = defineUndef(point, ORIGIN.clone());
+    // console.log(point.toString());
     let subtractPoint = nj.array([
       [1, 0, 0, 0],
       [0, 1, 0, 0],
@@ -623,18 +623,37 @@ class Mobject {
       [0, 0, 1, 0],
       [point.get(0,0), point.get(1,0), point.get(2,0), 1],
     ]);
-    console.log(point.toString());
-    console.log(subtractPoint.toString());
-    console.log(addPoint.toString());
+    // console.log(point.toString());
+    // console.log(subtractPoint.toString());
+    // console.log(addPoint.toString());
     this.familyMembersWithPoints().forEach(mobject => {
       let ones = nj.ones(mobject.points.shape[0]).reshape(-1,1);
-      let newPoints = nj.concatenate(mobject.points, ones);
+      // console.log(mobject.points.toString());
+      // console.log(ones.toString());
+      let newPoints;
+      if (mobject.points.shape.length == 1) {
+        newPoints = nj.array([...(mobject.points.selection.data), 1]);
+      }
+      else {
+        newPoints = nj.concatenate(mobject.points, ones);
+      }
       let originalShape = [...(mobject.points.shape)];
       newPoints = nj.dot(newPoints, subtractPoint);
       newPoints = func(newPoints.slice(null,[-1]));
-      newPoints = nj.concatenate(newPoints, ones);
+      if (mobject.points.shape.length == 1) {
+        newPoints = nj.array([...(mobject.points.selection.data), 1]);
+      }
+      else {
+        newPoints = nj.concatenate(mobject.points, ones);
+      }
       newPoints = nj.dot(newPoints, addPoint);
-      mobject.points = newPoints.slice(null,[-1]);
+      if (mobject.points.shape.length == 1) {
+        mobject.points = newPoints.slice([-1]);
+      }
+      else {
+        mobject.points = newPoints.slice(null,[-1]);
+      }
+      // console.log(mobject.points.toString());
     });
     
     return this;

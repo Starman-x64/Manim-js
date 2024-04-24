@@ -3,6 +3,8 @@ import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE, ManimColor } from "../color/manimColor.js";
 import { bezier } from "../utils/bezier.js";
 import { Point3D } from "../point3d.js";
+import { Validation } from "../utils/validation.js";
+import { Text } from "../mobject/text/textMobject.js";
 
 const GLOBAL_SCALE = 20;
 
@@ -161,14 +163,17 @@ class Renderer2D {
       if (mob instanceof VMobject) {
         this.drawVMobject(mob);
       }
+      if (mob instanceof Text) {
+        this.drawText(mob);
+      }
     });
     
   }
 
   /**
-   * Draws the given VMobject.  
+   * Draws the given `VMobject`.  
    * Handled differently from `GMobject`s (graphic mobjects) because VMobjects are drawn with `Path2D`.
-   * @param {VMobject} mobject The VMobject to draw.
+   * @param {VMobject} mobject The `VMobject` to draw.
    * @returns {void}
    */
   drawVMobject(mobject) {
@@ -233,6 +238,32 @@ class Renderer2D {
     // Now draw each of the submobjects
     mobject.submobjects.forEach(mob => {
       this.drawVMobject(mob);
+    });
+  }
+  
+  /**
+   * Draws the given `Text` mobject.  
+   * @param {Text} mobject The `Text` to draw.
+   * @returns {void}
+   */
+  drawText(mobject) {
+    if(mobject.opacity == 0) return;
+    mobject.color.setAlpha(mobject.fillOpacity * mobject.opacity);
+
+    let screenCoords = this.worldToScreenCoords(...(mobject.points.selection.data));
+
+    /** @type {ManimColor} */
+    let color = mobject.color.toString("rgba");
+    
+    this.ctx.font = mobject.getCanvasFontStyleString();
+    this.ctx.fillStyle = color;
+    this.ctx.textAlign = mobject.align;
+    this.ctx.textBaseline = mobject.baseline;
+    this.ctx.fillText(mobject.text, screenCoords[0], screenCoords[1]);
+    
+    // Now draw each of the submobjects
+    mobject.submobjects.forEach(mob => {
+      this.drawText(mob);
     });
   }
 

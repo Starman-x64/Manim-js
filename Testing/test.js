@@ -17,6 +17,7 @@ import { PI } from "../src/math.js";
 import { Create } from "../src/animation/creation.js";
 import { FadeIn, FadeOut } from "../src/animation/fading.js";
 import { Rotate, Scale, Shift, Transform } from "../src/animation/transform.js";
+import { Text } from "../src/mobject/text/textMobject.js";
 
 class TestScene extends Scene {
   construct() {
@@ -24,15 +25,19 @@ class TestScene extends Scene {
     let dashedLine = new DashedLine(5, 0.5, { start: Point3D(-100, 1, 0), end: Point3D(100, 1, 0) });
     let dottedLine = new DashedLine(1, 0.1, { start: Point3D(-100, -1, 0), end: Point3D(100, -1, 0) });
     let square = new Square();
+    let text =  new Text("Hello, world!");
     //let circle = new Circle({ radius: 2 });
 
     // circle.shift(Point3D(7, 0, 0));
     square.shift(Point3D(-5, 2, 0)).rotate(PI/4);
 
+    //this.add(text);
+
     // this.add(line);
     // this.add(dashedLine);
     // this.add(dottedLine);
     // this.add(circle);
+    this.play(FadeIn(text));
     this.play(FadeIn(square, { shiftVector: Point3D(0, -2, 0) }));
     this.play(Shift(square, Point3D(4, 0, 0)));
     this.play(Rotate(square, PI/6));

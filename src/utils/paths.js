@@ -7,8 +7,11 @@ class Paths {
   }
 
   static straightPath() {
-    return (start, end, alpha) => alpha == 0 || alpha == 1 ? Paths.clampEnds(start, end, alpha) :
-    nj.add(nj.multiply(start, 1 - alpha), nj.multiply(end, alpha));
+    return (start, end, alpha) => {
+      console.log(start.toString());
+      console.log(end.toString());
+      return alpha == 0 || alpha == 1 ? Paths.clampEnds(start, end, alpha) :
+    nj.add(nj.multiply(start, 1 - alpha), nj.multiply(end, alpha));}
   }
 
   static pathAlongCircles(arcAngle, circlesCenters, axis=OUT) {

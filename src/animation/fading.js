@@ -48,7 +48,7 @@ class __Fade extends _Transform {
     if (Validation.isUndefined(mobject)) {
       throw new ValueError("At least one Mobject must be passed into `_Fade` animation!");
     }
-    this.shiftVector = defineUndef(kwargs.shiftVector, ORIGIN);
+    this.shiftVector = defineUndef(kwargs.shiftVector, ORIGIN.clone());
     this.scaleFactor = defineUndef(kwargs.scaleFactor, 1);
     this.fadeIn = defineUndef(kwargs.fadeIn, false);
     

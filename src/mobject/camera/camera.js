@@ -5,13 +5,14 @@ class Camera extends Mobject {
   constructor(kwargs={}) {
     super();
 
-    if (Validation.isOfClass(this, "Camera")) {
+    if (Validation.isOfClass(this, Camera)) {
       this._init(kwargs);
     }
   }
   
   generatePoints() {
     this.points = [0, 0, 0];
+    console.log(this.points);
   }
   
   /**

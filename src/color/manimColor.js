@@ -321,7 +321,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
     this._alpha = $3;
     switch (inputMode) { // manimcolor, hex, gray, rgb, linearrgb, hsl, hsv, oklab, oklch, xyz
       case "manimcolor":
-        return [$0.rgb(), $0.alpha()];
+        return [$0.rgb, $0.alpha];
       case "hex":
         let hexNumbers = $0.substring(1);
         let hexArray;

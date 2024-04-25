@@ -8,7 +8,7 @@ import { Paths } from "../utils/paths.js";
 
 class MobjectReference extends Number {
   /**
-   * Return (a copy) of the `Mobject` represented by the `MobjectReference`.
+   * Return ~~(a copy of)~~ the `Mobject` represented by the `MobjectReference`.
    * @returns {Mobject}
    */
   get value() {
@@ -30,7 +30,16 @@ class Mobject {
    * @returns {MobjectReference}
    */
   static _generateId() {
-    return new MobjectReference(document.timeline.currentTime);
+    // salt and
+    let pepper = document.timeline.currentTime * 10e2 + math.sin((Mobject.MOBJECTS.size + 0.1) - 0.1) * 10e16;
+    let soup = pepper.toString();
+    let hash = 0, chr; 
+    for (let i = 0; i < soup.length; i++) {
+      chr = soup.charCodeAt(i);
+      hash = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return new MobjectReference(hash);
   }
 
   /**
@@ -82,9 +91,12 @@ class Mobject {
   get ref() {
     return this._id;
   }
-
+  
+  /**
+   * Get a copy of the `Mobject`'s points.
+   */
   get points() {
-    return this.points;
+    return structuredClone(this._points);
   }
 
   /**
@@ -710,4 +722,4 @@ class _AnimationBuilder {
   }
 }
 
-export { Mobject };
+export { Mobject, MobjectReference };

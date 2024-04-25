@@ -1,6 +1,6 @@
 import { Renderer2D } from "../renderer/renderer2d.js";
 import { Camera } from "../mobject/camera/camera.js";
-import { Mobject } from "../mobject/mobject.js";
+import { Mobject, MobjectReference } from "../mobject/mobject.js";
 import { ManimColor }/*, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE }*/ from "../color/manimColor.js";
 import { Animation, _AnimationCollection } from "../animation/animation.js";
 
@@ -17,7 +17,7 @@ class Scene {
   constructor(width, height) {
     /**
      * All the mobjects in the scene (excluding the camera);
-     * @type {Mobject[]}
+     * @type {MobjectReference[]}
      */
     this.mobjects = [];
     /**
@@ -48,7 +48,8 @@ class Scene {
     this.backgroundColor = new ManimColor("#101010");//BLACK.interpolate(BLUE, 0.1);
   }
 
-  /**Add content to the Scene.
+  /**
+   * Add content to the `Scene`.
    * 
    * From within `Scene.construct`, display mobjects on screen by calling
    * `Scene.add()` and remove them from screen by calling `Scene.remove()`.
@@ -86,7 +87,7 @@ class Scene {
    */
   update(dt) {
     this.updateAnimations(dt);
-    this.updateMobjects(dt);
+    // this.updateMobjects(dt);
   }
 
   /**
@@ -130,27 +131,31 @@ class Scene {
    * @returns {this}
    */
   add(...mobjects) {
-    this.mobjects = this.mobjects.filter(mobject => !mobjects.includes(mobject));
-    this.mobjects = this.mobjects.concat(mobjects);
+    let mobjectReferences = mobjects.map(x => x.ref);
+    this.mobjects = this.mobjects.filter(mobject => !mobjectReferences.includes(mobject));
+    this.mobjects = this.mobjects.concat(mobjectReferences);
 
     return this;
   }
 
-  /**Removes mobjects in the passed list of mobjects
+  /**
+   * Removes mobjects in the passed list of mobjects
    * from the scene and the foreground, by removing them
    * from "mobjects" and "foreground_mobjects".
    * 
-   * @param  {...any} mobjects The mobjects to remove.
+   * @param  {...Mobject} mobjects The mobjects to remove.
    * @returns {this}
    */
   remove(...mobjects) {
-    this.mobjects = this.mobjects.filter(mobject => !mobjects.includes(mobject));
-    this.foregroundMobjects = this.foregroundMobjects.filter(mobject => !mobjects.includes(mobject));
+    let mobjectReferences = mobjects.map(x => x.ref);
+    this.mobjects = this.mobjects.filter(mobject => !mobjectReferences.includes(mobject));
+    this.foregroundMobjects = this.foregroundMobjects.filter(mobject => !mobjectReferences.includes(mobject));
     
     return this;
   }
 
-  /**Removes all mobjects present in `this.mobjects`
+  /**
+   * Removes all mobjects present in `this.mobjects`
    * and `this.foregroundMobjects` from the scene.
    * 
    * @returns {this}

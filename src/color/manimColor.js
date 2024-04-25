@@ -1,6 +1,48 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { ValidationError } from "../error/errorClasses.js";
 
+class ManimColorSpace extends String {
+  static SRGB = new ManimColorSpace("SRGB");
+  static LINEAR_RGB = new ManimColorSpace("linearRGB");
+  static HSL = new ManimColorSpace("HSL");
+  static HSV = new ManimColorSpace("HSV");
+  static OKLAB = new ManimColorSpace("OKLAB");
+  static OKLCH = new ManimColorSpace("OKLCH");
+  static XYZ = new ManimColorSpace("XYZ");
+  
+  get name() {
+    return this.toLowerCase().toString();
+  }
+}
+
+class ManimColorFormat extends String {
+  static HEX = new ManimColorFormat("HEX_rep");
+  static RGB = new ManimColorFormat("sRGB_rep");
+  static SRGB = new ManimColorFormat("SRGB_rep");
+  static LINEAR_RGB = new ManimColorFormat("linearRGB_rep");
+  static HSL = new ManimColorFormat("HSL_rep");
+  static HSV = new ManimColorFormat("HSV_rep");
+  static OKLAB = new ManimColorFormat("OKLAB_rep");
+  static OKLCH = new ManimColorFormat("OKLCH_rep");
+  static XYZ = new ManimColorFormat("XYZ_rep");
+
+  static REGISTERED_FORMATS = [ManimColorFormat.HEX, ManimColorFormat.RGB, ManimColorFormat.SRGB, ManimColorFormat.LINEAR_RGB, ManimColorFormat.HSL, ManimColorFormat.HSV, ManimColorFormat.OKLAB, ManimColorFormat.OKLCH, ManimColorFormat.XYZ];
+  
+  static registerFormat(formatString) {
+    ManimColorFormat[formatString.toUpperCase()] = formatString.toUpperCase();
+  }
+
+  static isFormat(format) {
+    return ManimColorFormat.REGISTERED_FORMATS.includes(format);
+  }
+
+  get name() {
+    return this.split("_")[0].toLowerCase().toString();
+  }
+}
+
+
+
 /**
  * Color object with conversions between different spaces.
  */
@@ -33,55 +75,57 @@ class ManimColor {
     "xyz": ["xyz", ""]
   };
 
-  alpha = () => this._alpha;
-  alpha255 = () => Math.round(this._alpha * 255);
-  rgb = () => this._rgb;
-  rgba = () => [...(this._rgb.map(x => Math.round(x*255)))].concat(this.alpha());
-  rgb255 = () => this._rgb.map(x => Math.round(x*255));
-  hex = () => "#" + this.rgb().map(d => Math.round(d*255).toString(16).padStart(2, "0")).join("");
-  xyz = () => ManimColor.sRGBToXYZ(this._rgb);
-  linearrgb = () =>  ManimColor.sRGBToLinearRGB(this._rgb);
-  hsl = () => ManimColor.RGBtoHSL(this._rgb);
-  hsv = () => ManimColor.RGBtoHSV(this._rgb);
-  oklab = () => ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(this._rgb));
-  oklch = () => ManimColor.OklabToOklch(ManimColor.XYZToOklab(ManimColor.sRGBToXYZ(this._rgb)));
+  get alpha () { return this._alpha; }
+  get alpha255 () { return Math.round(this.alpha * 255); }
+  get rgb () { return [...(this._rgb)]; }
+  get rgb255 () { return this.rgb.map(x => Math.round(x*255)); }
+  get rgba () { return this.rgb.concat(this.alpha); }
+  get rgba255 () { return this.rgb255.concat(this.alpha255); }
+  get rgb255a () { return this.rgb255.concat(this.alpha); }
+  get hex () { return "#" + this.rgb255.map(d => d.toString(16).padStart(2, "0")).join(""); }
+  get hexa () { return "#" + this.rgba255.map(d => d.toString(16).padStart(2, "0")).join(""); }
+  get srgb () { return this.rgb; }
+  get xyz () { return ManimColor.sRGBToXYZ(this.rgb); }
+  get linearrgb () { return ManimColor.sRGBToXYZ(this.rgb); }
+  get hsl () { return ManimColor.RGBtoHSL(this.rgb); }
+  get hsv () { return ManimColor.RGBtoHSV(this.rgb); }
+  get oklab () { return ManimColor.XYZToOklab(this.xyz); }
+  get oklch () { return ManimColor.OklabToOklch(this.oklab); }
 
-  setAlpha(newAlpha) {
+  set alpha(newAlpha) {
     Validation.testNumberInRange({newAlpha}, 0, 1);
     this._alpha = newAlpha;
     return this;
   }
 
-  toString(space="rgb") {
-    if (!ManimColor.VALID_MODES.includes(space) && space != "rgba") {
-      space = ManimColor.MODE_SYNONYMS[space];
+  toString(format=ManimColorFormat.RGB) {
+    if (!ManimColorFormat.isFormat(format)) {
+      throw new ValueError(`"${format}" is not a supported color space!`);
     }
-    if (space === undefined) {
-      throw new ValueError(`"${space}" is not a supported color space!`);
+    if (format == ManimColorFormat.HEX) {
+      return this.hex;
     }
-    if (space == "hex") {
-      return this.hex();
-    }
-    if (space == "rgba") {
-      let rgba = this.rgba();
-      return `rgba(${rgba.join(", ")})`;
-    }
-    let values = this[space]().map(x => x.toFixed(3));
-    return `${space}(${values.join(", ")}` + (this._alpha !== undefined ? " | " + (this._alpha * 100) + "%" : "") + ")";
+    let formatName = format.name;
+    let values = this[formatName]().map(x => x.toFixed(3));
+    return `${formatName}(${values.join(", ")}` + (this.alpha !== undefined ? " | " + (this.alpha * 100) + "%" : "") + ")";
   }
   
-  
-  interpolate(color, t, kwargs={space: "oklab", func: (t)=>t}) {
-    let space = defineUndef(kwargs.space, "oklab");
-    let func = kwargs.func === undefined ? (t)=>t : kwargs.func;
+  /**
+   * Return a color lerped between `this` and `color`.
+   * @param {ManimColor} color The second color to interpolate to.
+   * @param {number} t How far to interpolate (between o and 1)
+   * @param {ManimColorSpace} space The color space to interpolate in. Default is `ManimColorSpace.OKLAB`.
+   * @returns {ManimColor}
+   */
+  interpolate(color, t, space=ManimColorSpace.OKLAB) {
     if (!ManimColor._isValidColorSpace(space)) {
       throw new ValueError(`Cannot interpolate in color space "${space}"!`);
     }
-    let a = nj.array(this[space]()).reshape(3,1);
-    let b = nj.array([color[space]()]).reshape(3,1);
-    let c = nj.add(a, nj.multiply(nj.subtract(b, a), func(t)));
+    let a = math.matrix(this[space.name]).reshape(3,1);
+    let b = math.matrix([color[space.name]]).reshape(3,1);
+    let c = math.add(math.multiply(a, 1 - t), math.multiply(b, t));
     
-    let alpha = this.alpha() + (color.alpha() - this.alpha()) * func(t);
+    let alpha = this.alpha() + (color.alpha() - this.alpha()) * t;
     let rgba = ManimColor.convertColorNdarrayBetweenSpaces(c, space, "rgb").selection.data.concat(alpha);
     let finalColor = new ManimColor(rgba);
 
@@ -574,6 +618,8 @@ const TRANSPARENT = new ManimColor("rgb255", 0, 0, 0, 0);
 // const DARK_BLUE = BLUE.interpolate(BLACK, 0.25, { space: "oklab" });
 // const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25, { space: "oklab" });
 // const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25, { space: "oklab" });
+
+console.log(ManimColorFormat.LINEAR_RGB.name);  
 
 export { ManimColor };
 export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT };//, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };

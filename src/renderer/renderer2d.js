@@ -101,7 +101,7 @@ class Renderer2D {
   drawFPS(dt, precision=1) {
     const fps = 1000/dt;
     this.ctx.fillStyle = "white";
-    this.ctx.strokeStyle = this.scene.backgroundColor.hex();
+    this.ctx.strokeStyle = this.scene.backgroundColor.hex;
     this.ctx.textBaseline = "top";
     this.ctx.lineWidth = 5;
     this.ctx.font = this.ctx.font.replace(/(?<value>\d+\.?\d*)/, 12);
@@ -129,7 +129,7 @@ class Renderer2D {
     const dt = this.calculateDeltaTime(timeStamp);
     
     // Clear the screen
-    this.ctx.fillStyle = this.scene.backgroundColor.hex();
+    this.ctx.fillStyle = this.scene.backgroundColor.hex;
     this.ctx.rect(0,0, this.canvas.width, this.canvas.height);
     this.ctx.fill();
     

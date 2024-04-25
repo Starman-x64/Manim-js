@@ -6,66 +6,185 @@ import { Animation } from "../animation/animation.js";
 import { NotImplementedError, ValueError } from "../error/errorClasses.js";
 import { Paths } from "../utils/paths.js";
 
-/**Mathematical Object: base class for objects that can be displayed on screen.
+class MobjectReference extends Number {
+  /**
+   * Return (a copy) of the `Mobject` represented by the `MobjectReference`.
+   * @returns {Mobject}
+   */
+  get value() {
+    return Mobject.MOBJECTS.get(this);
+  }
+}
+
+/**
+ * Mathematical Object: base class for objects that can be displayed on screen.
  * 
- * @param {Mobject[]} submobjects The contained objects.
- * @param {nj.NdArray} points The points of the objects.
+ * @param {MobjectReference[]} submobjects The contained objects.
+ * @param {number[][]} points The points of the objects.
  */
 class Mobject {
+  static MOBJECTS = new Map();
+  
   /**
-   * @param {{name: string, dim: number, target: Mobject|null, zIndex: number}} kwargs 
+   * Generate a new `Mobject` ID.
+   * @returns {MobjectReference}
+   */
+  static _generateId() {
+    return new MobjectReference(document.timeline.currentTime);
+  }
+
+  /**
+   * @param {{name: string}} kwargs 
    */
   constructor(kwargs={}) {
-    if (Validation.isOfClass(this, "Mobject")) {
+    if (Validation.isOfClass(this, Mobject)) {
       this._init(kwargs);
     }
   }
 
   _init(kwargs) {
     /**
-     * The name of the Mobject.
-     * @type {string}
+     * The name of the `Mobject`.
+     * @type {String}
      */
     this.name = defineUndef(kwargs.name, this.constructor.name);
-    this.opacity = defineUndef(this.opacity, defineUndef(kwargs.opacity, 1));
-    //this.dim = defineUndef(kwargs.dim, 3);
-    //this.target = defineUndef(kwargs.target, null);
-    //this.zIndex = defineUndef(kwargs.zIndex, 0);
-    //this.pointHash = null;
-    this.submobjects = [];
-    this.updaters = [];
+
     /**
-     * Whether or not this mobject should be updated each frame.
-     * @type {boolean}
+     * Unique ID which refers to this `Mobject`.
+     * @type {MobjectReference}
      */
-    this.updatingSuspended = false;
-    //self.color = ManimColor.parse(color)
+    this._id = Mobject._generateId();
 
+    /**
+     * List of references to this `Mobject`'s child `Mobject`s.
+     * @type {MobjectReference[]}
+     */
+    this.submobjects = [];
+    
+    /**
+     * The points which define the `Mobject`'s shape.  
+     * Some `Mobject`s' shapes may not be defined by a series of shapes.
+     * In these cases, `this.points` will contain one point; the position of the `Mobject`.
+     * @type {Number[][]}
+     */
+    this._points = [];
+    
     this.initMobject();
+
+    Mobject.MOBJECTS.set(this.ref, this);
+  }
+  
+  
+  /**
+   * Reference to the `Mobject`.
+   * @returns {MobjectReference}
+   */
+  get ref() {
+    return this._id;
   }
 
-  // animationOverrideFor() {}
-  // addIntrinsicAnimationOverrides() {}
-  // addAnimationOverride() {}
-  // setDefault() {}
-  // animate() {}
-
-  animate(kwargs) {
-    let animationBuilder = new _AnimationBuilder(this, kwargs);
-    this.animationBuilder = animationBuilder;
-    this.animationBuilder.targetMobject.animationBuilder = animationBuilder;
-    console.log(animationBuilder);
-    return animationBuilder.targetMobject;
+  get points() {
+    return this.points;
   }
 
-  buildAnimation() {
-    if (Validation.isUndefined(this.animationBuilder)) {
-      throw new ValueError("Mobject has no animation to build!");
-    }
-    console.log(this.animationBuilder);
-    let animation = this.animationBuilder.buildAnimation();
-    this.animationBuilder = undefined;
-    return animation;
+  /**
+   * @param {Number[][]} points
+   */
+  set points(points) {
+    let newPoints = structuredClone(points);
+    this._points = newPoints;
+  }
+  
+  get center() {
+    let maxs = math.max(this.points, 0);
+    let mins = math.min(this.points, 0);
+    return math.mean([maxs, mins], 0);
+  }
+  
+  /**
+   * Gets the width (X dimension) of the mobject.
+   * @returns {Number}
+   */
+  get width() {
+    return this.lengthOverDim(0);
+  }
+  
+  /**
+   * Gets the height (Y dimension) of the mobject.
+   * @returns {number}
+   */
+  get height() {
+    return this.lengthOverDim(1);
+  }
+  
+  /**
+   * Gets the depth (Z dimension) of the mobject.
+   * @returns {number}
+   */
+  get depth() {
+    return this.lengthOverDim(2);
+  }
+  
+  /**
+   * Set the `Mobject`'s width (X dimension) to the given value.
+   * @param {Number} value 
+   */
+  set width(value) {
+    this.scaleToFitWidth(value);
+    return this;
+  }
+
+  /**
+   * Set the `Mobject`'s height (Y dimension) to the given value.
+   * @param {number} value 
+   */
+  set height(value) {
+    this.scaleToFitHeight(value);
+    return this;
+  }
+  
+  /**
+   * Set the `Mobject`'s depth (Z dimension) to the given value.
+   * @param {number} value 
+   */
+  set depth(value) {
+    this.scaleToFitDepth(value);
+    return this;
+  }
+  
+  /**
+   * The length of the `Mobject` across the given dimension.  
+   * Computes the range (`max - min`) of the `Mobject`'s points in the specified dimension.
+   * @param {Number} dimension The dimension to measure the length over.
+   * @returns {number}
+   */
+  lengthOverDim(dimension) {
+    let max = math.max(this.points, 0)[dimension];
+    let min = math.min(this.points, 0)[dimension];
+    return max - min;
+  }
+
+
+  /**
+   * Not sure what this does...
+   * @returns {["points"]}
+   */
+  getArrayAttrs() {
+    return ["points"];
+  }
+  
+  
+  /**
+   * Create and return an identical clone of the `Mobject` including all submobjects.  
+   * The clone's `_id` is reset upon creation.
+   * The clone is initially not visible in the `Scene`, even if the original was.
+   * 
+   * @returns {Mobject} The copy.
+   */
+  clone() {
+    let clone = structuredClone(this);
+    clone._id = Mobject._generateId();
+    return clone;
   }
   
   /**
@@ -85,33 +204,6 @@ class Mobject {
   }
 
   /**
-   * Sets `points` to be an empty array.
-   */
-  resetPoints() {
-    this.points = [];
-  }
-  
-  /**
-   * Initializes the colors.
-   * 
-   * Gets called upon creation. This is an empty method that can be implemented by
-   * subclasses.
-   */
-  initColors() {
-    
-  }
-  
-  /**
-   * Initializes `points` and therefore the shape.
-   * 
-   * Gets called upon creation. This is an empty method that can be implemented by
-   * subclasses.
-   */
-  generatePoints() {
-    
-  }
-
-  /**
    * Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
    * 
    * A mobject cannot contain itself, and it cannot contain a submobject
@@ -119,20 +211,23 @@ class Mobject {
    * submobjects will also be displayed (i.e. they are automatically added
    * to the parent Scene).
    * 
-   * @param {...Mobject} mobjects The mobjects to add.
+   * @param {...Mobject | MobjectReference} mobjects The mobjects to add.
    * @returns {this}
    */
   add(...mobjects) {
+    let mobjectReferences  = mobjects.map(x => Validation.isOfClass(x, Mobject) ? x.ref : x);
     // Error checking
-    if (mobjects.includes(this)) {
+    if (mobjectReferences.includes(this.ref)) {
       throw new ValueError("Mobject cannot contain self");
     }
-    mobjects.forEach((mobject, i) => {
-      if (!(mobject instanceof Mobject)) {
+    mobjectReferences.forEach((reference, i) => {
+      if (!Validation.isOfClass(reference, MobjectReference)) {
         throw new TypeError("All submobjects must be of type Mobject");
       }
     });
-    let existingChildren = mobjects.filter(mobject => this.submobjects.includes(mobject));
+
+
+    let existingChildren = mobjectReferences.filter(mobject => this.submobjects.includes(mobject));
     if (existingChildren.length > 0) {
       console.warn(`Some Mobjects are already children of their parent, adding again is not possible. These cases are ignored.`);
     }
@@ -141,9 +236,9 @@ class Mobject {
      * Creates an `Array` excluding mobjects that are already children.
      * `Array` is converted into a `Set` which will remove duplicates, before being turned back into an `Array`.
      */ 
-    let uniqueMobjects = Array.from(new Set(mobjects.filter(mobject => !existingChildren.includes(mobject))));
+    let uniqueMobjects = Array.from(new Set(mobjectReferences.filter(mobject => !existingChildren.includes(mobject))));
     // console.log(uniqueMobjects);
-    if (uniqueMobjects.length != mobjects.length - existingChildren.length) {
+    if (uniqueMobjects.length != mobjectReferences.length - existingChildren.length) {
       console.warn("Attempted adding some Mobject as a child more than once, this is not possible. Repetitions are ignored."); 
     }
     
@@ -152,31 +247,33 @@ class Mobject {
     return this;
   }
 
-  /**Inserts a mobject at a specific position into `this.mobjects`.
+  /**
+   * Inserts a mobject at a specific position into `this.submobjects`.
    * 
    * Effectively just calls `this.submobjects.splice(index, 0, mobject)`.
    * 
    * Highly adapted from `Mobject.add`.
    * 
    * @param {number} index The index at which to insert the given mobject.
-   * @param {Mobject} mobject The mobject to insert.
+   * @param {Mobject | MobjectReference} mobject The mobject to insert.
    * @returns {void}
    */
   insert(index, mobject) {
+    let mobjectReference  = Validation.isOfClass(mobject, Mobject) ? mobject.ref : mobject;
     // Error checking
-    if (mobject === this) {
+    if (mobjectReference === this.ref) {
       throw new Error("Mobject cannot contain self");
     }
-    if (!(mobject instanceof Mobject)) {
+    if (!Validation.isOfClass(mobjectReference, MobjectReference)) {
       throw new TypeError("All submobjects must be of type Mobject");
     }
-    if (this.submobjects.includes(mobject)) {
+    if (this.submobjects.includes(mobjectReference)) {
       console.warn(`Mobject is already a child of parent, adding again is not possible. This is ignored.`);
       return;
     }
     
     // Insert at desired index
-    this.submobjects.splice(index, 0, mobject);
+    this.submobjects.splice(index, 0, mobjectReference);
     return this;
   }
 
@@ -188,26 +285,27 @@ class Mobject {
    * of the list are rendered first, which places the corresponding mobjects behind the subsequent
    * list members. 
    * 
-   * @param  {...Mobject} mobjects The mobjects to add.
+   * @param  {...Mobject | MobjectReference} mobjects The mobjects to add.
    * @returns {this}
    */
   addToBack(...mobjects) {
+    let mobjectReferences = mobjects.map(x => Validation.isOfClass(x, Mobject) ? x.ref : x);
     // Error checking
-    if (mobjects.includes(this)) {
+    if (mobjectReferences.includes(this.ref)) {
       throw new Error("Mobject cannot contain self");
     }
-    mobjects.forEach((mobject, i) => {
-      if (!(mobject instanceof Mobject)) {
+    mobjectReferences.forEach((reference, i) => {
+      if (!Validation.isOfClass(reference, MobjectReference)) {
         throw new TypeError("All submobjects must be of type Mobject");
       }
     });
-    let uniqueMobjects = Array.from(new Set(mobjects));
-    if (uniqueMobjects.length != mobjects.length) {
+    let uniqueMobjects = Array.from(new Set(mobjectReferences));
+    if (uniqueMobjects.length != mobjectReferences.length) {
       console.warn("Attempted adding some Mobject as a child more than once, this is not possible. Repetitions are ignored."); 
     }
 
     // If any mobjects we want to add are already children, remove them, but then prepend them with the other mobjects.
-    this.submobjects = this.submobjects.filter(mobject => !mobjects.includes(mobject));
+    this.submobjects = this.submobjects.filter(mobject => !mobjectReferences.includes(mobject));
     this.submobjects.splice(0, 0, ...uniqueMobjects);
     
     return this;
@@ -215,11 +313,12 @@ class Mobject {
 
   /**Removes the given mobjects from `this.submobjects` if they exist.
    * 
-   * @param  {...Mobject} mobjects The mobjects to remove.
+   * @param  {...Mobject | MobjectReference} mobjects The mobjects to remove.
    * @returns {this}
    */
   remove(...mobjects) {
-    this.submobjects = this.submobjects.filter(mobject => !mobjects.includes(mobject));
+    let mobjectReferences = mobjects.map(x => Validation.isOfClass(x, Mobject) ? x.ref : x);
+    this.submobjects = this.submobjects.filter(mobject => !mobjectReferences.includes(mobject));
     return this;
   }
 
@@ -240,328 +339,6 @@ class Mobject {
     }
     return this;
   }
-  
-  /**
-   * Gets the width (X dimension) of the mobject.
-   * @returns {number}
-   */
-  // width() {
-  // }
-
-  /**
-   * Sets the mobject's width (X dimension) to the given value.
-   * @param {number} value 
-   */
-  width(value) {
-    if (this.value !== undefined) {
-      this.scaleToFitWidth(value);
-      return;
-    }
-    return this.lengthOverDim(0);
-  }
-  
-  /**
-   * Gets the height (Y dimension) of the mobject.
-   * @returns {number}
-   *//**
-   * Sets the mobject's height (Y dimension) to the given value.
-   * @param {number} value 
-   */
-  // height() {
-  //   return this.lengthOverDim(1);
-  // }
-  height(value) {
-    if (this.value !== undefined) {
-      this.scaleToFitHeight(value);
-      return;
-    }
-    return this.lengthOverDim(1);
-  }
-  
-  /**
-   * Gets the depth (Z dimension) of the mobject.
-   * @returns {number}
-   *//**
-   * Sets the mobject's depth (Z dimension) to the given value.
-   * @param {number} value 
-   */
-  // depth() {
-  //   return this.lengthOverDim(2);
-  // }
-  depth(value) {
-    if (this.value !== undefined) {
-      this.scaleToFitDepth(value);
-      return;
-    }
-    return this.lengthOverDim(2);
-  }
-
-  lengthOverDim(dim) {
-    let componentsInDim = this.points.slice([dim, dim+1]).flatten();
-    return componentsInDim.max() - componentsInDim.min();
-  }
-
-  getCenter() {
-    throw new NotImplementedError(`Cannot get the centre of ${this.constructor.name}!`);
-  }
-
-  /**
-   * Not sure what this does...
-   * @returns {["points"]}
-   */
-  getArrayAttrs() {
-    return ["points"];
-  }
-  /**
-   * Not sure what this does either...
-   * @param {Function} func Mapping function.
-   * @returns {this}
-   */
-  applyOverAttrArrays(func) {
-    
-  }
-  
-  setPoints(points) {
-    this.points = points;
-  }
-  
-  /**
-   * Get a specific point by its index.
-   * @param {number} index The index of the point to get.
-   * @returns {Ndarray}
-   */
-  getPoint(index) {
-    Validation.testNumberInRange({index}, 0, this.points.shape[0] - 1);
-    return this.points.slice([index, index+1]).flatten();
-  }
-  
-
-  // Displaying
-  
-  /**
-   * 
-   * @param {Camera} camera
-   * @returns {image}
-   */
-  getImage(camera=null) {
-    
-  }
-  
-  show(camera=null) {
-    
-  }
-
-  /**Saves an image of only this `Mobject` at its position to a png file.
-   * 
-   * @param {string} name Name of file. If omitted, uses `this.name`.
-   * @returns {void}
-   */
-  saveImage(name=null) {
-    
-  } 
-
-
-  /**Create and return an identical copy of the `Mobject` including all `submobjects`.
-   * 
-   * The copy is initially not visible in the Scene, even if the original was.
-   * 
-   * @returns {Mobject} The copy.
-   */
-  copy() {
-    let copy = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    copy.points = Validation.isOfClass(this.points, "Array") ? [] : this.points.clone();
-    copy.opacity = this.opacity.valueOf() * 1;
-    // for (let [key, value] of Object.entries(this)) {
-    //   if (key == "points") continue;
-    //   try {
-    //     copy[key] = structuredClone(value);
-    //   }
-    //   catch (error) {
-
-    //   }
-    // }
-    return copy;
-  }
-  
-  /**Dunno what this does...
-   * 
-   * @param {boolean | false} useDeepcopy Use deep copy
-   */
-  generateTarget(useDeepcopy=false) {
-    
-  }
-
-
-  // Updating
-
-  /**Apply all updaters.
-   * 
-   * Does nothing if updating is suspended.
-   * 
-   * @param {number} dt The parameter `dt` to pass to all the update functions. Usually this is the time in seconds since the last call of `update`.
-   * @param {bool | true} recursive Whether to recursively update all submobjects.
-   * @returns {this}
-   */
-  update(dt=0, recursive=true) {
-    if (this.updatingSuspended) {
-      return this;
-    }
-    
-    this.updaters.forEach(updater => {
-      // An updater function can only have the parameter `dt` or no parameter at all.
-      if (updater.length > 0) {
-        updater.call(this, dt);
-      }
-      else {
-        updater.call(this);
-      }
-    });
-    
-    if (recursive) {
-      this.submobjects.forEach(submobject => {
-        submobject.update(dt, recursive);
-      });
-    }
-    return this;
-  }
-
-  /**Return all updaters using the `dt` parameter.
-   * 
-   * The updaters use this parameter as the input for difference in time.
-   * 
-   * @returns {TimeBasedUpdater[]}
-   */
-  getTimeBasedUpdaters() {
-    return self.updaters.filter(updater => updater.length > 0);
-  }
-
-  /**Test if `this` has a time based updater.
-   * 
-   * @returns {boolean} `true` if at least one updater uses the `dt` parameter, `false` otherwise.
-   */
-  hasTimeBasedUpdater() {
-    this.updaters.forEach(updater => {
-      if (updater.length > 0) {
-        return true;
-      }
-    });
-    return false;
-  }
-
-  /**Return all updaters.
-   * 
-   * @returns {Updater[]}
-   */
-  getUpdaters() {
-    return this.updaters;
-  }
-
-  /**What does this do? Who knows!
-   * 
-   * @returns {Updater[]}
-   */
-  getFamilyUpdaters() {
-
-  }
-
-  /**Add an update function to this mobject.
-   * 
-   * Update functions, or updaters in short, are functions that are applied to the Mobject in every frame.
-   * 
-   * @param {Updater} updateFunction The update function to be added.
-   * @param {number} index The index at which the updater should be added in `this.updaters`. In the case `index` is `null` the updater will be added at the end.
-   * @param {boolean} callUpdater Whether or not to call the updater initially. If `true`, the updater will be called using `dt=0`.
-   * @returns {this}
-   */
-  addUpdater(updateFunction, index=null, callUpdater=false) {
-    if (!index) {
-      this.updaters.push(updateFunction);
-    }
-    else {
-      this.updaters.splice(index, 0, updateFunction);
-    }
-    
-    if (callUpdater) {
-      if (updater.length > 0) {
-        updater.call(this, dt);
-      }
-      else {
-        updater.call(this);
-      }
-    }
-
-    return this;
-  }
-  
-  /**Remove an updater.
-   * 
-   * If the same updater is applied multiple times, every instance gets removed.
-   * 
-   * @param {Updater} updateFunction The update function to be removed.
-   * @returns {this}
-   */
-  removeUpdater(updateFunction) {
-    while(this.updaters.includes(updateFunction)) {
-      this.updaters.splice(this.updaters.indexOf(updateFunction), 1);
-    }
-    
-    return this;
-  }
-
-  /**Remove every updater.
-   * 
-   * @param {boolean | true} recursive Whether to recursively call `clearUpdaters` on all submobjects.
-   * @returns {this}
-   */
-  clearUpdaters(recursive=true) {
-    this.updaters = [];
-    
-    if (recursive) {
-      this.submobjects.forEach(submobject => {
-        submobject.clearUpdaters();
-      });
-    }
-    
-    return this;
-  }
-
-  matchUpdaters() {}
-  
-  /**Disable updating from updaters and animations.
-   * 
-   * @param {boolean | true} recursive Whether to recursively suspend updating on all submobjects.
-   * @returns {this}
-   */
-  suspendUpdating(recursive=true) {
-    self.updatingSuspended = true;
-    
-    if (recursive) {
-      this.submobjects.forEach(submobject => {
-        submobject.suspendUpdating();
-      });
-    }
-    return this
-  }
-
-  /**Enable updating from updaters and animations.
-   * 
-   * @param {boolean | true} recursive Whether to recursively enable updating on all submobjects.
-   * @returns {this}
-   */
-  resumeUpdating(recursive=true) {
-    self.updatingSuspended = false;
-    
-    if (recursive) {
-      this.submobjects.forEach(submobject => {
-        submobject.resumeUpdating();
-      });
-    }
-    
-    this.update(0, recursive);
-    return this;
-  }
-
-
 
   // Transforming Operations
   /**Apply a function to `this` and every submobject with points recursively.
@@ -882,6 +659,40 @@ class Mobject {
   familyMembersWithPoints() {
     return this.getFamily().filter(mobject => mobject.getNumPoints() > 0);
   }
+
+
+
+
+
+
+
+
+  /**
+   * Sets `this._points` to be an empty array.
+   */
+  resetPoints() {
+    this.points = [];
+  }
+  
+  /**
+   * Initializes the colors.
+   * 
+   * Gets called upon creation. This is an empty method that can be implemented by
+   * subclasses.
+   */
+  initColors() {
+    
+  }
+  
+  /**
+   * Initializes `points` and therefore the shape.
+   * 
+   * Gets called upon creation. This is an empty method that can be implemented by
+   * subclasses.
+   */
+  generatePoints() {
+    
+  }
 }
 
 class _AnimationBuilder {
@@ -899,4 +710,4 @@ class _AnimationBuilder {
   }
 }
 
-export {Mobject};
+export { Mobject };

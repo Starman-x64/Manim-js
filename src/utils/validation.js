@@ -114,10 +114,15 @@ class Validation {
    * @param {string} className The name of the class to test against.
    */
   static isOfClass(value, className) {
-    if (!Validation.isString(className)) {
-      throw new TypeError(`Class name to validate against must be a string, not a ${className.constructor.name}!`);
+    if (Validation.isString(className)) {
+      return value.constructor.name == className;
     }
-    return value.constructor.name == className;
+    if (className) {
+      if ("name" in className) {
+        return value.constructor.name == className.name;
+      }
+    }
+    throw new TypeError(`Class name to validate against must be a string, not a ${className.constructor.name}!`);
   }
 
   

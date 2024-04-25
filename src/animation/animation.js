@@ -38,7 +38,7 @@ class Animation {
      * @type {Mobject}
      */
     this.targetMobject = targetMobject;
-    this.startingMobject = mobject.copy();
+    this.startingMobject = mobject.clone();
     console.log(targetMobject.opacity, mobject.opacity);
     mobject.interpolate(targetMobject, targetMobject, 1);
     console.log(targetMobject.opacity, mobject.opacity);
@@ -175,7 +175,7 @@ class Animation {
    * @returns {Mobject}
    */
   createStartingMobject() {
-    let startingMobject = this.mobject.copy();
+    let startingMobject = this.mobject.clone();
     return startingMobject;
   }
   

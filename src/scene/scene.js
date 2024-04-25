@@ -114,7 +114,7 @@ class Scene {
    */
   updateMobjects(dt) {
     //this.mobjects.forEach(mobject => mobject.update(dt));
-    this.camera.update(dt);
+    // this.camera.update(dt);
   }
 
   /**Add mobjects to scene.

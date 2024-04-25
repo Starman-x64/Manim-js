@@ -122,7 +122,7 @@ class VMobject extends Mobject {
     return currentWidth;
   }
 
-  getCenter() {
+  get center() {
     let xComponents = this.points.slice(null,[0,1]).flatten();
     let yComponents = this.points.slice(null,[1,2]).flatten();
     let zComponents = this.points.slice(null,[2,3]).flatten();

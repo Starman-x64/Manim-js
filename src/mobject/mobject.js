@@ -92,6 +92,12 @@ class Mobject {
      */
     this._points = [];
     
+    /**
+     * List of functions to run every frame.
+     * @type {((mobject: Mobject, dt: Number) => void)[]}
+     */
+    this.updaters = [];
+    
     this.initMobject(kwargs);
   }
   
@@ -147,59 +153,40 @@ class Mobject {
    * Gets the width (X dimension) of the mobject.
    * @returns {Number}
    */
-  get width() {
-    return this.lengthOverDim(0);
-  }
-  
+  get width() { return this.lengthOverDim(0); }
   /**
    * Gets the height (Y dimension) of the mobject.
    * @returns {number}
    */
-  get height() {
-    return this.lengthOverDim(1);
-  }
-  
+  get height() { return this.lengthOverDim(1); }
   /**
    * Gets the depth (Z dimension) of the mobject.
    * @returns {number}
    */
-  get depth() {
-    return this.lengthOverDim(2);
-  }
-  
+  get depth() { return this.lengthOverDim(2); }
   /**
    * Set the `Mobject`'s width (X dimension) to the given value.
    * @param {Number} value 
    */
-  set width(value) {
-    this.scaleToFitLength(0, value);
-  }
-
+  set width(value) { this.scaleToFitLength(0, value); }
   /**
    * Set the `Mobject`'s height (Y dimension) to the given value.
    * @param {number} value 
    */
-  set height(value) {
-    this.scaleToFitLength(1, value);
-  }
-  
+  set height(value) { this.scaleToFitLength(1, value); }
   /**
    * Set the `Mobject`'s depth (Z dimension) to the given value.
    * @param {number} value 
    */
-  set depth(value) {
-    this.scaleToFitLength(2, value);
-  }
-
+  set depth(value) { this.scaleToFitLength(2, value); }
+  
   get color() { return new ManimColor(this.fillColor) };
   set color(newColor) { this.fillColor = new ManimColor(newColor) };
   
   /**
    * The number of points the `Mobject` has. 
    */
-  get numPoints() {
-    return this._points.length;
-  }
+  get numPoints() { return this._points.length; }
   
   /**
    * The length of the `Mobject` across the given dimension.  
@@ -410,6 +397,20 @@ class Mobject {
     let mobjectReferences = mobjects.map(x => Validation.isOfClass(x, Mobject) ? x.ref : x);
     this.submobjects = this.submobjects.filter(mobject => !mobjectReferences.includes(mobject));
     return this;
+  }
+
+  /* [markdown]
+   * ## Updater Operations
+   * 
+   * 
+   */
+  
+  /**
+   * Add a function to be run each frame to this `Mobject`.
+   * @param {...((mobject: Mobject, dt: Number) => void)} updater Updaters to add.
+   */
+  addUpdaters(...updaters) {
+
   }
 
   

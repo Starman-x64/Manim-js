@@ -3,6 +3,7 @@ import { Camera } from "../mobject/camera/camera.js";
 import { Mobject, MobjectReference } from "../mobject/mobject.js";
 import { BLACK, BLUE, ManimColor }/*, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE }*/ from "../color/manimColor.js";
 import { Animation, _AnimationCollection } from "../animation/animation.js";
+import { InputHandler } from "../inputHandler.js";
 
 /**
  * An abstract class for all ManimJs scenes.  
@@ -44,6 +45,12 @@ class Scene {
      * @type {Renderer2D}
      */
     this.renderer = new Renderer2D(this, width, height);
+
+    /**
+     * The input handler for the scene. Each scene has one renderer, and each renderer has one scene.
+     * @type {Renderer2D}
+     */
+    this.input = new InputHandler(this.renderer.canvas);
     
     /**
      * The scene camera.

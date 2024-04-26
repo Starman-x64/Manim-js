@@ -1,5 +1,5 @@
 import { Validation, defineUndef } from "../utils/validation.js";
-import { ValidationError } from "../error/errorClasses.js";
+import { ValidationError, ValueError } from "../error/errorClasses.js";
 
 class ManimColorSpace extends String {
   static SRGB = new ManimColorSpace("SRGB");
@@ -9,6 +9,16 @@ class ManimColorSpace extends String {
   static OKLAB = new ManimColorSpace("OKLAB");
   static OKLCH = new ManimColorSpace("OKLCH");
   static XYZ = new ManimColorSpace("XYZ");
+
+  static REGISTERED_SPACES = [ManimColorSpace.SRGB, ManimColorSpace.LINEAR_RGB, ManimColorSpace.HSL, ManimColorSpace.HSV, ManimColorSpace.OKLAB, ManimColorSpace.OKLCH, ManimColorSpace.XYZ];
+  
+  static registerFormat(spaceString) {
+    ManimColorSpace[spaceString.toUpperCase()] = spaceString.toUpperCase();
+  }
+
+  static isSpace(space) {
+    return ManimColorSpace.REGISTERED_SPACES.includes(space);
+  }
   
   get name() {
     return this.toLowerCase().toString();
@@ -17,7 +27,7 @@ class ManimColorSpace extends String {
 
 class ManimColorFormat extends String {
   static HEX = new ManimColorFormat("HEX_rep");
-  static RGB = new ManimColorFormat("sRGB_rep");
+  static RGB = new ManimColorFormat("SRGB_rep");
   static SRGB = new ManimColorFormat("SRGB_rep");
   static LINEAR_RGB = new ManimColorFormat("linearRGB_rep");
   static HSL = new ManimColorFormat("HSL_rep");
@@ -57,19 +67,19 @@ class ManimColor {
   static VALID_MODES = ["hex", "rgb", "linearrgb", "hsl", "hsv", "oklab", "oklch", "xyz"];
   static MODE_SYNONYMS = { "srgb": "rgb" };
   static PATH_TO_XYZ = {
-    "rgb": ["linearrgb", "sRGBToLinearRGB"],
+    "srgb": ["linearrgb", "sRGBToLinearRGB"],
     "linearrgb": ["xyz", "LinearRGBToXYZ"],
-    "hsl": ["rgb", "HSLToRGB"],
-    "hsv": ["rgb", "HSVToRGB"],
+    "hsl": ["srgb", "HSLToRGB"],
+    "hsv": ["srgb", "HSVToRGB"],
     "oklab": ["xyz", "OklabToXYZ"],
     "oklch": ["oklab", "OklchToOklab"],
     "xyz": ["xyz", ""]
   };
   static PATH_FROM_XYZ = {
-    "rgb": ["linearrgb", "LinearRGBTosRGB"],
+    "srgb": ["linearrgb", "LinearRGBTosRGB"],
     "linearrgb": ["xyz", "XYZToLinearRGB"],
-    "hsl": ["rgb", "RGBtoHSL"],
-    "hsv": ["rgb", "RGBtoHSV"],
+    "hsl": ["srgb", "RGBtoHSL"],
+    "hsv": ["srgb", "RGBtoHSV"],
     "oklab": ["xyz", "XYZToOklab"],
     "oklch": ["oklab", "OklabToOklch"],
     "xyz": ["xyz", ""]
@@ -84,6 +94,7 @@ class ManimColor {
   get rgb255a () { return this.rgb255.concat(this.alpha); }
   get hex () { return "#" + this.rgb255.map(d => d.toString(16).padStart(2, "0")).join(""); }
   get hexa () { return "#" + this.rgba255.map(d => d.toString(16).padStart(2, "0")).join(""); }
+  
   get srgb () { return this.rgb; }
   get xyz () { return ManimColor.sRGBToXYZ(this.rgb); }
   get linearrgb () { return ManimColor.sRGBToXYZ(this.rgb); }
@@ -99,47 +110,48 @@ class ManimColor {
   }
 
   toString(format=ManimColorFormat.RGB) {
-    if (!ManimColorFormat.isFormat(format)) {
-      throw new ValueError(`"${format}" is not a supported color space!`);
+    if (!ManimColorFormat.isFormat(format) && !ManimColorSpace.isSpace(format)) {
+      throw new ValueError(`"${format}" is not a supported color format nor space!`);
     }
     if (format == ManimColorFormat.HEX) {
       return this.hex;
     }
     let formatName = format.name;
-    let values = this[formatName]().map(x => x.toFixed(3));
+    let values = this[formatName].map(x => x.toFixed(3));
     return `${formatName}(${values.join(", ")}` + (this.alpha !== undefined ? " | " + (this.alpha * 100) + "%" : "") + ")";
   }
   
   /**
    * Return a color lerped between `this` and `color`.
    * @param {ManimColor} color The second color to interpolate to.
-   * @param {number} t How far to interpolate (between o and 1)
+   * @param {number} t How far to interpolate (between 0 and 1)
    * @param {ManimColorSpace} space The color space to interpolate in. Default is `ManimColorSpace.OKLAB`.
    * @returns {ManimColor}
    */
   interpolate(color, t, space=ManimColorSpace.OKLAB) {
-    if (!ManimColor._isValidColorSpace(space)) {
+    if (!ManimColorSpace.isSpace(space)) {
       throw new ValueError(`Cannot interpolate in color space "${space}"!`);
     }
-    let a = math.matrix(this[space.name]).reshape(3,1);
-    let b = math.matrix([color[space.name]]).reshape(3,1);
+    let a = this[space.name];
+    let b = color[space.name];
     let c = math.add(math.multiply(a, 1 - t), math.multiply(b, t));
     
-    let alpha = this.alpha() + (color.alpha() - this.alpha()) * t;
-    let rgba = ManimColor.convertColorNdarrayBetweenSpaces(c, space, "rgb").selection.data.concat(alpha);
+    let alpha = this.alpha * (1 - t) + color.alpha * t;
+    let rgba = ManimColor.convertColorBetweenSpaces(c, space, ManimColorSpace.SRGB).concat(alpha);
     let finalColor = new ManimColor(rgba);
+    // console.log(rgba);
 
-   /* console.log(
+    /*console.log(
 `Interpolating
-${this.toString("rgb")} → ${color.toString("rgb")}
+${this.toString(ManimColorFormat.SRGB)} → ${color.toString(ManimColorFormat.SRGB)}
 through color space ${space} with t = ${t}
 ${this.toString(space)} → ${color.toString(space)}.
-Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
+Final Color: ${finalColor.toString(ManimColorSpace.SRGB)} (${finalColor.toString(space)})
 %c█%c → %c█%c → %c█%c
 `,
-  `color: rgb(${this.rgb255()[0]} ${this.rgb255()[1]} ${this.rgb255()[2]});`, `color: white;`,
-  `color: rgb(${finalColor.rgb255()[0]} ${finalColor.rgb255()[1]} ${finalColor.rgb255()[2]});`, `color: white;`,
-  `color: rgb(${color.rgb255()[0]} ${color.rgb255()[1]} ${color.rgb255()[2]});`, `color: white;`);*/
+  `color: rgb(${this.rgb255[0]} ${this.rgb255[1]} ${this.rgb255[2]});`, `color: white;`,
+  `color: rgb(${finalColor.rgb255[0]} ${finalColor.rgb255[1]} ${finalColor.rgb255[2]});`, `color: white;`,
+  `color: rgb(${color.rgb255[0]} ${color.rgb255[1]} ${color.rgb255[2]});`, `color: white;`);*/
     
     return finalColor;
   }
@@ -148,39 +160,41 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   static _isValidColorSpace(space) {
     return (ManimColor.VALID_MODES.includes(space) || ManimColor.MODE_SYNONYMS[space] !== undefined) && space != "hex"
   }
-  static convertColorNdarrayBetweenSpaces(startColorNdarray, fromSpace, toSpace) {
-    if (!ManimColor._isValidColorSpace(toSpace)) throw new ValueError(`Cannot convert color to color space "${toSpace}"!`);
-    if (!ManimColor._isValidColorSpace(fromSpace) && fromSpace != "") throw new ValueError(`Cannot convert color to color space "${fromSpace}"!`);
+  static convertColorBetweenSpaces(startColorArray, fromSpace, toSpace) {
+    if (!ManimColorSpace.isSpace(toSpace)) throw new ValueError(`Cannot convert color to color space "${toSpace}"!`);
+    if (!ManimColorSpace.isSpace(fromSpace) && fromSpace != "") throw new ValueError(`Cannot convert color to color space "${fromSpace}"!`);
     
-    if (fromSpace == toSpace) return startColorNdarray;
+    if (fromSpace == toSpace) return startColorArray;
     
     /** The path/tree of conversions to go from XYZ to the target. */
     let pathFromXYZ = [];
     let pathToXYZ = [];
-    let currSpace = toSpace;
-    //console.log(`Want to convert color from "${fromSpace}" to "${toSpace}".`);
+    let currSpace = toSpace.toString().toLowerCase();
+    let fSpace = fromSpace.toString().toLowerCase();
+    let tSpace = toSpace.toString().toLowerCase();
+    //console.log(`Want to convert color from "${fSpace}" to "${tSpace}".`);
     for (let i = 0; i < 100; i++) {
-      if (currSpace == fromSpace || currSpace == "xyz") break;
+      if (currSpace == fSpace || currSpace == "xyz") break;
       pathFromXYZ.push(ManimColor.PATH_FROM_XYZ[currSpace]);
       currSpace = ManimColor.PATH_FROM_XYZ[currSpace][0];
     }
-    currSpace = fromSpace; 
+    currSpace = fSpace; 
     if (pathFromXYZ[pathFromXYZ.length - 1].includes("xyz")) {
       for (let i = 0; i < 100; i++) {
-        if (currSpace == toSpace || currSpace == "xyz") break;
+        if (currSpace == tSpace || currSpace == "xyz") break;
         pathToXYZ.push(ManimColor.PATH_TO_XYZ[currSpace]);
         currSpace = ManimColor.PATH_TO_XYZ[currSpace][0];
       }
     }
     pathFromXYZ.reverse();
-    pathFromXYZ.push([toSpace, "end"]);
+    pathFromXYZ.push([tSpace, "end"]);
     let temp = pathToXYZ.map(x => x[0]);
     temp.reverse();
-    temp.push(fromSpace);
+    temp.push(fSpace);
     temp.reverse();
     let path  = pathToXYZ.map((x,i) => [temp[i], x[1]]).concat(pathFromXYZ);
     //console.log(path.map(x => x[0] + " --(" + x[1] + ")-> ").join(""));
-    let finalColor = startColorNdarray.clone();
+    let finalColor = [...startColorArray];
     path.forEach(step => {
       let func = ManimColor[step[1]];
       //console.log(step[1]);
@@ -422,46 +436,46 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   
   /**Convert from sRGB to Linear RGB.
    * 
-   * @param {NdArray} rgb 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of Linear RGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} rgb Array of sRGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of Linear RGB values. `r,g,b ∈ [0,1]`
    */
   static sRGBToLinearRGB(rgb) {
     const lin = (c) => c <= 0.04045 ? c / 12.92 : Math.pow(((c + 0.055) / 1.055), 2.4);
-    return nj.array([[lin(rgb.get(0, 0))], [lin(rgb.get(1, 0))], [lin(rgb.get(2, 0))]]);
+    return rgb.map(x => lin(x));
   }
 
   /**Convert from Linear RGB to sRGB.
    * 
-   * @param {NdArray} rgb 3x1 matrix of Linear RGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} rgb Array of Linear RGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of sRGB values. `r,g,b ∈ [0,1]`
    */
   static LinearRGBTosRGB(rgb) {
     const unlin = (c) => c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-    return nj.array([[unlin(rgb.get(0, 0))], [unlin(rgb.get(1, 0))], [unlin(rgb.get(2, 0))]]);
+    return rgb.map(x => unlin(x));
   }
 
   /**Convert from Linear RGB to CIE XYZ.
    * 
-   * @param {NdArray} rgb 3x1 matrix of Linear RGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
+   * @param {Number[]} rgb Array of Linear RGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of XYZ values. `X,Y,Z ∈ ℝ`
    */
   static LinearRGBToXYZ(rgb) {
-    return nj.dot(ManimColor.LINEAR_RGB_TO_XYZ_MATRIX, rgb);
+    return math.multiply(rgb, ManimColor.LINEAR_RGB_TO_XYZ_MATRIX)._data;
   }
 
   /**Convert from CIE XYZ to Linear RGB.
    * 
-   * @param {NdArray} XYZ 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
-   * @returns {NdArray} 3x1 matrix of Linear RGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} XYZ Array of XYZ values. `X,Y,Z ∈ ℝ`
+   * @returns {Number[]} Array of Linear RGB values. `r,g,b ∈ [0,1]`
    */
   static XYZToLinearRGB(XYZ) {
-    return nj.dot(ManimColor.XYZ_TO_LINEAR_RGB, XYZ);
+    return math.multiply(XYZ, ManimColor.XYZ_TO_LINEAR_RGB)._data;
   }
 
   /**Convert from sRGB to CIE XYZ.
    * 
-   * @param {NdArray} rgb 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
+   * @param {Number[]} rgb Array of sRGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of XYZ values. `X,Y,Z ∈ ℝ`
    */
   static sRGBToXYZ(rgb) {
     return ManimColor.LinearRGBToXYZ(ManimColor.sRGBToLinearRGB(rgb));
@@ -469,8 +483,8 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
 
   /**Convert from CIE XYZ to sRGB.
    * 
-   * @param {NdArray} XYZ 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
-   * @returns {NdArray} 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} XYZ Array of XYZ values. `X,Y,Z ∈ ℝ`
+   * @returns {Number[]} Array of sRGB values. `r,g,b ∈ [0,1]`
    */
   static XYZTosRGB(XYZ) {
     return ManimColor.LinearRGBTosRGB(ManimColor.XYZToLinearRGB(XYZ));
@@ -478,62 +492,62 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
   
   /**Convert from Oklab to CIE XYZ.
    * 
-   * @param {NdArray} Lab 3x1 matrix of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
-   * @returns {NdArray} 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
+   * @param {Number[]} Lab Array of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
+   * @returns {Number[]} Array of XYZ values. `X,Y,Z ∈ ℝ`
    */
   static OklabToXYZ(Lab) {
-    let nonLinearResponse = nj.dot(ManimColor.OKLAB_M2_INV, Lab);
-    let coneResponse = nonLinearResponse.pow(nj.array([3, 3, 3]).reshape(3, 1));
-    return nj.dot(ManimColor.OKLAB_M1_INV, coneResponse);
+    let nonLinearResponse = math.multiply(Lab, ManimColor.OKLAB_M2_INV);
+    let coneResponse = nonLinearResponse.map(x => math.pow(x, 3));
+    return math.multiply(coneResponse, ManimColor.OKLAB_M1_INV)._data;
   }
   
   /**Convert from CIE XYZ to Oklab.
    * 
-   * @param {NdArray} XYZ 3x1 matrix of XYZ values. `X,Y,Z ∈ ℝ`
-   * @returns {NdArray} 3x1 matrix of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
+   * @param {Number[]} XYZ Array of XYZ values. `X,Y,Z ∈ ℝ`
+   * @returns {Number[]} Array of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
    */
   static XYZToOklab(XYZ) {
-    let coneResponse = nj.dot(ManimColor.OKLAB_M1, XYZ);
-    let nonLinearResponse = coneResponse.pow(nj.array([1/3, 1/3, 1/3]).reshape(3, 1));
-    return nj.dot(ManimColor.OKLAB_M2, nonLinearResponse);
+    let coneResponse = math.multiply(XYZ, ManimColor.OKLAB_M1);
+    let nonLinearResponse = coneResponse.map(x => math.pow(x, 1/3));
+    return math.multiply(nonLinearResponse, ManimColor.OKLAB_M2)._data;
   }
   
   /**Convert from Oklab to Oklch (lightness, chroma, hue).
    * 
-   * @param {NdArray} Lab 3x1 matrix of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
-   * @returns {NdArray} 3x1 matrix of LCh values. `L ∈ [0,1], C ∈ [0,0.4], h ∈ [0, 360)`
+   * @param {Number[]} Lab Array of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
+   * @returns {Number[]} Array of LCh values. `L ∈ [0,1], C ∈ [0,0.4], h ∈ [0, 360)`
    */
   static OklabToOklch(Lab) {
-    let L = Lab.get(0, 0);
-    let a = Lab.get(1, 0);
-    let b = Lab.get(2, 0);
+    let L = Lab[0];
+    let a = Lab[1];
+    let b = Lab[2];
     
     let C = Math.sqrt(a*a + b*b);
     let h = Math.atan2(b, a) * DEGREES;
 
-    return nj.array([[L], [C], [h]]);
+    return [L, C, h];
   }
   
   /**Convert from Oklch to Oklab.
    * 
-   * @param {NdArray} Lch 3x1 matrix of LCh values. `L ∈ [0,1], C ∈ [0,0.4], h ∈ [0, 360)`
-   * @returns {NdArray} 3x1 matrix of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
+   * @param {Number[]} Lch Array of LCh values. `L ∈ [0,1], C ∈ [0,0.4], h ∈ [0, 360)`
+   * @returns {Number[]} Array of Lab values. `L ∈ [0,1], a,b ∈ [-0.4,0.4]`
    */
   static OklchToOklab(Lch) {
-    let L = Lch.get(0, 0);
-    let C = Lch.get(1, 0);
-    let h = Lch.get(2, 0);
+    let L = Lch[0];
+    let C = Lch[1];
+    let h = Lch[2];
     
     let a = C * Math.cos(h * DEGREES);
     let b = C * Math.sin(h * DEGREES);
 
-    return nj.array([[L], [a], [b]]);
+    return [L, a, b];
   }
   
   /**Convert from sRGB to HSV.
    * 
-   * @param {NdArray} rgb 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of HSV values. `H ∈ [0, 360), S,V ∈ [0,1]`
+   * @param {Number[]} rgb Array of sRGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of HSV values. `H ∈ [0, 360), S,V ∈ [0,1]`
    */
   static RGBtoHSV(rgb) {
     let r = rgb.get(0, 0);
@@ -546,13 +560,13 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
     let H = C == 0 ? 0 : V == r ? 60 * (((g - b)/C) % 6) : V == g ? 60 * (((b - r)/C) + 2) : 60 * (((r - g)/C) + 4);
     let S = V == 0 ? 0 : C / V;
 
-    return nj.array([H], [S], [V]);
+    return [H, S, V];
   }
   
   /**Convert from sRGB to HSL.
    * 
-   * @param {NdArray} rgb 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of HSL values. `H ∈ [0, 360), S,L ∈ [0,1]`
+   * @param {Number[]} rgb Array of sRGB values. `r,g,b ∈ [0,1]`
+   * @returns {Number[]} Array of HSL values. `H ∈ [0, 360), S,L ∈ [0,1]`
    */
   static RGBtoHSL(rgb) {
     let r = rgb.get(0, 0);
@@ -566,13 +580,13 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
     let H = C == 0 ? 0 : V == r ? 60 * (((g - b)/C) % 6) : V == g ? 60 * (((b - r)/C) + 2) : 60 * (((r - g)/C) + 4);
     let S = L == 0 || L == 1 ? 0 : (v - L) / Math.min(L, 1-L);
 
-    return nj.array([H], [S], [L]);
+    return [H, S, L];
   }
   
   /**Convert from HSV to sRGB.
    * 
-   * @param {NdArray} HSV 3x1 matrix of HSV values. `H ∈ [0, 360), S,V ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} HSV Array of HSV values. `H ∈ [0, 360), S,V ∈ [0,1]`
+   * @returns {Number[]} Array of sRGB values. `r,g,b ∈ [0,1]`
    */
   static HSVToRGB(HSV) {
     let H = HSV.get(0, 0);
@@ -583,13 +597,13 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
 
     let f = (n) => V - V * S * Math.max(0, Math.min(k(n), 4 - k(n), 1));
 
-    return nj.array([[f(5)], [f(3)], [f(1)]]);
+    return [f(5), f(3), f(1)];
   }
   
   /**Convert from HSL to sRGB.
    * 
-   * @param {NdArray} HSL 3x1 matrix of HSL values. `H ∈ [0, 360), S,L ∈ [0,1]`
-   * @returns {NdArray} 3x1 matrix of sRGB values. `r,g,b ∈ [0,1]`
+   * @param {Number[]} HSL Array of HSL values. `H ∈ [0, 360), S,L ∈ [0,1]`
+   * @returns {Number[]} Array of sRGB values. `r,g,b ∈ [0,1]`
    */
   static HSLToRGB(HSL) {
     let H = HSL.get(0, 0);
@@ -601,7 +615,7 @@ Final Color: ${finalColor.toString("rgb")} (${finalColor.toString(space)})
 
     let f = (n) => L - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
 
-    return nj.array([[f(0)], [f(8)], [f(4)]]);
+    return [f(0), f(8), f(4)];
   }
 }
 
@@ -613,13 +627,12 @@ const BLUE = new ManimColor("rgb255", 77, 177, 255);
 const YELLOW = new ManimColor("rgb255", 247, 227, 47);
 const ORANGE = new ManimColor("rgb255", 247, 137, 27);
 const TRANSPARENT = new ManimColor("rgb255", 0, 0, 0, 0);
-// const DARK_RED = RED.interpolate(BLACK, 0.25, { space: "oklab" });
-// const DARK_GREEN = GREEN.interpolate(BLACK, 0.25, { space: "oklab" });
-// const DARK_BLUE = BLUE.interpolate(BLACK, 0.25, { space: "oklab" });
-// const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25, { space: "oklab" });
-// const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25, { space: "oklab" });
+const DARK_RED = RED.interpolate(BLACK, 0.25);
+const DARK_GREEN = GREEN.interpolate(BLACK, 0.25);
+const DARK_BLUE = BLUE.interpolate(BLACK, 0.25);
+const DARK_YELLOW = YELLOW.interpolate(BLACK, 0.25);
+const DARK_ORANGE = ORANGE.interpolate(BLACK, 0.25);
 
-console.log(ManimColorFormat.LINEAR_RGB.name);  
 
 export { ManimColor };
-export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT };//, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };
+export { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE };

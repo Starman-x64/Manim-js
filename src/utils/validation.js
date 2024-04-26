@@ -145,7 +145,7 @@ class Validation {
    * @param {any} value The value to test.
    * @param {class} classInstance The name of the class to test against.
    */
-  static isInstanceOf(value, classInstance) {
+  static inheritsFrom(value, classInstance) {
     return value instanceof classInstance;
   }
 }

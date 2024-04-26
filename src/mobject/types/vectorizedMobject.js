@@ -5,7 +5,7 @@ import { defineUndef } from "../../utils/validation.js";
 import { Validation } from "../../utils/validation.js";
 import { bezier } from "../../utils/bezier.js";
 import { Point3D } from "../../point3d.js";
-import { SVGDrawer } from "../../renderer/renderer2d.js";
+import { SVGDrawer } from "../../renderer/drawer.js";
 import { NotImplementedError } from "../../error/errorClasses.js";
 import { DEFAULT_LINE_WIDTH } from "../../constants.js";
 
@@ -152,7 +152,7 @@ class VMobject extends Mobject {
       [0, 1, 0],
       [0, 0, 1]
     ]);
-    this.transformByMatrix(matrix);
+    this.linearTransformation(matrix);
   }
   
   /**
@@ -166,7 +166,7 @@ class VMobject extends Mobject {
       [0, yScaleFactor, 0],
       [0, 0, 1]
     ]);
-    this.transformByMatrix(matrix);
+    this.linearTransformation(matrix);
   }
   
   /**
@@ -180,7 +180,7 @@ class VMobject extends Mobject {
       [0, 1, 0],
       [0, 0, zScaleFactor]
     ]);
-    this.transformByMatrix(matrix);
+    this.linearTransformation(matrix);
   }
 
   getPerimeter(samplePoints=10) {
@@ -406,7 +406,7 @@ class VMobject extends Mobject {
    */
   pointwiseBecomePartial(vmobject, a, b) {
     throw new NotImplementedError("**NEED TO FIx THIS, IMPLEMENTATION INCOMPLETE**");
-    if (!Validation.isInstanceOf(vmobject, VMobject)) {
+    if (!Validation.inheritsFrom(vmobject, VMobject)) {
       throw new TypeError("Only `VMobject`s can be model vmobjects for `VMobject.pointwiseBecomePartial()`!")
     }
 

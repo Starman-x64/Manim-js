@@ -1,17 +1,18 @@
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Point3D } from "../point3d.js";
 import { ORIGIN, OUT } from "../mathConstants.js";
-import { ManimColor } from "../color/manimColor.js";
+import { ManimColor, TRANSPARENT, WHITE } from "../color/manimColor.js";
 import { Animation } from "../animation/animation.js";
 import { NotImplementedError, ValueError } from "../error/errorClasses.js";
 import { Paths } from "../utils/paths.js";
+import { DEFAULT_LINE_WIDTH } from "../constants.js";
 
 class MobjectReference extends Number {
   /**
    * Return ~~(a copy of)~~ the `Mobject` represented by the `MobjectReference`.
    * @returns {Mobject}
    */
-  get value() {
+  get obj() {
     return Mobject.MOBJECTS.get(this);
   }
 }
@@ -43,7 +44,7 @@ class Mobject {
   }
 
   /**
-   * @param {{name: string}} kwargs 
+   * @param {{name: string, style: MobjectStyle}} kwargs 
    */
   constructor(kwargs={}) {
     if (Validation.isOfClass(this, Mobject)) {
@@ -53,16 +54,22 @@ class Mobject {
 
   _init(kwargs) {
     /**
-     * The name of the `Mobject`.
-     * @type {String}
-     */
-    this.name = defineUndef(kwargs.name, this.constructor.name);
-
-    /**
      * Unique ID which refers to this `Mobject`.
      * @type {MobjectReference}
      */
     this._id = Mobject._generateId();
+    
+    /**
+     * The name of the `Mobject`.
+     * @type {String}
+     */
+    this.name = defineUndef(kwargs.name, this.constructor.name);
+    
+    /**
+     * The name of the `Mobject`.
+     * @type {MobjectStyle}
+     */
+    this.style = defineUndef(kwargs.style, MobjectStyle.MOBJECT);
 
     /**
      * List of references to this `Mobject`'s child `Mobject`s.
@@ -165,6 +172,13 @@ class Mobject {
   }
   
   /**
+   * The number of points the `Mobject` has. 
+   */
+  get numPoints() {
+    return this._points.length;
+  }
+  
+  /**
    * The length of the `Mobject` across the given dimension.  
    * Computes the range (`max - min`) of the `Mobject`'s points in the specified dimension.
    * @param {Number} dimension The dimension to measure the length over.
@@ -175,27 +189,25 @@ class Mobject {
     let min = math.min(this.points, 0)[dimension];
     return max - min;
   }
-
-
-  /**
-   * Not sure what this does...
-   * @returns {["points"]}
-   */
-  getArrayAttrs() {
-    return ["points"];
-  }
-  
   
   /**
    * Create and return an identical clone of the `Mobject` including all submobjects.  
    * The clone's `_id` is reset upon creation.
    * The clone is initially not visible in the `Scene`, even if the original was.
    * 
+   * @param {Boolean} ephemeral If `true`, the `Mobject` is not assigned a new id and is not added th`Mobject.MOBJECTS`. Used when `Renderer` passes a copy the `Mobject` with points transformed into the canvas' coordinate space.
    * @returns {Mobject} The copy.
    */
-  clone() {
-    let clone = structuredClone(this);
+  clone(ephemeral=false) {
+    let clone = Object.create(
+      Object.getPrototypeOf(this), 
+      Object.getOwnPropertyDescriptors(this) 
+    );
+    
+    if (ephemeral) return clone;
+    
     clone._id = Mobject._generateId();
+    Mobject.MOBJECTS.set(clone.ref, clone);
     return clone;
   }
   
@@ -214,7 +226,16 @@ class Mobject {
     this.generatePoints();
     this.initColors();
   }
+  
 
+  /* [markdown]
+   * ## Submobject Operations
+   * - `add(...mobjects: MobjectReference[])`
+   * - `insert(index: int, mobject: MobjectReference)`
+   * - `addToBack(...mobjects: MobjectReference[])`
+   * - `remove(...mobjects: MobjectReference[])`
+   */
+  
   /**
    * Add mobjects as submobjects. The mobjects are added to `this.submobjects`.
    * 
@@ -351,8 +372,32 @@ class Mobject {
     }
     return this;
   }
+  
 
-  // Transforming Operations
+  /* [markdown]
+   * ## Point Transformations
+   * - `linearTransformation(transformationMatrix: number[][])`
+   * - `shift(...vectors: float[][])`
+   * - `scale(scaleFactor: float, )`
+   * - `rotate(angle: float, { axis: float[], center: float[] })`
+   */
+  
+  /**
+   * Apply a generic linear transformation to the `Mobject`'s `this.points`.
+   * 
+   * Default behavior is to scale about the center of the mobject.
+   * 
+   * @param  {Number[][]} transformationMatrix The 3x3 transformation matrix
+   * @returns {this}
+   */
+  linearTransformation(transformationMatrix, kwargs) {
+    this.submobjects.forEach(mobject => {
+      // Matrix is postmultiplied because points are row-major.
+      mobject.points = math.multiply(mobject.points, transformationMatrix);
+    });
+    return this;
+  }
+
   /**Apply a function to `this` and every submobject with points recursively.
    * 
    * @param {Function} func The function to apply to each mobject. `func` gets passed the respective (sub)mobject as parameter.
@@ -486,24 +531,6 @@ class Mobject {
     return this;
   }
 
-  /**
-   * Transform the points of the mobject by applying a matrix.
-   * 
-   * Default behavior is to scale about the center of the mobject.
-   * 
-   * @param  {number} matrix The 3x3 transformation matrix.
-   * @param  {object} kwargs Additional keyword arguments passed to `applyPointsFunctionAboutPoint()`.
-   * @returns {this}
-   */
-  transformByMatrix(matrix, kwargs) {
-    //let transformationMatrix = vectors.reduce((acc, vector) => nj.add(acc, vector), nj.zeros(3)); 
-    this.familyMembersWithPoints().forEach(mobject => {
-      // Matrix is postmultiplied because points are row-major.
-      mobject.points = nj.dot(mobject.points, matrix);
-    });
-
-    return this;
-  }
   
   /**
    * Turns this `Mobject` into an interpolation between `mobject1` and `mobject2`.
@@ -650,15 +677,17 @@ class Mobject {
 
   // Family matters
   
-  /**Get this moject's family (this mobject and all of its children and their children and so on).
+  /**
+   * Get this moject's family (this mobject and all of its children and their children and so on).
    * 
    * @param {boolean | true} recurse Whether or not to recursively include grandchild mobjects (submobjects of submobjects).
-   * @returns {Mobject[]}
+   * @returns {MobjectReference[]}
    */
   getFamily(recurse=true) {
+    /** @type {MobjectReference} */
     let subFamilies = [];
     this.submobjects.forEach(mobject => {
-      subFamilies = subFamilies.concat(mobject.getFamily());
+      subFamilies = subFamilies.concat(mobject.obj.getFamily());
     });
     let allMobjects = [this].concat(subFamilies);
     return Array.from(new Set(allMobjects));
@@ -707,6 +736,40 @@ class Mobject {
   }
 }
 
+
+class MobjectStyle {
+  static MOBJECT = new MobjectStyle({
+    fillColor: new ManimColor(TRANSPARENT),
+    strokeColor: new ManimColor(WHITE),
+    lineWidth: DEFAULT_LINE_WIDTH,
+  });
+
+  /**
+   * 
+   * @param {{fillColor: ManimColor, strokeColor: ManimColor, lineWidth: Number, color?: ManimColor}} style 
+   */
+  constructor(style={
+    fillColor,
+    strokeColor,
+    lineWidth,
+    color
+  }) {
+    this.fillColor = new ManimColor(defineUndef(style.fillColor, TRANSPARENT));
+    this.strokeColor = new ManimColor(defineUndef(style.strokeColor, WHITE));
+    this.lineWidth = defineUndef(style.lineWidth, DEFAULT_LINE_WIDTH);
+    
+    this.color = defineUndef(style.color, null);
+    
+    if (this.color !== null) {
+      this.fillColor = this.color;
+      this.strokeColor = this.color;
+    }
+  }
+
+
+}
+
+
 class _AnimationBuilder {
   constructor(mobject, animationKwargs) {
     this.mobject = mobject;
@@ -722,4 +785,4 @@ class _AnimationBuilder {
   }
 }
 
-export { Mobject, MobjectReference };
+export { Mobject, MobjectReference, MobjectStyle };

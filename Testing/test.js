@@ -1,11 +1,18 @@
 import { Scene } from "../src/scene/scene.js";
-import { Point3D } from "../src/point3d.js";
-import { Mobject } from "../src/mobject/mobject.js";
+import { Mobject, MobjectStyle } from "../src/mobject/mobject.js";
+import { RED, WHITE } from "../src/color/manimColor.js";
 
 class TestScene extends Scene {
   construct() {
-    let mob = new Mobject();
-    mob.points = [3, 2, 0];
+    let mob = new Mobject({ style: new MobjectStyle({ fillColor: RED })})
+    mob.points = [
+      [-2, 2, 0],
+      [-1, 2, 0], [1, 2, 0], [2, 2, 0],
+      [2, 1, 0], [2, -1, 0], [2, -2, 0],
+      [1, -2, 0], [-1, -2, 0], [-2, -2, 0],
+      [-2, -1, 0], [-2, 1, 0], [-2, 2, 0]
+    ];
+    mob.clone();
     this.add(mob);
     console.log(Mobject.MOBJECTS);
   }

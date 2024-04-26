@@ -1,7 +1,7 @@
-import { Renderer2D } from "../renderer/renderer2d.js";
+import { Renderer2D } from "../renderer/renderer.js";
 import { Camera } from "../mobject/camera/camera.js";
 import { Mobject, MobjectReference } from "../mobject/mobject.js";
-import { ManimColor }/*, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE }*/ from "../color/manimColor.js";
+import { BLACK, BLUE, ManimColor }/*, WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, DARK_RED, DARK_GREEN, DARK_BLUE, DARK_YELLOW, DARK_ORANGE }*/ from "../color/manimColor.js";
 import { Animation, _AnimationCollection } from "../animation/animation.js";
 
 /**
@@ -20,32 +20,37 @@ class Scene {
      * @type {MobjectReference[]}
      */
     this.mobjects = [];
+    
     /**
      * The queue of animations to play.
      * @type {_AnimationCollection[]}
      */
     this.animationQueue = [];
+
     /**
      * The current animation playing;
      * @type {_AnimationCollection}
      */
     this.currentAnimations = _AnimationCollection.nullCollection;
+
+    /**
+     * The background color.
+     * @type {ManimColor}
+     */
+    this.backgroundColor = BLACK.interpolate(BLUE, 0.1);
+
     /**
      * The renderer for the scene. Each scene has one renderer, and each renderer has one scene.
      * @type {Renderer2D}
      */
     this.renderer = new Renderer2D(this, width, height);
+    
     /**
      * The scene camera.
      * @type {Camera}
      */
     this.camera = new Camera();
 
-    /**
-     * The background color.
-     * @type {ManimColor}
-     */
-    this.backgroundColor = new ManimColor("#101010");//BLACK.interpolate(BLUE, 0.1);
   }
 
   /**

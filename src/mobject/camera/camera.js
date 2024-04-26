@@ -11,7 +11,7 @@ class Camera extends Mobject {
   }
   
   generatePoints() {
-    this.points = [0, 0, 0];
+    this.points = [[0, 0, 0]];
     console.log(this.points);
   }
   

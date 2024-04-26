@@ -1,15 +1,14 @@
 import { ManimColor, TRANSPARENT, WHITE } from "../../color/manimColor.js";
-import { DEFAULT_FONT_SIZE } from "../../constants.js";
+import { DEFAULT_FONT_SIZE, DEFAULT_LINE_WIDTH } from "../../constants.js";
 import { ORIGIN } from "../../mathConstants.js";
 import { Validation, defineUndef } from "../../utils/validation.js";
-import { Mobject } from "../mobject.js";
-import { GMobject } from "../types/graphicMobject.js";
+import { Mobject, MobjectStyle } from "../mobject.js";
 
 class TextMobject extends Mobject {
   constructor(text, kwargs={}) {
     super();
     
-    if (Validation.isOfClass(this, "Text")) {
+    if (Validation.isOfClass(this, "TextMobject")) {
       this._init(text, kwargs);
     }
   }
@@ -18,45 +17,37 @@ class TextMobject extends Mobject {
    * Display non-LATEX text.
    */
   _init(text, kwargs) {
-    this.lineSpacing = defineUndef(kwargs.lineSpacing, -1);
-    this.font = defineUndef(kwargs.lineSpacing, "Monospace");
-    this._fontSize = defineUndef(kwargs.fontSize, DEFAULT_FONT_SIZE);
+    super._init(kwargs);
     // this.slant = defineUndef(kwargs.slant, )
     // this.weight = 
     // this.gradient = 
     // this.tabWidth = 
-    this.bold = defineUndef(kwargs.bold, false);
-    this.italic = defineUndef(kwargs.italic, false);
-    this.align = defineUndef(kwargs.align, TextAlign.AUTO);
-    this.baseline = defineUndef(kwargs.baseline, TextBaseline.AUTO);
 
     this.originalText = text;
     let textWithoutTabs = text;
     this.text = textWithoutTabs;
-    
-    super._init(kwargs);
+  }
 
-    this.color = defineUndef(kwargs.color, new ManimColor(WHITE));//, new ManimColor(kwargs.color));
-    this.fillColor = defineUndef(kwargs.fillColor, new ManimColor(TRANSPARENT));//, new ManimColor(kwargs.color));
-    this.strokeColor = defineUndef(kwargs.strokeColor, new ManimColor(TRANSPARENT));//, new ManimColor(kwargs.color));
+  initStyle(kwargs) {
+    super.initStyle(kwargs);
+    this.color = new ManimColor(defineUndef(kwargs.fillColor, WHITE));
+    this.strokeColor = new ManimColor(defineUndef(kwargs.strokeColor, TRANSPARENT));
+    
+    this.typeface = defineUndef(kwargs.typeface, "Monospace");
+    this.fontSize = defineUndef(kwargs.fontSize, DEFAULT_FONT_SIZE);
+    this.bold = defineUndef(kwargs.bold, false);
+    this.italic = defineUndef(kwargs.italic, false);
+    
+    this.lineSpacing = defineUndef(kwargs.lineSpacing, -1);
+    this.align = defineUndef(kwargs.align, TextAlign.AUTO);
+    this.baseline = defineUndef(kwargs.baseline, TextBaseline.AUTO);
   }
   
   generatePoints() {
-    this.points = ORIGIN.clone(); 
+    this.points = [[0, 0, 0]]; 
   }
 
-  getCenter() {
-    return this.points.clone();
-  }
-
-  fontSize() {
-    return this._fontSize;
-  }
-
-  getCanvasFontStyleString() {
-    return `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize()}px ${this.font}`;
-  }
-  
+  get font() { return `${this.bold ? "bold " : ""}${this.italic ? "italic " : ""}${this.fontSize}px ${this.typeface}`; }
 }
 
 class TextAlign extends String {
@@ -69,7 +60,8 @@ class TextAlign extends String {
 }
 
 class TextBaseline extends String {
-  static AUTO = new TextBaseline("middle"); // generally (as in in all js projects, including things unrelated to manim), the default value is alphabetic.
+  // Generally (as in in all JS projects, including things unrelated to Manim), the default value is "alphabetic".
+  static AUTO = new TextBaseline("middle");
   static TOP = new TextBaseline("top");
   static HANGING = new TextBaseline("hanging");
   static MIDDLE = new TextBaseline("middle");

@@ -17,6 +17,12 @@ class MobjectReference extends Number {
   }
 }
 
+const DEFAULT_MOBJECT_STYLE = new Map([
+  ["fillColor", new ManimColor(TRANSPARENT)],
+  ["strokeColor", new ManimColor(WHITE)],
+  ["lineWidth", DEFAULT_LINE_WIDTH],
+])
+
 /**
  * Mathematical Object: base class for objects that can be displayed on screen.
  * 
@@ -44,21 +50,22 @@ class Mobject {
   }
 
   /**
-   * @param {{name: string, style: MobjectStyle}} kwargs 
+   * @param {{name: string, style: Map}} kwargs 
    */
   constructor(kwargs={}) {
+    /**
+     * Unique ID which refers to this `Mobject`.
+     * @type {MobjectReference}
+     */
+    this._id = Mobject._generateId();
+    Mobject.MOBJECTS.set(this.ref, this);
+    
     if (Validation.isOfClass(this, Mobject)) {
       this._init(kwargs);
     }
   }
 
   _init(kwargs) {
-    /**
-     * Unique ID which refers to this `Mobject`.
-     * @type {MobjectReference}
-     */
-    this._id = Mobject._generateId();
-    
     /**
      * The name of the `Mobject`.
      * @type {String}
@@ -67,7 +74,7 @@ class Mobject {
     
     /**
      * The name of the `Mobject`.
-     * @type {MobjectStyle}
+     * @type {Map}
      */
     this.style = defineUndef(kwargs.style, MobjectStyle.MOBJECT);
 
@@ -85,9 +92,7 @@ class Mobject {
      */
     this._points = [];
     
-    this.initMobject();
-
-    Mobject.MOBJECTS.set(this.ref, this);
+    this.initMobject(kwargs);
   }
   
   
@@ -186,13 +191,22 @@ class Mobject {
     this.scaleToFitLength(2, value);
   }
 
-  get fillColor() { return this.style.fillColor; }
-  get strokeColor() { return this.style.strokeColor; }
-  get color() { return this.style.color === null ? [this.fillColor, this.strokeColor] : this.style.color; }
+  get color() { return new ManimColor(this.fillColor) };
+  set color(newColor) { this.fillColor = new ManimColor(newColor) };
 
-  set fillColor(color) { this.style.fillColor = new ManimColor(color); }
-  set strokeColor(color) { this.style.strokeColor = new ManimColor(color); }
-  set color(color) { this.style.color = new ManimColor(color); this.style.fillColor = this.style.color; this.style.fillColor = this.style.strokeColor; }
+  // get fillColor() { return this.style.get("fillStyle"); }
+  // get strokeColor() { return this.style.get("strokeStyle"); }
+  // get color() { return this.style.get("color") === null ? [this.fillColor, this.strokeColor] : this.style.get("color"); }
+
+  // set fillColor(color) { this.style.set("fillColor", new ManimColor(color)); }
+  // set strokeColor(color) { this.style.set("strokeColor", new ManimColor(color)); }
+  // set color(color) {
+  //   this.style.set("color", new ManimColor(color));
+  //   if (color !== null) {
+  //     this.fillColor = this.color;
+  //     this.fillColor = this.color;
+  //   }
+  // }
   
   /**
    * The number of points the `Mobject` has. 
@@ -267,10 +281,21 @@ class Mobject {
    * `Mobject` meant that any implementations of these functions which included
    * attributes specific to a child class would often be erroneous.
   */
-  initMobject() {
+  initMobject(kwargs) {
+    this.initStyle(kwargs);
     this.resetPoints();
     this.generatePoints();
     this.initColors();
+  }
+
+  initStyle(kwargs) {
+    /** @type {ManimColor} */
+    this.fillColor = new ManimColor(defineUndef(kwargs.fillColor, TRANSPARENT));
+    /** @type {ManimColor} */
+    this.strokeColor = new ManimColor(defineUndef(kwargs.strokeColor, WHITE));
+    /** @type {Number} */
+    this.lineWidth = defineUndef(kwargs.lineWidth, DEFAULT_LINE_WIDTH);
+
   }
   
 
@@ -853,8 +878,6 @@ class MobjectStyle {
       this.strokeColor = this.color;
     }
   }
-
-
 }
 
 
@@ -873,4 +896,4 @@ class _AnimationBuilder {
   }
 }
 
-export { Mobject, MobjectReference, MobjectStyle };
+export { Mobject, MobjectReference, MobjectStyle, DEFAULT_MOBJECT_STYLE };

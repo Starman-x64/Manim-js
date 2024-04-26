@@ -2,10 +2,11 @@ import { Scene } from "../src/scene/scene.js";
 import { Mobject, MobjectStyle } from "../src/mobject/mobject.js";
 import { BLUE, RED, WHITE } from "../src/color/manimColor.js";
 import { RIGHT } from "../src/mathConstants.js";
+import { TextAlign, TextMobject } from "../src/mobject/text/textMobject.js";
 
 class TestScene extends Scene {
   construct() {
-    let mob1 = new Mobject({ style: new MobjectStyle({ fillColor: RED })});
+    let mob1 = new Mobject({ fillColor: RED });
     mob1.points = [
       [-2, 2, 0],
       [-1, 2, 0], [1, 2, 0], [2, 2, 0],
@@ -33,9 +34,11 @@ class TestScene extends Scene {
     mob1.add(mob2);
     mob1.add(mob3);
     mob1.add(mob4);
+    
     this.add(mob1);
     
-    mob1.shift(RIGHT);
+    let text = new TextMobject("Hello, world!", { align: TextAlign.CENTER });
+    this.add(text);
     
     console.log(Mobject.MOBJECTS);
   }

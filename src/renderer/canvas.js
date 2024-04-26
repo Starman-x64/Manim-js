@@ -1,5 +1,6 @@
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, ManimColor } from "../color/manimColor.js";
 import { Mobject } from "../mobject/mobject.js";
+import { TextAlign, TextBaseline } from "../mobject/text/textMobject.js";
 import { bezier } from "../utils/bezier.js";
 import { Validation, defineUndef } from "../utils/validation.js";
 import { Drawer } from "./drawer.js";
@@ -115,7 +116,27 @@ class Canvas2D extends Canvas {
   get lineWidth() { return this._ctx.lineWidh; }
   /** @param {Number} newWidth */
   set lineWidth(newWidth) { this._ctx.lineWidth = newWidth; }
+
+  /** @returns {Number} */
+  get lineSpacing() { return this._ctx.lineSpacing; }
+  /** @param {Number} newSpacing */
+  set lineSpacing(newSpacing) { this._ctx.lineSpacing = newSpacing; }
+
+  /** @returns {Number} */
+  get textAlign() { return this._ctx.textAlign; }
+  /** @param {TextAlign} newAlign */
+  set textAlign(newAlign) { this._ctx.textAlign = newAlign; }
   
+  /** @returns {Number} */
+  get textBaseline() { return this._ctx.textBaseline; }
+  /** @param {TextBaseline} newBaseline */
+  set textBaseline(newBaseline) { this._ctx.textBaseline = newBaseline; }
+  
+  /** @returns {Number} */
+  get font() { return this._ctx.font; }
+  /** @param {String} newFont */
+  set font(newFont) { this._ctx.font = newFont; }
+    
   /**
    * @returns {this}
    */
@@ -141,6 +162,30 @@ class Canvas2D extends Canvas {
    */
   fill(path=null) {
     this._ctx.fill(path);
+    return this;
+  }
+  
+  /**
+   * @param {String} text 
+   * @param {Number} x 
+   * @param {Number} y 
+   * @param {Number | undefined} maxWidth 
+   * @returns {this}
+   */
+  strokeText(text, x, y, maxWidth=undefined) {
+    this._ctx.strokeText(text, x, y, maxWidth);
+    return this;
+  }
+  
+  /**
+   * @param {String} text 
+   * @param {Number} x 
+   * @param {Number} y 
+   * @param {Number | undefined} maxWidth 
+   * @returns {this}
+   */
+  fillText(text, x, y, maxWidth=undefined) {
+    this._ctx.fillText(text, x, y, maxWidth);
     return this;
   }
 

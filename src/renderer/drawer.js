@@ -21,7 +21,7 @@ class Drawer {
   static generateDrawInstructions(ghostMobject, canvas) {
     let ghostMobjectClass = ghostMobject.constructor;
     if (ghostMobjectClass == TextMobject) { // TODO: in future, should be VMobject.
-      return VMobjectDrawer.generateDrawInstructions(ghostMobject, canvas);
+      return TextMobjectDrawer.generateDrawInstructions(ghostMobject, canvas);
     }
     if (ghostMobjectClass == Mobject) { // TODO: in future, should be VMobject.
       return VMobjectDrawer.generateDrawInstructions(ghostMobject, canvas);
@@ -30,15 +30,19 @@ class Drawer {
   
   
   /** 
-   * @param {MobjectStyle} style 
+   * @param {{}}} style 
    * @param {Canvas2D} canvas 
    * @returns {(canvas: Canvas2D) => void}
    */
   static setStyle(style, canvas) {
     return [
-      () => { canvas.fillStyle = style.fillColor; },
-      () => { canvas.strokeStyle = style.strokeColor; },
+      () => { canvas.fillStyle = style.fillStyle; },
+      () => { canvas.strokeStyle = style.strokeStyle; },
       () => { canvas.lineWidth = style.lineWidth; },
+      () => { canvas.lineSpacing = style.lineSpacing; },
+      () => { canvas.textAlign = style.textAlign; },
+      () => { canvas.textBaseline = style.textBaseline; },
+      () => { canvas.font = style.font; },
     ];
   }
 }
@@ -70,7 +74,11 @@ class VMobjectDrawer extends Drawer {
     
     let drawInstructions = [];
     
-    let style = ghostMobject.style;
+    let style = {
+      fillStyle: ghostMobject.fillColor,
+      strokeStyle: ghostMobject.strokeColor,
+      lineWidth: ghostMobject.lineWidth,
+    };
     
     drawInstructions.push(...(Drawer.setStyle(style, canvas)));
 
@@ -151,37 +159,51 @@ class TextMobjectDrawer extends Drawer {
    * @returns {Function[]}
    */
   static generateDrawInstructions(ghostMobject, canvas) {
-    TextMobject._validate(ghostMobject);
+    TextMobjectDrawer._validate(ghostMobject);
     
     let drawInstructions = [];
     
-    let style = ghostMobject.style;
+    let style = {
+      fillStyle: ghostMobject.fillColor,
+      strokeStyle: ghostMobject.strokeColor,
+      lineWidth: ghostMobject.lineWidth,
+      lineSpacing: ghostMobject.lineSpacing,
+      textAlign: ghostMobject.align,
+      textBaseline: ghostMobject.baseline,
+      font: ghostMobject.font,
+    };
     
     drawInstructions.push(...(Drawer.setStyle(style, canvas)));
 
     
-    drawInstructions.push(TextMobjectDrawer.stroke(svgPath, canvas));
-    drawInstructions.push(TextMobjectDrawer.fill(svgPath, canvas));
+    drawInstructions.push(TextMobjectDrawer.fillText(canvas, ghostMobject.text, ...(ghostMobject.center)));
+    //drawInstructions.push(TextMobjectDrawer.strokeText(canvas, ghostMobject.text, ...(ghostMobject.center)));
     
     return drawInstructions;
   }
   
   /** 
-   * @param {Path2D} point The `Path2D` to stroke.
    * @param {Canvas2D} canvas The `Canvas` to stroke onto.
+   * @param {String} text The text to stroke.
+   * @param {Number} x 
+   * @param {Number} y 
+   * @param {Number | undefined} maxWidth 
    * @returns {() => void}
    */
-  static stroke(path, canvas) {
-    return () => { canvas.stroke(path); }
+  static strokeText(canvas, text, x, y, maxWidth=undefined) {
+    return () => { canvas.strokeText(text, x, y, maxWidth); }
   }
   
   /** 
-   * @param {Path2D} point The `Path2D` to stroke.
    * @param {Canvas2D} canvas The `Canvas` to stroke onto.
+   * @param {String} text The text to fill.
+   * @param {Number} x 
+   * @param {Number} y 
+   * @param {Number | undefined} maxWidth 
    * @returns {() => void}
    */
-  static fill(path, canvas) {
-    return () => { canvas.fill(path); }
+  static fillText(canvas, text, x, y, maxWidth=undefined) {
+    return () => { canvas.fillText(text, x, y, maxWidth); }
   }
 }
 

@@ -148,6 +148,13 @@ class Mobject {
     let mins = math.min(this.points, 0);
     return math.mean([maxs, mins], 0);
   }
+  /**
+   * @param {Number[]} newCenter 
+   */
+  set center(newCenter) {
+    let displacement = math.subtract(newCenter, this.center);
+    this.shift(displacement);
+  }
   
   /**
    * Gets the width (X dimension) of the mobject.
@@ -410,7 +417,11 @@ class Mobject {
    * @param {...((mobject: Mobject, dt: Number) => void)} updater Updaters to add.
    */
   addUpdaters(...updaters) {
+    this.updaters = this.updaters.concat(updaters);
+  }
 
+  update(dt) {
+    this.getFamily().forEach(mobject => mobject.obj.updaters.forEach (updater => updater(this, dt)));
   }
 
   

@@ -175,7 +175,7 @@ class Renderer2D extends Renderer {
    * Draw the scene's mobjects onto the screen.
    * @returns {void}
   */
- drawScene() {
+  drawScene() {
    this.canvas.clear();
    
    let camera = this.scene.camera;
@@ -204,15 +204,32 @@ class Renderer2D extends Renderer {
    * @param {Number[][]} worldPoints World-space coordinates.
    * @returns {Number[]}
   */
- worldToCanvasCoords(worldPoints) {
-   let worldPointsAsMatrix = worldPoints.map(x => [...x, 1]);
-   let transformationMatrix = [
-     [GLOBAL_SCALE, 0],
-     [0, -GLOBAL_SCALE],
-     [0, 0],
-     [this.canvas.width/2 - this.scene.camera.x, this.canvas.height/2 + this.scene.camera.y]
+  worldToCanvasCoords(worldPoints) {
+    let worldPointsAsMatrix = worldPoints.map(x => [x[0], x[1], 1]);
+    let transformationMatrix = [
+      [GLOBAL_SCALE, 0, 0],
+      [0, -GLOBAL_SCALE, 0],
+      [this.canvas.width/2 - this.scene.camera.x, this.canvas.height/2 + this.scene.camera.y, 1]
     ];
-    return math.multiply(worldPointsAsMatrix, transformationMatrix);
+    let resultantPoints = math.multiply(worldPointsAsMatrix, transformationMatrix);
+    resultantPoints = resultantPoints.map(x => [x[0], x[1]]);
+    return resultantPoints;
+  }
+
+  /**
+   * Convert the position of an object from canvas-space to world-space.
+   * @param {Number[][]} canvasPoints Canvas-space coordinates.
+   * @returns {Number[]}
+  */
+  canvasToWorldCoords(canvasPoints) {
+    let canvasPointsAsMatrix = canvasPoints.map(x => [...x, 1]);
+    let transformationMatrix = math.inv([
+      [GLOBAL_SCALE, 0, 0],
+      [0, -GLOBAL_SCALE, 0],
+      [this.canvas.width/2 - this.scene.camera.x, this.canvas.height/2 + this.scene.camera.y, 1]
+    ]);
+    let resultantPoints = math.multiply(canvasPointsAsMatrix, transformationMatrix).map(x => { x.pop(); return [...x, 0]; });
+    return resultantPoints;
   }
   
     /**

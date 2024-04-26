@@ -48,7 +48,7 @@ class Scene {
 
     /**
      * The input handler for the scene. Each scene has one renderer, and each renderer has one scene.
-     * @type {Renderer2D}
+     * @type {InputHandler}
      */
     this.input = new InputHandler(this.renderer.canvas);
     
@@ -99,7 +99,7 @@ class Scene {
    */
   update(dt) {
     this.updateAnimations(dt);
-    // this.updateMobjects(dt);
+    this.updateMobjects(dt);
   }
 
   /**
@@ -126,8 +126,8 @@ class Scene {
    * @param {number} dt Change in time between updates. Defaults (mostly) to `1/framesPerSecond`.
    */
   updateMobjects(dt) {
-    //this.mobjects.forEach(mobject => mobject.update(dt));
-    // this.camera.update(dt);
+    this.camera.update(dt);
+    this.mobjects.forEach(mobject => mobject.obj.update(dt));
   }
 
   /**Add mobjects to scene.
@@ -204,6 +204,24 @@ class Scene {
    */
   queueAnimationCollection(animationCollection) {
     this.animationQueue.push(animationCollection);
+  }
+
+  /**
+   * Convert the position of an object from world-space to canvas-space.
+   * @param {Number[][]} worldPoints World-space coordinates.
+   * @returns {Number[]}
+  */
+  worldToCanvasCoords(worldPoints) {
+    return this.renderer.worldToCanvasCoords(worldPoints);
+  }
+
+  /**
+   * Convert the position of an object from canvas-space to world-space.
+   * @param {Number[][]} canvasPoints Canvas-space coordinates.
+   * @returns {Number[]}
+  */
+  canvasToWorldCoords(canvasPoints) {
+    return this.renderer.canvasToWorldCoords(canvasPoints);
   }
 }
 

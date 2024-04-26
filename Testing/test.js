@@ -17,6 +17,8 @@ class TestScene extends Scene {
     let mob2 = mob1.clone();
     let mob3 = mob1.clone();
     let mob4 = mob1.clone();
+    let mouseFollower = mob1.clone();
+    
     mob2.shift([-1, 0.75, 0]);
     mob2.scale(0.2);
     mob2.fillColor = BLUE;
@@ -39,6 +41,19 @@ class TestScene extends Scene {
     
     let text = new TextMobject("Hello, world!", { align: TextAlign.CENTER });
     this.add(text);
+    this.add(mouseFollower);
+
+    text.shift([-10, -10, 0]);
+
+    text.addUpdaters((mobject, dt) => {
+      let mouseCoords = this.canvasToWorldCoords([this.input.mousePosition]).map(x => math.round(x, 3))[0];
+      mobject.text = `(${mouseCoords[0]}, ${mouseCoords[1]})`;
+    });
+
+    mouseFollower.addUpdaters((mobject, dt) => {
+      let mouseCoords = this.canvasToWorldCoords([this.input.mousePosition])[0];
+      mobject.center = mouseCoords;
+    });
     
     console.log(Mobject.MOBJECTS);
   }

@@ -193,20 +193,6 @@ class Mobject {
 
   get color() { return new ManimColor(this.fillColor) };
   set color(newColor) { this.fillColor = new ManimColor(newColor) };
-
-  // get fillColor() { return this.style.get("fillStyle"); }
-  // get strokeColor() { return this.style.get("strokeStyle"); }
-  // get color() { return this.style.get("color") === null ? [this.fillColor, this.strokeColor] : this.style.get("color"); }
-
-  // set fillColor(color) { this.style.set("fillColor", new ManimColor(color)); }
-  // set strokeColor(color) { this.style.set("strokeColor", new ManimColor(color)); }
-  // set color(color) {
-  //   this.style.set("color", new ManimColor(color));
-  //   if (color !== null) {
-  //     this.fillColor = this.color;
-  //     this.fillColor = this.color;
-  //   }
-  // }
   
   /**
    * The number of points the `Mobject` has. 
@@ -426,23 +412,6 @@ class Mobject {
     return this;
   }
 
-  /**Sets attributes.
-   * 
-   * I.e. `myMobject.set({ foo: 1 })` applies `myMobject.foo = 1`.
-   * 
-   * This is a convenience to be used along with `this.animate` to
-   * animate setting attributes.
-   * 
-   * @param {object} kvp Object containing pairs of attributes and values to set.
-   * @returns {this Mobject}
-   */
-  set(kvp) {
-    for (let [key, value] of Object.entries(kvp)) {
-      this[key] = value;
-      this.width
-    }
-    return this;
-  }
   
 
   /* [markdown]
@@ -462,7 +431,7 @@ class Mobject {
    * @param  {Number[][]} transformationMatrix The 3x3 transformation matrix
    * @returns {this}
    */
-  linearTransformation(transformationMatrix, kwargs) {
+  linearTransformation(transformationMatrix) {
     this.getFamily().forEach(mobject => {
       // Matrix is postmultiplied because points are row-major.
       mobject.obj.points = math.multiply(mobject.obj.points, transformationMatrix);
@@ -478,7 +447,7 @@ class Mobject {
    * @param  {Number[][]} transformationMatrix The 4x4 transformation matrix
    * @returns {this}
    */
-  linearTransformation4D(transformationMatrix, kwargs) {
+  linearTransformation4D(transformationMatrix) {
     this.applyToFamily((mobject) => {
       // Matrix is postmultiplied because points are row-major.
       mobject.obj.augmentedPoints = math.multiply(mobject.obj.augmentedPoints, transformationMatrix);

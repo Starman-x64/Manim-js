@@ -2,9 +2,10 @@ import { ManimColor, TRANSPARENT, WHITE } from "../../color/manimColor.js";
 import { DEFAULT_FONT_SIZE } from "../../constants.js";
 import { ORIGIN } from "../../mathConstants.js";
 import { Validation, defineUndef } from "../../utils/validation.js";
+import { Mobject } from "../mobject.js";
 import { GMobject } from "../types/graphicMobject.js";
 
-class Text extends GMobject {
+class TextMobject extends Mobject {
   constructor(text, kwargs={}) {
     super();
     
@@ -77,4 +78,4 @@ class TextBaseline extends String {
   static BOTTOM = new TextBaseline("bottom");
 }
 
-export { Text, TextAlign, TextBaseline };
+export { TextMobject, TextAlign, TextBaseline };

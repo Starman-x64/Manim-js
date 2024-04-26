@@ -3,7 +3,7 @@ import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, ManimColor } from "../color/manimColor.js";
 import { bezier } from "../utils/bezier.js";
 import { Validation, defineUndef } from "../utils/validation.js";
-import { Text } from "../mobject/text/textMobject.js";
+import { TextMobject } from "../mobject/text/textMobject.js";
 import { Mobject, MobjectReference, MobjectStyle } from "../mobject/mobject.js";
 import { Canvas, Canvas2D } from "./canvas.js";
 
@@ -20,6 +20,9 @@ class Drawer {
    */
   static generateDrawInstructions(ghostMobject, canvas) {
     let ghostMobjectClass = ghostMobject.constructor;
+    if (ghostMobjectClass == TextMobject) { // TODO: in future, should be VMobject.
+      return VMobjectDrawer.generateDrawInstructions(ghostMobject, canvas);
+    }
     if (ghostMobjectClass == Mobject) { // TODO: in future, should be VMobject.
       return VMobjectDrawer.generateDrawInstructions(ghostMobject, canvas);
     }
@@ -123,6 +126,62 @@ class VMobjectDrawer extends Drawer {
     }
     
     return new Path2D(string);
+  }
+}
+
+/**
+ * Generates a series of draw instructions from a given `TextMobject`.
+ */
+class TextMobjectDrawer extends Drawer {
+  /**
+   * Ensure only instances inheriting from `TextMobject` are passeed into the function.
+   * @param {any} ghostMobject The ghost `Mobject` to validate.
+   */
+  static _validate(ghostMobject) {
+    if (!Validation.inheritsFrom(ghostMobject, TextMobject)) {
+      throw new TypeError(`TextMobjectDrawer can only Mobjects inheriting from TextMobject, (which ${ghostMobject.constructor.name} does not)!`);
+    }
+  }
+  
+  /**
+   * Generate a series of draw instructions from a given `Mobject`.  
+   * The `Mobject` is handled by different `Drawer` subclassess, depending on what kind of `Mobject` the given one is.
+   * @param {TextMobject} ghostMobject The `TextMobject` to generate instructions from.
+   * @param {Canvas2D} canvas The `Canvas` to generate instructions for.
+   * @returns {Function[]}
+   */
+  static generateDrawInstructions(ghostMobject, canvas) {
+    TextMobject._validate(ghostMobject);
+    
+    let drawInstructions = [];
+    
+    let style = ghostMobject.style;
+    
+    drawInstructions.push(...(Drawer.setStyle(style, canvas)));
+
+    
+    drawInstructions.push(TextMobjectDrawer.stroke(svgPath, canvas));
+    drawInstructions.push(TextMobjectDrawer.fill(svgPath, canvas));
+    
+    return drawInstructions;
+  }
+  
+  /** 
+   * @param {Path2D} point The `Path2D` to stroke.
+   * @param {Canvas2D} canvas The `Canvas` to stroke onto.
+   * @returns {() => void}
+   */
+  static stroke(path, canvas) {
+    return () => { canvas.stroke(path); }
+  }
+  
+  /** 
+   * @param {Path2D} point The `Path2D` to stroke.
+   * @param {Canvas2D} canvas The `Canvas` to stroke onto.
+   * @returns {() => void}
+   */
+  static fill(path, canvas) {
+    return () => { canvas.fill(path); }
   }
 }
 

@@ -1,19 +1,42 @@
 import { Scene } from "../src/scene/scene.js";
 import { Mobject, MobjectStyle } from "../src/mobject/mobject.js";
-import { RED, WHITE } from "../src/color/manimColor.js";
+import { BLUE, RED, WHITE } from "../src/color/manimColor.js";
+import { RIGHT } from "../src/mathConstants.js";
 
 class TestScene extends Scene {
   construct() {
-    let mob = new Mobject({ style: new MobjectStyle({ fillColor: RED })})
-    mob.points = [
+    let mob1 = new Mobject({ style: new MobjectStyle({ fillColor: RED })});
+    mob1.points = [
       [-2, 2, 0],
       [-1, 2, 0], [1, 2, 0], [2, 2, 0],
       [2, 1, 0], [2, -1, 0], [2, -2, 0],
       [1, -2, 0], [-1, -2, 0], [-2, -2, 0],
       [-2, -1, 0], [-2, 1, 0], [-2, 2, 0]
     ];
-    mob.clone();
-    this.add(mob);
+    let mob2 = mob1.clone();
+    let mob3 = mob1.clone();
+    let mob4 = mob1.clone();
+    mob2.shift([-1, 0.75, 0]);
+    mob2.scale(0.2);
+    mob2.fillColor = BLUE;
+
+    mob3.shift([1, 0.75, 0]);
+    mob3.scale(0.2);
+    mob3.fillColor = BLUE;
+    
+    mob4.shift([0, -1, 0]);
+    mob4.scale(0.2);
+    mob4.width = 3;
+    mob4.height = 0.5;
+    mob4.fillColor = BLUE;
+    
+    mob1.add(mob2);
+    mob1.add(mob3);
+    mob1.add(mob4);
+    this.add(mob1);
+    
+    mob1.shift(RIGHT);
+    
     console.log(Mobject.MOBJECTS);
   }
 }

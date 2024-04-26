@@ -107,11 +107,29 @@ class Mobject {
   }
 
   /**
-   * @param {Number[][]} points
+  * @param {Number[][]} points
    */
   set points(points) {
     let newPoints = structuredClone(points);
     this._points = newPoints;
+  }
+  
+  /**
+   * Get a copy of the `Mobject`'s points, with `1` appended at the end of each.
+   */
+  get augmentedPoints() {
+    let points = structuredClone(this._points);
+    points.forEach(x => { x.push(1); });
+    return points;
+  }
+  
+  /**
+   * @param {Number[][]} augmentedPoints
+   */
+  set augmentedPoints(augmentedPoints) {
+    let points = structuredClone(augmentedPoints);
+    points.forEach(x => { x.pop(); });
+    this._points = points;
   }
   
   get center() {
@@ -149,8 +167,7 @@ class Mobject {
    * @param {Number} value 
    */
   set width(value) {
-    this.scaleToFitWidth(value);
-    return this;
+    this.scaleToFitLength(0, value);
   }
 
   /**
@@ -158,8 +175,7 @@ class Mobject {
    * @param {number} value 
    */
   set height(value) {
-    this.scaleToFitHeight(value);
-    return this;
+    this.scaleToFitLength(1, value);
   }
   
   /**
@@ -167,9 +183,16 @@ class Mobject {
    * @param {number} value 
    */
   set depth(value) {
-    this.scaleToFitDepth(value);
-    return this;
+    this.scaleToFitLength(2, value);
   }
+
+  get fillColor() { return this.style.fillColor; }
+  get strokeColor() { return this.style.strokeColor; }
+  get color() { return this.style.color === null ? [this.fillColor, this.strokeColor] : this.style.color; }
+
+  set fillColor(color) { this.style.fillColor = new ManimColor(color); }
+  set strokeColor(color) { this.style.strokeColor = new ManimColor(color); }
+  set color(color) { this.style.color = new ManimColor(color); this.style.fillColor = this.style.color; this.style.fillColor = this.style.strokeColor; }
   
   /**
    * The number of points the `Mobject` has. 
@@ -191,6 +214,20 @@ class Mobject {
   }
   
   /**
+   * Scale the mobject along an axis so that its length in that dimension matches the one provided.
+   * @param {Number} dimension Which dimension (x=0, y=1, z=2) to scale in.
+   * @param {Number} length The length to match.
+   */
+  scaleToFitLength(dimension, length) {
+    let currentLength = this.lengthOverDim(dimension);
+    let scaleFactor = length / currentLength; // TODO: what if the currentLength == 0?
+    let [sf, d] = [scaleFactor, dimension];
+    let scaleFactors = [(sf-1)*(d==0)+1, (sf-1)*(d==1)+1, (sf-1)*(d==2)+1];
+
+    this.scale(scaleFactors);
+  }
+  
+  /**
    * Create and return an identical clone of the `Mobject` including all submobjects.  
    * The clone's `_id` is reset upon creation.
    * The clone is initially not visible in the `Scene`, even if the original was.
@@ -199,11 +236,20 @@ class Mobject {
    * @returns {Mobject} The copy.
    */
   clone(ephemeral=false) {
+    /** @type {this} */
     let clone = Object.create(
       Object.getPrototypeOf(this), 
       Object.getOwnPropertyDescriptors(this) 
     );
     
+    /** @type {MobjectStyle} */
+    let cloneStyle = Object.create(
+      Object.getPrototypeOf(this.style), 
+      Object.getOwnPropertyDescriptors(this.style) 
+    );
+
+    clone.style = cloneStyle;
+      
     if (ephemeral) return clone;
     
     clone._id = Mobject._generateId();
@@ -377,8 +423,9 @@ class Mobject {
   /* [markdown]
    * ## Point Transformations
    * - `linearTransformation(transformationMatrix: number[][])`
+   * - `linearTransformation4D(transformationMatrix: number[][])`
    * - `shift(...vectors: float[][])`
-   * - `scale(scaleFactor: float, )`
+   * - `scale(scaleFactor: float | float[], center?: float[])`
    * - `rotate(angle: float, { axis: float[], center: float[] })`
    */
   
@@ -391,53 +438,94 @@ class Mobject {
    * @returns {this}
    */
   linearTransformation(transformationMatrix, kwargs) {
-    this.submobjects.forEach(mobject => {
+    this.getFamily().forEach(mobject => {
       // Matrix is postmultiplied because points are row-major.
-      mobject.points = math.multiply(mobject.points, transformationMatrix);
+      mobject.obj.points = math.multiply(mobject.obj.points, transformationMatrix);
+    });
+    return this;
+  }
+  
+  /**
+   * Apply a 4x4 linear transformation to the `Mobject`'s `this.points`.
+   * 
+   * Default behavior is to scale about the center of the mobject.
+   * 
+   * @param  {Number[][]} transformationMatrix The 4x4 transformation matrix
+   * @returns {this}
+   */
+  linearTransformation4D(transformationMatrix, kwargs) {
+    this.applyToFamily((mobject) => {
+      // Matrix is postmultiplied because points are row-major.
+      mobject.obj.augmentedPoints = math.multiply(mobject.obj.augmentedPoints, transformationMatrix);
     });
     return this;
   }
 
-  /**Apply a function to `this` and every submobject with points recursively.
+  /**
+   * Apply a function to `this` and every submobject with points recursively.
    * 
-   * @param {Function} func The function to apply to each mobject. `func` gets passed the respective (sub)mobject as parameter.
+   * @param {(mobject: MobjectReference) => void} func The function to apply to each mobject. `func` gets passed the respective (sub)mobject as parameter.
    * @returns {this}
    */
   applyToFamily(func) {
-    this.familyMembersWithPoints().forEach(submobject => func.apply(submobject, func.arguments));
+    this.getFamily().forEach(func);
     return this;
   }
   
-  /**Shift by the given vectors.
+  /**
+   * Shift by the given vectors.
    * 
    * @param  {...number[]} vectors Vectors to shift by. If multiple vectors are given, they are added together.
    * @returns {this}
    */
   shift(...vectors) {
-    let totalVector = vectors.reduce((acc, vector) => nj.add(acc, vector), Point3D(0, 0, 0));
+    let totalVector = vectors.reduce((acc, vector) => math.add(acc, vector), [0, 0, 0]);
     // console.log(this.constructor.name, this.familyMembersWithPoints());
-    this.familyMembersWithPoints().forEach(mobject => {
-      totalVector.flatten().selection.data.forEach((coord, index) => {
-        for(let i = 0; i < mobject.points.shape[0]; i++) {
-          mobject.points.set(i, index, mobject.points.get(i, index) + coord);
-        }
-      });
+    this.applyToFamily((mobject) => {
+      let newPoints = [];
+      for (let point of mobject.obj.points) {
+        newPoints.push(math.add(point, totalVector));
+      }
+      mobject.obj.points = newPoints;
     });
 
     return this;
   }
   
-  /**Scale the size by a factor.
-   * 
-   * Default behavior is to scale about the center of the mobject.
-   * 
-   * @param  {number} scaleFactor The scaling factor `α`. If `0 < |α| < 1`, the mobject will shrink, and for :math:`|α| > 1` it will grow. Furthermore, if :math:`α < 0`, the mobject is also flipped.
-   * @param  {object} kwargs Additional keyword arguments passed to `applyPointsFunctionAboutPoint()`.
+  /**
+   * Scale the size by a factor.  
+   * Default behavior is to scale about the center of the `Mobject` (`this.center`).
+   * @param  {Number | Number[]} scaleFactor The scaling factor `α`. If `0 < |α| < 1`, the mobject will shrink, and for :math:`|α| > 1` it will grow. Furthermore, if :math:`α < 0`, the mobject is also flipped. An array of 3 numbers can be passed for different scaling in each axis.
+   * @param  {Number[]} center The center point to scale from.
    * @returns {this}
    */
-  scale(scaleFactor, kwargs) {
-    kwargs = defineUndef(kwargs, { center: this.getCenter() });
-    this.applyPointsFunctionAboutPoint(points => nj.multiply(points, scaleFactor), kwargs.center);
+  /* [markdown]
+   * Applies the following matrix to the points:
+   * $$
+   * \begin{align}
+   * \mathbf{M} &= \mathbf{T}\mathbf{S}\mathbf{T}^{-1} \\
+   * &=
+   * \begin{bmatrix}
+   * \alpha_{x} & 0 & 0 & 0 \\
+   * 0 & \alpha_{y} & 0 & 0 \\
+   * 0 & 0 & \alpha_{z} & 0 \\
+   * \Delta x (1-\alpha_{x}) & \Delta y (1-\alpha_{y}) & \Delta z (1-\alpha_{z}) & 1
+   * \end{bmatrix}
+   * \end{align}
+   * $$
+   * 
+   * where $\mathbf{T}$ translates `center` ($\begin{bmatrix}\Delta x & \Delta y & \Delta z\end{bmatrix}$) to the orign, and $\mathbf{S}$ scales by $\alpha$ about the origin.
+   */
+  scale(scaleFactor, center=this.center) {
+    let [dx, dy, dz] = center;
+    let [ax, ay, az] = Validation.isNumber(scaleFactor) ? [scaleFactor, scaleFactor, scaleFactor] : scaleFactor;
+    let matrix4D = [
+      [ax,  0,  0,  0],
+      [ 0, ay,  0,  0],
+      [ 0,  0, az,  0],
+      [dx*(1-ax), dy*(1-ay), dz*(1-az), 1]
+    ]
+    this.linearTransformation4D(matrix4D);
 
     return this;
   }
@@ -684,12 +772,12 @@ class Mobject {
    * @returns {MobjectReference[]}
    */
   getFamily(recurse=true) {
-    /** @type {MobjectReference} */
+    /** @type {MobjectReference[]} */
     let subFamilies = [];
     this.submobjects.forEach(mobject => {
       subFamilies = subFamilies.concat(mobject.obj.getFamily());
     });
-    let allMobjects = [this].concat(subFamilies);
+    let allMobjects = [this.ref].concat(subFamilies);
     return Array.from(new Set(allMobjects));
   }
 

@@ -3,7 +3,6 @@ import {Scene} from "../scene/scene.js";
 import { WHITE, BLACK, RED, GREEN, BLUE, YELLOW, ORANGE, TRANSPARENT, ManimColor } from "../color/manimColor.js";
 import { bezier } from "../utils/bezier.js";
 import { Validation, defineUndef } from "../utils/validation.js";
-import { Text } from "../mobject/text/textMobject.js";
 import { Mobject, MobjectReference } from "../mobject/mobject.js";
 import { Canvas, Canvas2D } from "./canvas.js";
 import { Drawer, VMobjectDrawer, SVGDrawer } from "./drawer.js";
@@ -192,11 +191,12 @@ class Renderer2D extends Renderer {
    * @param {MobjectReference} mobject The `Mobject` to draw.
    * @returns {void}
   */
- drawMobject(mobject) {
-  let family = mobject.obj.getFamily();
-   let ghostMobject = mobject.obj.clone(true);
-   ghostMobject.points = this.worldToCanvasCoords(ghostMobject.points);
-   this.canvas.draw(ghostMobject);
+  drawMobject(mobject) {
+    mobject.obj.getFamily().forEach(submobject => {
+      let ghostMobject = submobject.obj.clone(true);
+      ghostMobject.points = this.worldToCanvasCoords(ghostMobject.points);
+      this.canvas.draw(ghostMobject);
+    });
   }
   
   /**

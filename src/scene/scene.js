@@ -50,7 +50,7 @@ class Scene {
      * The input handler for the scene. Each scene has one renderer, and each renderer has one scene.
      * @type {InputHandler}
      */
-    this.input = new InputHandler(this.renderer.canvas);
+    this.input = new InputHandler(this.renderer.canvas, this);
     
     /**
      * The scene camera.

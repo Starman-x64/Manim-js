@@ -205,7 +205,13 @@ class Renderer2D extends Renderer {
    * @returns {Number[]}
   */
   worldToCanvasCoords(worldPoints) {
-    let worldPointsAsMatrix = worldPoints.map(x => [x[0], x[1], 1]);
+    let worldPointsAsMatrix;
+    try {
+      worldPointsAsMatrix = worldPoints.map(x => [x[0], x[1], 1]);
+    }
+    catch (e) {
+      worldPointsAsMatrix = [[worldPoints[0], worldPoints[1], 1]];
+    }
     let transformationMatrix = [
       [GLOBAL_SCALE, 0, 0],
       [0, -GLOBAL_SCALE, 0],
@@ -222,7 +228,13 @@ class Renderer2D extends Renderer {
    * @returns {Number[]}
   */
   canvasToWorldCoords(canvasPoints) {
-    let canvasPointsAsMatrix = canvasPoints.map(x => [...x, 1]);
+    let canvasPointsAsMatrix;
+    try {
+      canvasPointsAsMatrix = canvasPoints.map(x => [...x, 1]);
+    }
+    catch (e) {
+      canvasPointsAsMatrix = [[...canvasPoints, 1]];
+    }
     let transformationMatrix = math.inv([
       [GLOBAL_SCALE, 0, 0],
       [0, -GLOBAL_SCALE, 0],

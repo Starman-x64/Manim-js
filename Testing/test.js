@@ -43,6 +43,8 @@ class TestScene extends Scene {
     this.add(text);
     this.add(mouseFollower);
 
+    mouseFollower.isInteractive = true;
+
     text.shift([-10, -10, 0]);
 
     text.addUpdaters((mobject, dt) => {

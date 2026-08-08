@@ -71,7 +71,13 @@ class Mobject {
      * @type {String}
      */
     this.name = defineUndef(kwargs.name, this.constructor.name);
-    
+
+    /**
+     * If the `Mobject` is interactive.
+     * @type {Boolean}
+     */
+    this.isInteractive = defineUndef(kwargs.isInteractive, false);
+   
     /**
      * The name of the `Mobject`.
      * @type {Map}
@@ -764,7 +770,23 @@ class Mobject {
   }
   
   
-  
+  /**
+   * Return true if the given point is inside the `Mobject`.
+   * @param {Number[]} point The point to test.
+   */
+  pointIsInside(point) {
+     return true;
+  }
+
+  /**
+   * 
+   * @param {MouseEvent} event 
+   * @param {Number[]} mouseWorldPosition 
+   */
+  onClicked(event, mouseWorldPosition) {
+    console.log(mouseWorldPosition);
+    this.scale(1.1);
+  }
 
 
 
